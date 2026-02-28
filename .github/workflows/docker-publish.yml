@@ -148,6 +148,17 @@ jobs:
             -p:ContainerRepository=${{ env.IMAGE_REPOSITORY }}/mylife-connector \
             -p:ContainerImageTag=${{ steps.version.outputs.version }}
 
+      - name: Build and push Nightscout connector
+        if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)
+        working-directory: src/Connectors/Nocturne.Connectors.Nightscout
+        run: |
+          dotnet publish \
+            -c Release \
+            -p:PublishProfile=DefaultContainer \
+            -p:ContainerRegistry=${{ env.REGISTRY }} \
+            -p:ContainerRepository=${{ env.IMAGE_REPOSITORY }}/nightscout-connector \
+            -p:ContainerImageTag=${{ steps.version.outputs.version }}
+
       # Build web app using standard Docker build (Node.js/Vite apps don't use .NET container publishing)
       - name: Build and push Nocturne.Web container
         if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)
@@ -241,6 +252,7 @@ jobs:
             echo "- \`${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/glooko-connector:${{ steps.version.outputs.version }}\`"
             echo "- \`${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/freestyle-connector:${{ steps.version.outputs.version }}\`"
             echo "- \`${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/mylife-connector:${{ steps.version.outputs.version }}\`"
+            echo "- \`${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nightscout-connector:${{ steps.version.outputs.version }}\`"
             echo ""
             if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
               echo "> Publishing is skipped for fork PRs."
@@ -271,6 +283,7 @@ jobs:
               "glooko-connector",
               "freestyle-connector",
               "mylife-connector",
+              "nightscout-connector",
             ];
 
             const lines = [];
@@ -284,7 +297,8 @@ jobs:
 
             for (const image of images) {
               const ref = `${registry}/${imageRepo}/${image}:${tag}`;
-              const packageUrl = `https://github.com/${owner}/${repo}/pkgs/container/${image}`;
+              const packageName = encodeURIComponent(`${repo}/${image}`);
+              const packageUrl = `https://github.com/${owner}/${repo}/pkgs/container/${packageName}`;
               lines.push(`| \`${image}\` | [package](${packageUrl}) | \`docker pull ${ref}\` |`);
             }
 
@@ -428,12 +442,13 @@ jobs:
 
           ## Container Images
 
-          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/api:${{ steps.version.outputs.version }}`
-          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/web:${{ steps.version.outputs.version }}`
+          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nocturne-api:${{ steps.version.outputs.version }}`
+          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nocturne-web:${{ steps.version.outputs.version }}`
           - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/dexcom-connector:${{ steps.version.outputs.version }}`
           - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/glooko-connector:${{ steps.version.outputs.version }}`
           - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/freestyle-connector:${{ steps.version.outputs.version }}`
           - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/mylife-connector:${{ steps.version.outputs.version }}`
+          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nightscout-connector:${{ steps.version.outputs.version }}`
 
 
           ## Files in this release
@@ -485,6 +500,7 @@ jobs:
   #         - glooko-connector
   #         - freestyle-connector
   #         - mylife-connector
+  #         - nightscout-connector
 
   #   steps:
   #     - name: Log in to GitHub Container Registry
