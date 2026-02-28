@@ -240,6 +240,26 @@ jobs:
             --push \
             .
 
+      - name: Verify published image manifests
+        if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)
+        run: |
+          set -euo pipefail
+          images=(
+            "nocturne-api"
+            "nocturne-web"
+            "dexcom-connector"
+            "glooko-connector"
+            "freestyle-connector"
+            "mylife-connector"
+            "nightscout-connector"
+          )
+
+          for image in "${images[@]}"; do
+            ref="${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/${image}:${{ steps.version.outputs.version }}"
+            echo "Verifying manifest: $ref"
+            docker buildx imagetools inspect "$ref" >/dev/null
+          done
+
       - name: Summarize published image tags
         if: always()
         run: |
