@@ -2,6 +2,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using Nocturne.API.Multitenancy;
 using Nocturne.API.Services.Auth;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
@@ -37,11 +39,12 @@ public class RecoveryModeCheckServiceTests : IDisposable
         _dbContext.Dispose();
     }
 
-    private RecoveryModeCheckService CreateService()
+    private RecoveryModeCheckService CreateService(MultitenancyConfiguration? multitenancyConfig = null)
     {
         return new RecoveryModeCheckService(
             _serviceProvider,
             _state,
+            Options.Create(multitenancyConfig ?? new MultitenancyConfiguration()),
             NullLogger<RecoveryModeCheckService>.Instance
         );
     }
@@ -55,6 +58,19 @@ public class RecoveryModeCheckServiceTests : IDisposable
 
         await service.StartAsync(CancellationToken.None);
 
+        _state.IsEnabled.Should().BeFalse();
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
+    public async Task StartAsync_EmptyDatabase_WithMultitenancy_SkipsSetupMode()
+    {
+        var config = new MultitenancyConfiguration { BaseDomain = "nocturnecgm.com" };
+        var service = CreateService(config);
+
+        await service.StartAsync(CancellationToken.None);
+
+        _state.IsSetupRequired.Should().BeFalse();
         _state.IsEnabled.Should().BeFalse();
     }
 

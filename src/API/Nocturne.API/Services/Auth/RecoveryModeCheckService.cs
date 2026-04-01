@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Nocturne.API.Multitenancy;
 using Nocturne.Infrastructure.Data;
 
 namespace Nocturne.API.Services.Auth;
@@ -8,21 +10,28 @@ namespace Nocturne.API.Services.Auth;
 /// should enter recovery mode. Recovery mode is triggered when any active,
 /// non-system subject has neither a passkey credential nor an OIDC binding,
 /// or when the NOCTURNE_RECOVERY_MODE environment variable is set to "true".
+///
+/// In multitenancy mode (BaseDomain configured), the setup-required check is
+/// skipped because an empty database is the expected initial state — tenants
+/// are created via the external provisioning flow.
 /// </summary>
 public class RecoveryModeCheckService : IHostedService
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly RecoveryModeState _state;
+    private readonly MultitenancyConfiguration _multitenancyConfig;
     private readonly ILogger<RecoveryModeCheckService> _logger;
 
     public RecoveryModeCheckService(
         IServiceProvider serviceProvider,
         RecoveryModeState state,
+        IOptions<MultitenancyConfiguration> multitenancyConfig,
         ILogger<RecoveryModeCheckService> logger
     )
     {
         _serviceProvider = serviceProvider;
         _state = state;
+        _multitenancyConfig = multitenancyConfig.Value;
         _logger = logger;
     }
 
@@ -53,6 +62,14 @@ public class RecoveryModeCheckService : IHostedService
 
             if (!activeSubjects)
             {
+                if (!string.IsNullOrEmpty(_multitenancyConfig.BaseDomain))
+                {
+                    _logger.LogInformation(
+                        "No user subjects found, but multitenancy is enabled — skipping setup mode"
+                    );
+                    return;
+                }
+
                 _state.IsSetupRequired = true;
                 _logger.LogWarning(
                     "Setup mode enabled: no user subjects found (fresh database)"
