@@ -86,9 +86,10 @@ jobs:
   publish-csharp:
     needs: generate-spec
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
-      packages: write
+      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -109,6 +110,9 @@ jobs:
             -o sdk/csharp/out
             --additional-properties=packageVersion=${{ needs.generate-spec.outputs.sdk_version }}
 
+      - name: Fix file permissions
+        run: sudo chown -R $USER:$USER sdk/csharp/out
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -120,9 +124,16 @@ jobs:
           dotnet build -c Release
           dotnet pack -c Release -o ../../../nupkg
 
+      - name: NuGet login (trusted publishing)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: rcgy
+
       - name: Publish to NuGet
         if: startsWith(github.ref, 'refs/tags/v')
-        run: dotnet nuget push nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push nupkg/*.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
   publish-typescript:
     needs: generate-spec
@@ -149,6 +160,9 @@ jobs:
             -c sdk/typescript/config.yaml
             -o sdk/typescript/out
             --additional-properties=npmVersion=${{ needs.generate-spec.outputs.sdk_version }}
+
+      - name: Fix file permissions
+        run: sudo chown -R $USER:$USER sdk/typescript/out
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -193,6 +207,9 @@ jobs:
             -c sdk/kotlin/config.yaml
             -o sdk/kotlin/out
             --additional-properties=artifactVersion=${{ needs.generate-spec.outputs.sdk_version }}
+
+      - name: Fix file permissions
+        run: sudo chown -R $USER:$USER sdk/kotlin/out
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -267,6 +284,9 @@ jobs:
             -c sdk/python/config.yaml
             -o sdk/python/out
             --additional-properties=packageVersion=${{ needs.generate-spec.outputs.sdk_version }}
+
+      - name: Fix file permissions
+        run: sudo chown -R $USER:$USER sdk/python/out
 
       - name: Setup Python
         uses: actions/setup-python@v5
