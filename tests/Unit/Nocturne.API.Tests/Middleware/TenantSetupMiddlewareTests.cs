@@ -84,8 +84,15 @@ public class TenantSetupMiddlewareTests : IDisposable
     [Fact]
     public async Task WhenTenantHasCredential_CallsNext()
     {
-        // Arrange — seed a passkey credential for this tenant
+        // Arrange — seed a subject and passkey credential for this tenant
         var subjectId = Guid.CreateVersion7();
+        _dbContext.Subjects.Add(new SubjectEntity
+        {
+            Id = subjectId,
+            Name = "Test User",
+            IsActive = true,
+            IsSystemSubject = false,
+        });
         _dbContext.PasskeyCredentials.Add(new PasskeyCredentialEntity
         {
             Id = Guid.CreateVersion7(),
