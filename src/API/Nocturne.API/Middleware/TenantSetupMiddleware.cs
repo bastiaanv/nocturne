@@ -88,5 +88,6 @@ public class TenantSetupMiddleware
             setupRequired = true,
             recoveryMode = false,
         });
+        return;
     }
 }
