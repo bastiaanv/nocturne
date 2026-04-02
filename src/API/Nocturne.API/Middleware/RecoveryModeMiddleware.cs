@@ -33,10 +33,12 @@ public class RecoveryModeMiddleware
 
         var path = context.Request.Path.Value ?? "";
 
-        // Allow passkey, TOTP, and metadata endpoints
+        // Allow passkey, TOTP, metadata, and slug validation endpoints
         if (path.StartsWith("/api/auth/passkey/", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWith("/api/auth/totp/", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWith("/api/metadata", StringComparison.OrdinalIgnoreCase))
+            path.StartsWith("/api/metadata", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/api/admin/tenants/validate-slug", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("/api/v4/me/tenants/validate-slug", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context);
             return;
