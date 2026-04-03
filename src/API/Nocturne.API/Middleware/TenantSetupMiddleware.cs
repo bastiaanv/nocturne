@@ -19,6 +19,7 @@ public class TenantSetupMiddleware
 
     private static readonly string[] AllowedPrefixes =
     [
+        "/api/admin/",
         "/api/auth/passkey/",
         "/api/auth/totp/",
         "/api/metadata",
