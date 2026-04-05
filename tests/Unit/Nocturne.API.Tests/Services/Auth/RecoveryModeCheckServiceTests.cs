@@ -186,6 +186,28 @@ public class RecoveryModeCheckServiceTests : IDisposable
 
     [Fact]
     [Trait("Category", "Unit")]
+    public async Task StartAsync_OrphanedSubject_WithMultitenancy_SkipsRecoveryMode()
+    {
+        _dbContext.Subjects.Add(new SubjectEntity
+        {
+            Id = Guid.CreateVersion7(),
+            Name = "Orphaned User",
+            IsActive = true,
+            IsSystemSubject = false,
+            OidcSubjectId = null,
+        });
+        await _dbContext.SaveChangesAsync();
+
+        var config = new MultitenancyConfiguration { BaseDomain = "nocturnecgm.com" };
+        var service = CreateService(config);
+
+        await service.StartAsync(CancellationToken.None);
+
+        _state.IsEnabled.Should().BeFalse("multi-tenant mode should not set global recovery");
+    }
+
+    [Fact]
+    [Trait("Category", "Unit")]
     public async Task StartAsync_EnvironmentVariableOverride_EnablesRecoveryMode()
     {
         // Set environment variable
