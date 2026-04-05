@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Nocturne.API.Multitenancy;
 using Nocturne.Connectors.Core.Utilities;
 using Nocturne.Core.Contracts.Multitenancy;
+using Nocturne.Core.Models.Authorization;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
 
@@ -331,8 +332,25 @@ public partial class TenantService : ITenantService
                 context.Tenants.Add(tenant);
                 await context.SaveChangesAsync(ct);
 
-                // Seed default roles for this tenant
-                await _roleService.SeedRolesForTenantAsync(tenant.Id, ct);
+                // Seed default roles for this tenant (inline to share transaction context)
+                var now = DateTime.UtcNow;
+                foreach (var (roleSlug, permissions) in TenantPermissions.SeedRolePermissions)
+                {
+                    var name = TenantPermissions.SeedRoleNames[roleSlug];
+                    context.TenantRoles.Add(new TenantRoleEntity
+                    {
+                        Id = Guid.CreateVersion7(),
+                        TenantId = tenant.Id,
+                        Name = name,
+                        Slug = roleSlug,
+                        Description = null,
+                        Permissions = new List<string>(permissions),
+                        IsSystem = true,
+                        SysCreatedAt = now,
+                        SysUpdatedAt = now,
+                    });
+                }
+                await context.SaveChangesAsync(ct);
 
                 // 2. Find or create subject by email
                 var subject = await context.Subjects.FirstOrDefaultAsync(s => s.Email == ownerEmail, ct);
@@ -364,10 +382,26 @@ public partial class TenantService : ITenantService
                 });
                 await context.SaveChangesAsync(ct);
 
-                // 4. Add subject as tenant owner
+                // 4. Add subject as tenant owner (inline to share transaction context)
                 var ownerRole = await context.TenantRoles
                     .FirstAsync(r => r.TenantId == tenant.Id && r.Slug == "owner", ct);
-                await AddMemberAsync(tenant.Id, subject.Id, [ownerRole.Id], ct: ct);
+                var member = new TenantMemberEntity
+                {
+                    Id = Guid.CreateVersion7(),
+                    TenantId = tenant.Id,
+                    SubjectId = subject.Id,
+                    SysCreatedAt = now,
+                    SysUpdatedAt = now,
+                };
+                context.TenantMembers.Add(member);
+                context.TenantMemberRoles.Add(new TenantMemberRoleEntity
+                {
+                    Id = Guid.CreateVersion7(),
+                    TenantMemberId = member.Id,
+                    TenantRoleId = ownerRole.Id,
+                    SysCreatedAt = now,
+                });
+                await context.SaveChangesAsync(ct);
 
                 // 5. Commit transaction
                 await transaction.CommitAsync(ct);
