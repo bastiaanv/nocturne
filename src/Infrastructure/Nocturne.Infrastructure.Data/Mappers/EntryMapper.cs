@@ -15,10 +15,11 @@ public static class EntryMapper
     /// </summary>
     public static EntryEntity ToEntity(Entry entry)
     {
+        var unwrappedId = MongoIdUtils.UnwrapObjectId(entry.Id);
         var entity = new EntryEntity
         {
-            Id = string.IsNullOrEmpty(entry.Id) ? Guid.CreateVersion7() : ParseIdToGuid(entry.Id),
-            OriginalId = MongoIdUtils.IsValidMongoId(entry.Id) ? entry.Id : null,
+            Id = string.IsNullOrEmpty(unwrappedId) ? Guid.CreateVersion7() : ParseIdToGuid(unwrappedId),
+            OriginalId = MongoIdUtils.IsValidMongoId(unwrappedId) ? unwrappedId : null,
             Mills = entry.Mills,
             DateString = entry.DateString,
             Mgdl = entry.Mgdl,

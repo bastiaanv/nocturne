@@ -17,12 +17,13 @@ public static class TreatmentMapper
     /// </summary>
     public static TreatmentEntity ToEntity(Treatment treatment)
     {
+        var unwrappedId = MongoIdUtils.UnwrapObjectId(treatment.Id);
         var entity = new TreatmentEntity
         {
-            Id = string.IsNullOrEmpty(treatment.Id)
+            Id = string.IsNullOrEmpty(unwrappedId)
                 ? Guid.CreateVersion7()
-                : ParseIdToGuid(treatment.Id),
-            OriginalId = IsValidMongoObjectId(treatment.Id) ? treatment.Id : null,
+                : ParseIdToGuid(unwrappedId),
+            OriginalId = IsValidMongoObjectId(unwrappedId) ? unwrappedId : null,
             EventType = treatment.EventType,
             Reason = treatment.Reason,
             Carbs = treatment.Carbs,

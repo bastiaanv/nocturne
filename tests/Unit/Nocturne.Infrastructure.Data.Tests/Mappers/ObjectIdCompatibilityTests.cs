@@ -1,0 +1,130 @@
+using FluentAssertions;
+using Nocturne.Core.Models;
+using Nocturne.Infrastructure.Data.Common;
+using Nocturne.Infrastructure.Data.Mappers;
+using Xunit;
+
+namespace Nocturne.Infrastructure.Data.Tests.Mappers;
+
+/// <summary>
+/// Tests that ObjectId(...) wrapper format from older Nightscout data
+/// is correctly handled during mapping to database entities.
+///
+/// ~25% of _id values in the OpenAPS Data Commons use the wrapped format
+/// "ObjectId(59dabbb7c7d5afdddbc992f4)" instead of bare "59dabbb7c7d5afdddbc992f4".
+/// </summary>
+public class ObjectIdCompatibilityTests
+{
+    // ========================================================================
+    // MongoIdUtils.UnwrapObjectId — new method needed
+    // ========================================================================
+
+    [Fact]
+    public void UnwrapObjectId_UnwrapsWrappedFormat()
+    {
+        var wrappedId = "ObjectId(59dabbb7c7d5afdddbc992f4)";
+
+        var unwrapped = MongoIdUtils.UnwrapObjectId(wrappedId);
+
+        unwrapped.Should().Be("59dabbb7c7d5afdddbc992f4");
+        MongoIdUtils.IsValidMongoId(unwrapped).Should().BeTrue();
+    }
+
+    [Fact]
+    public void UnwrapObjectId_PassesThroughBareId()
+    {
+        var bareId = "59dabbb7c7d5afdddbc992f4";
+
+        var result = MongoIdUtils.UnwrapObjectId(bareId);
+
+        result.Should().Be(bareId);
+    }
+
+    [Fact]
+    public void UnwrapObjectId_HandlesNull()
+    {
+        MongoIdUtils.UnwrapObjectId(null).Should().BeNull();
+    }
+
+    [Fact]
+    public void UnwrapObjectId_HandlesEmptyString()
+    {
+        MongoIdUtils.UnwrapObjectId("").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void UnwrapObjectId_HandlesGuidString()
+    {
+        var guid = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
+
+        MongoIdUtils.UnwrapObjectId(guid).Should().Be(guid);
+    }
+
+    // ========================================================================
+    // EntryMapper — should unwrap before storing OriginalId
+    // ========================================================================
+
+    [Fact]
+    public void EntryMapper_PreservesOriginalIdFromWrappedObjectId()
+    {
+        var entry = new Entry
+        {
+            Id = "ObjectId(59dabbb7c7d5afdddbc992f4)",
+            Sgv = 120,
+            Mills = 1507507102681
+        };
+
+        var entity = EntryMapper.ToEntity(entry);
+
+        entity.OriginalId.Should().Be("59dabbb7c7d5afdddbc992f4");
+    }
+
+    [Fact]
+    public void EntryMapper_PreservesOriginalIdFromBareObjectId()
+    {
+        var entry = new Entry
+        {
+            Id = "59dabbb7c7d5afdddbc992f4",
+            Sgv = 120,
+            Mills = 1507507102681
+        };
+
+        var entity = EntryMapper.ToEntity(entry);
+
+        entity.OriginalId.Should().Be("59dabbb7c7d5afdddbc992f4");
+    }
+
+    // ========================================================================
+    // TreatmentMapper — should unwrap before storing OriginalId
+    // ========================================================================
+
+    [Fact]
+    public void TreatmentMapper_PreservesOriginalIdFromWrappedObjectId()
+    {
+        var treatment = new Treatment
+        {
+            Id = "ObjectId(59daddd0c7d5afdddbc99331)",
+            EventType = "Temp Basal",
+            CreatedAt = "2017-10-08T22:21:55-04:00"
+        };
+
+        var entity = TreatmentMapper.ToEntity(treatment);
+
+        entity.OriginalId.Should().Be("59daddd0c7d5afdddbc99331");
+    }
+
+    [Fact]
+    public void TreatmentMapper_PreservesOriginalIdFromBareObjectId()
+    {
+        var treatment = new Treatment
+        {
+            Id = "59daddd0c7d5afdddbc99331",
+            EventType = "Temp Basal",
+            CreatedAt = "2017-10-08T22:21:55-04:00"
+        };
+
+        var entity = TreatmentMapper.ToEntity(treatment);
+
+        entity.OriginalId.Should().Be("59daddd0c7d5afdddbc99331");
+    }
+}

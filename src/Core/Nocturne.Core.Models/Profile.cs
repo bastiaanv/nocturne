@@ -229,6 +229,7 @@ public class TimeValue
     /// If not set, it will be calculated from Time property during serialization.
     /// </summary>
     [JsonPropertyName("timeAsSeconds")]
+    [JsonConverter(typeof(FlexibleNullableIntConverter))]
     public int? TimeAsSeconds { get; set; }
 
     /// <summary>

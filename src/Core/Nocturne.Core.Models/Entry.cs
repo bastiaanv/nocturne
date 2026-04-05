@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Nocturne.Core.Models.Attributes;
+using Nocturne.Core.Models.Serializers;
 
 namespace Nocturne.Core.Models;
 
@@ -150,6 +151,7 @@ public class Entry : ProcessableDocumentBase
     /// Common values: Flat, SingleUp, DoubleUp, SingleDown, DoubleDown, FortyFiveUp, FortyFiveDown
     /// </summary>
     [JsonPropertyName("direction")]
+    [JsonConverter(typeof(FlexibleDirectionConverter))]
     public string? Direction { get; set; }
 
     /// <summary>
@@ -253,6 +255,7 @@ public class Entry : ProcessableDocumentBase
     /// Gets or sets the noise level (0-4)
     /// </summary>
     [JsonPropertyName("noise")]
+    [JsonConverter(typeof(FlexibleNullableIntConverter))]
     public int? Noise { get; set; }
 
     /// <summary>

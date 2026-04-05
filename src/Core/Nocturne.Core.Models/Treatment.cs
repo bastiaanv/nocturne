@@ -372,6 +372,7 @@ public class Treatment : ProcessableDocumentBase
     /// If not explicitly set, checks Absolute, or attempts to calculate from Insulin / (Duration/60).
     /// </summary>
     [JsonPropertyName("rate")]
+    [JsonConverter(typeof(FlexibleNullableDoubleConverter))]
     public double? Rate
     {
         get
@@ -753,10 +754,11 @@ public class Treatment : ProcessableDocumentBase
     public long? OriginalEnd { get; set; }
 
     /// <summary>
-    /// Gets or sets additional properties for the treatment
+    /// Gets or sets additional/overflow properties for the treatment.
+    /// Captures unknown JSON fields (e.g., Medtronic raw_rate, raw_duration, wizard, bolus,
+    /// medtronic URI, _type) so they survive round-trip through the API.
     /// </summary>
-    [JsonPropertyName("additional_properties")]
-    [NocturneOnly]
+    [JsonExtensionData]
     public Dictionary<string, object>? AdditionalProperties { get; set; }
 
     /// <summary>
