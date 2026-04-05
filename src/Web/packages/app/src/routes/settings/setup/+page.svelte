@@ -13,9 +13,12 @@
     ChevronRight,
     ArrowRightLeft,
   } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button";
+  import { goto } from "$app/navigation";
   import * as patientRemote from "$lib/api/generated/patientRecords.generated.remote";
   import * as servicesRemote from "$lib/api/generated/services.generated.remote";
   import * as profileRemote from "$lib/api/generated/profiles.generated.remote";
+  import { markSetupComplete } from "./setup.remote";
 
   // ── Data loading ──────────────────────────────────────────────────
 
@@ -137,6 +140,18 @@
     completionStatus.filter((complete, i) => steps[i].required && complete)
       .length,
   );
+
+  let isFinishing = $state(false);
+
+  async function handleFinishSetup() {
+    isFinishing = true;
+    try {
+      await markSetupComplete();
+      await goto("/", { invalidateAll: true });
+    } finally {
+      isFinishing = false;
+    }
+  }
 </script>
 
 <div class="container mx-auto max-w-4xl p-6 space-y-6">
@@ -203,5 +218,15 @@
         </Card.Root>
       </a>
     {/each}
+  </div>
+
+  <div class="flex justify-end">
+    <Button
+      variant="outline"
+      disabled={isFinishing}
+      onclick={handleFinishSetup}
+    >
+      {isFinishing ? "Finishing..." : "Finish Setup"}
+    </Button>
   </div>
 </div>
