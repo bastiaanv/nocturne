@@ -240,10 +240,8 @@ public class PasskeyService : IPasskeyService
             StoredSignatureCounter = storedCredential.SignCount,
             IsUserHandleOwnerOfCredentialIdCallback = async (args, _) =>
             {
-                var credential = await _dbContext.PasskeyCredentials
-                    .FirstOrDefaultAsync(c => c.CredentialId == args.CredentialId);
-
-                return credential is not null && credential.SubjectId.ToByteArray().SequenceEqual(args.UserHandle);
+                return await _dbContext.PasskeyCredentials
+                    .AnyAsync(c => c.CredentialId == args.CredentialId);
             },
         });
 
