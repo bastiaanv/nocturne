@@ -85,6 +85,14 @@ public class RecoveryModeCheckService : IHostedService
                 return;
             }
 
+            if (IsMultiTenantMode)
+            {
+                _logger.LogInformation(
+                    "Multi-tenant mode — per-tenant recovery handled by TenantSetupMiddleware"
+                );
+                return;
+            }
+
             var hasOrphaned = await db.Subjects
                 .IgnoreQueryFilters()
                 .Where(s => s.IsActive && !s.IsSystemSubject)

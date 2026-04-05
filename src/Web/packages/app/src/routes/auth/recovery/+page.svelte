@@ -211,7 +211,7 @@
           <div class="flex items-start gap-3 rounded-md border border-green-500/20 bg-green-500/5 p-3">
             <Check class="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
             <p class="text-sm text-green-700 dark:text-green-400">
-              Passkey registered. Recovery mode will be deactivated on next restart.
+              Passkey registered successfully. Recovery mode has been deactivated.
             </p>
           </div>
           <Button class="w-full" onclick={handleContinue}>
@@ -223,7 +223,7 @@
 
     <Card.Footer class="justify-center">
       <p class="text-xs text-muted-foreground">
-        To disable recovery mode, restart the application after registering a passkey.
+        Register a passkey to restore normal access.
       </p>
     </Card.Footer>
   </Card.Root>

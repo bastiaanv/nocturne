@@ -17021,8 +17021,8 @@ msgid "Passkey registered. Recovery mode will be deactivated on next restart."
 msgstr "Passkey registered. Recovery mode will be deactivated on next restart."
 
 #: src/routes/auth/recovery/+page.svelte
-msgid "To disable recovery mode, restart the application after registering a passkey."
-msgstr "To disable recovery mode, restart the application after registering a passkey."
+msgid "Register a passkey to restore normal access."
+msgstr "Register a passkey to restore normal access."
 
 #: src/routes/settings/setup/profile/+page.svelte
 msgid "Search timezones..."
