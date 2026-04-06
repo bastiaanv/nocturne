@@ -44,11 +44,7 @@ public class HomeAssistantConnectorInstaller : IConnectorInstaller
         // Sync executor
         services.AddScoped<IConnectorSyncExecutor, HomeAssistantSyncExecutor>();
 
-        // Write-back sink (typed HttpClient for HA push)
-        if (!string.IsNullOrEmpty(config.Url))
-            services.AddHttpClient<HomeAssistantWriteBackSink>()
-                .ConfigureConnectorClient(config.Url);
-        else
-            services.AddHttpClient<HomeAssistantWriteBackSink>();
+        // Write-back sink (uses IHomeAssistantApiClient which has its own typed HttpClient)
+        services.AddScoped<HomeAssistantWriteBackSink>();
     }
 }

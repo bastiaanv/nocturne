@@ -17,7 +17,6 @@ public class HomeAssistantConnectorService : BaseConnectorService<HomeAssistantC
 {
     private readonly IHomeAssistantApiClient _apiClient;
     private readonly HomeAssistantEntityMapper _mapper;
-    private readonly Dictionary<string, DateTimeOffset> _lastChanged = new();
 
     public HomeAssistantConnectorService(
         HttpClient httpClient,
@@ -69,11 +68,9 @@ public class HomeAssistantConnectorService : BaseConnectorService<HomeAssistantC
                     continue;
                 }
 
-                // Dedup: skip if last_changed hasn't moved
-                if (_lastChanged.TryGetValue(entityId, out var prev) && prev >= state.LastChanged)
-                    continue;
-
-                _lastChanged[entityId] = state.LastChanged;
+                // Dedup is handled by the persistence layer (entry/treatment services)
+                // via timestamp + source checks. In-memory dedup is not possible here
+                // because the service is registered as transient via AddHttpClient<T>.
 
                 var published = await PublishStateAsync(dataType, state, config, cancellationToken);
                 if (published)

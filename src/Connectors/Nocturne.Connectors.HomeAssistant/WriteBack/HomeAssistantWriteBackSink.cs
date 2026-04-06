@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Nocturne.Connectors.HomeAssistant.Configurations;
 using Nocturne.Connectors.HomeAssistant.Services;
+using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Contracts.Events;
 using Nocturne.Core.Models;
@@ -26,6 +27,10 @@ public class HomeAssistantWriteBackSink(
     public async Task OnCreatedAsync(Entry item, CancellationToken ct = default)
     {
         if (!config.WriteBackEnabled)
+            return;
+
+        // Prevent sync loop: HA → Nocturne → write-back → HA → repeat
+        if (item.DataSource == DataSources.HomeAssistantConnector)
             return;
 
         if (IsStale(item))

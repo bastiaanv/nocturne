@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nocturne.Connectors.Core.Models;
 using Nocturne.Connectors.HomeAssistant.Configurations;
 using Nocturne.Connectors.HomeAssistant.Mappers;
 using Nocturne.Connectors.HomeAssistant.Models;
@@ -11,6 +12,10 @@ namespace Nocturne.API.Controllers.V4.Connectors;
 /// Receives inbound webhooks from Home Assistant automations.
 /// Authentication is via secret in URL path, not standard auth middleware.
 /// </summary>
+// TODO: In multitenant deployments, webhook URL should include tenant context.
+// Current implementation works for single-tenant setups. For multitenant:
+// either encode tenant ID in URL (/webhook/{tenantId}/{secret}) or
+// have the webhook secret map to a specific tenant.
 [ApiController]
 [Route("api/v4/connectors/home-assistant/webhook")]
 [AllowAnonymous]
@@ -42,12 +47,19 @@ public class HomeAssistantWebhookController(
             return BadRequest("Entity not mapped");
         }
 
-        // Currently only glucose mapping implemented
+        var dataType = mapping.Key;
+
+        if (dataType != SyncDataType.Glucose)
+        {
+            return BadRequest(
+                $"Webhook only supports Glucose data type. " +
+                $"Use polling for {dataType}.");
+        }
+
         var entry = mapper.MapToEntry(payload);
         if (entry == null)
             return Ok(); // Silently skip unavailable/unknown states
 
-        // Check for duplicate before persisting
         var duplicate = await entryService.CheckForDuplicateEntryAsync(
             entry.Device, entry.Type, entry.Sgv, entry.Mills, cancellationToken: ct);
 
@@ -55,7 +67,6 @@ public class HomeAssistantWebhookController(
             return Ok(); // Already have this reading
 
         await entryService.CreateEntriesAsync([entry], ct);
-
         return Ok();
     }
 }

@@ -4,6 +4,7 @@ using Moq;
 using Nocturne.Connectors.HomeAssistant.Configurations;
 using Nocturne.Connectors.HomeAssistant.Services;
 using Nocturne.Connectors.HomeAssistant.WriteBack;
+using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models;
 using Xunit;
@@ -66,6 +67,21 @@ public class HomeAssistantWriteBackSinkTests
     {
         var sink = CreateSink(writeBackEnabled: false);
         var entry = CreateRecentEntry();
+
+        await sink.OnCreatedAsync(entry);
+
+        _apiClientMock.Verify(
+            x => x.SetStateAsync(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<Dictionary<string, object>>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task OnCreatedAsync_WhenEntryFromHomeAssistant_SkipsToPreventSyncLoop()
+    {
+        var sink = CreateSink();
+        var entry = CreateRecentEntry();
+        entry.DataSource = DataSources.HomeAssistantConnector;
 
         await sink.OnCreatedAsync(entry);
 
