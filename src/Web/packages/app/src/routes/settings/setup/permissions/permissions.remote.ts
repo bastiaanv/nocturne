@@ -1,14 +1,25 @@
 import { command, query, getRequestEvent } from "$app/server";
 import { z } from "zod";
+import {
+  getMembers,
+  setMemberRoles,
+  setMemberPermissions,
+  setMemberLimitTo24Hours,
+} from "$lib/api/generated/memberinvites.generated.remote";
 
 /**
  * Get the current public access configuration.
  * Returns the Public subject's membership info from the members list.
  */
 export const getPublicAccessConfig = query(async () => {
-  const { apiClient } = getRequestEvent().locals;
-  const members = await apiClient.memberInvites.getMembers();
-  const publicMember = members.find((m: any) => m.name === "Public");
+  const members = await getMembers(undefined).current;
+  // Fall back to direct API call if query cache isn't populated
+  const memberList =
+    members ??
+    (await getRequestEvent().locals.apiClient.memberInvites.getMembers());
+  const publicMember = (memberList ?? []).find(
+    (m: any) => m.name === "Public",
+  );
 
   if (!publicMember) {
     return {
@@ -31,7 +42,7 @@ export const getPublicAccessConfig = query(async () => {
     configured: hasRoles || hasDirectPerms,
     memberId: publicMember.id,
     mode: isReadable ? ("readable" as const) : ("denied" as const),
-    limitTo24Hours: (publicMember as any).limitTo24Hours ?? true,
+    limitTo24Hours: publicMember.limitTo24Hours ?? true,
     roles: publicMember.roles ?? [],
     directPermissions: publicMember.directPermissions ?? [],
   };
@@ -39,15 +50,14 @@ export const getPublicAccessConfig = query(async () => {
 
 /**
  * Get available tenant roles (to find readable/denied role IDs).
+ * Extracts unique roles from member data since there's no dedicated roles endpoint.
  */
 export const getTenantRoles = query(async () => {
   const { apiClient } = getRequestEvent().locals;
-  // TODO: Use apiClient.roles.getRoles() once NSwag client is regenerated.
-  // For now, extract unique roles from member data.
   const members = await apiClient.memberInvites.getMembers();
   const roleMap = new Map<string, { id: string; slug: string; name: string }>();
   for (const m of members) {
-    for (const r of (m as any).roles ?? []) {
+    for (const r of m.roles ?? []) {
       if (r.id && r.slug) {
         roleMap.set(r.id, {
           id: r.id,
@@ -61,7 +71,7 @@ export const getTenantRoles = query(async () => {
 });
 
 /**
- * Save public access configuration.
+ * Save public access configuration using the generated remote functions.
  */
 export const savePublicAccess = command(
   z.object({
@@ -72,44 +82,22 @@ export const savePublicAccess = command(
     deniedRoleId: z.string().optional(),
   }),
   async ({ memberId, mode, limitTo24Hours, readableRoleId, deniedRoleId }) => {
-    const { apiClient } = getRequestEvent().locals;
-
     if (mode === "denied") {
       if (deniedRoleId) {
-        await (apiClient.memberInvites as any).setMemberRoles(memberId, {
-          roleIds: [deniedRoleId],
-        });
+        await setMemberRoles({ id: memberId, request: { roleIds: [deniedRoleId] } });
       } else {
-        // Clear all roles and permissions — the backend "denied" role
-        // may not exist yet; fall back to removing readable.
-        await (apiClient.memberInvites as any).setMemberRoles(memberId, {
-          roleIds: [],
-        });
-        await (apiClient.memberInvites as any).setMemberPermissions(memberId, {
-          directPermissions: [],
-        });
+        await setMemberRoles({ id: memberId, request: { roleIds: [] } });
+        await setMemberPermissions({ id: memberId, request: { directPermissions: [] } });
       }
     } else if (mode === "readable" && readableRoleId) {
-      await (apiClient.memberInvites as any).setMemberRoles(memberId, {
-        roleIds: [readableRoleId],
-      });
-      // Clear any custom direct permissions
-      await (apiClient.memberInvites as any).setMemberPermissions(memberId, {
-        directPermissions: null,
-      });
+      await setMemberRoles({ id: memberId, request: { roleIds: [readableRoleId] } });
+      await setMemberPermissions({ id: memberId, request: { directPermissions: null } });
     }
 
-    // Update LimitTo24Hours
-    // TODO: Remove `any` cast once NSwag client is regenerated with this endpoint
-    try {
-      await (apiClient.memberInvites as any).setMemberLimitTo24Hours(memberId, {
-        limitTo24Hours,
-      });
-    } catch {
-      console.warn(
-        "setMemberLimitTo24Hours not available yet — will work after NSwag regen",
-      );
-    }
+    await setMemberLimitTo24Hours({
+      id: memberId,
+      request: { limitTo24Hours },
+    });
 
     return { success: true };
   },
