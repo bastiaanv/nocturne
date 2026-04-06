@@ -62,5 +62,8 @@ public enum ConnectorPropertyKey
 
     // Write-back
     WriteBackEnabled,
-    WriteBackBatchSize
+    WriteBackBatchSize,
+
+    // Home Assistant-specific
+    WebhookEnabled
 }
