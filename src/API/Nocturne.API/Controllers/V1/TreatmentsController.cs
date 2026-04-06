@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
+using Nocturne.API.Authorization;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models;
 
@@ -13,7 +14,7 @@ namespace Nocturne.API.Controllers.V1;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyNames.HasPermissions)]
 public class TreatmentsController : ControllerBase
 {
     private readonly ITreatmentService _treatmentService;
@@ -41,7 +42,6 @@ public class TreatmentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Array of treatments ordered by most recent first</returns>
     [HttpGet]
-    [AllowAnonymous]
     [NightscoutEndpoint("/api/v1/treatments")]
     [ProducesResponseType(typeof(Treatment[]), 200)]
     [ProducesResponseType(400)]
@@ -131,7 +131,6 @@ public class TreatmentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The treatment with the specified ID</returns>
     [HttpGet("{id}")]
-    [AllowAnonymous]
     [NightscoutEndpoint("/api/v1/treatments/:id")]
     [ProducesResponseType(typeof(Treatment), 200)]
     [ProducesResponseType(404)]
@@ -186,6 +185,7 @@ public class TreatmentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created treatments with assigned IDs</returns>
     [HttpPost]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/treatments")]
     [ProducesResponseType(typeof(Treatment[]), 200)]
     [ProducesResponseType(400)]
@@ -292,6 +292,7 @@ public class TreatmentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated treatment</returns>
     [HttpPut("{id}")]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/treatments/:id")]
     [ProducesResponseType(typeof(Treatment), 200)]
     [ProducesResponseType(404)]
@@ -367,6 +368,7 @@ public class TreatmentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success status</returns>
     [HttpDelete("{id}")]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/treatments/:id")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
@@ -416,6 +418,7 @@ public class TreatmentsController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Number of treatments deleted</returns>
     [HttpDelete]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/treatments")]
     [ProducesResponseType(typeof(object), 200)]
     [ProducesResponseType(400)]

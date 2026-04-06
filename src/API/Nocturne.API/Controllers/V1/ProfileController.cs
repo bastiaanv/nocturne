@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
+using Nocturne.API.Authorization;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models;
 
@@ -12,7 +13,7 @@ namespace Nocturne.API.Controllers.V1;
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize]
+[Authorize(Policy = PolicyNames.HasPermissions)]
 public class ProfileController : ControllerBase
 {
     private readonly IProfileDataService _profileDataService;
@@ -34,7 +35,6 @@ public class ProfileController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of profiles</returns>
     [HttpGet]
-    [AllowAnonymous]
     [NightscoutEndpoint("/api/v1/profile")]
     [ProducesResponseType(typeof(Profile[]), 200)]
     [ProducesResponseType(typeof(Profile[]), 304)] // Not Modified response
@@ -117,6 +117,7 @@ public class ProfileController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created profiles with assigned IDs as an array</returns>
     [HttpPost]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/profile")]
     [ProducesResponseType(typeof(Profile[]), 200)]
     [ProducesResponseType(400)]
@@ -186,7 +187,6 @@ public class ProfileController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The current active profile as a single object (Nightscout format), or empty array if no profiles exist</returns>
     [HttpGet("current")]
-    [AllowAnonymous]
     [NightscoutEndpoint("/api/v1/profile/current")]
     [ProducesResponseType(typeof(Profile), 200)]
     [ProducesResponseType(typeof(Profile[]), 200)] // Empty array when no profile
@@ -250,7 +250,6 @@ public class ProfileController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The profile with the specified ID, or empty array if not found</returns>
     [HttpGet("{spec}")]
-    [AllowAnonymous]
     [NightscoutEndpoint("/api/v1/profile/{spec}")]
     [ProducesResponseType(typeof(Profile[]), 200)]
     [ProducesResponseType(typeof(Profile[]), 304)] // Not Modified response

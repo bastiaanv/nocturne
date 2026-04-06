@@ -15,6 +15,11 @@ public class PermissionTrie
     public int Count => _permissions.Count;
 
     /// <summary>
+    /// Whether the trie contains no permissions
+    /// </summary>
+    public bool IsEmpty => _permissions.Count == 0;
+
+    /// <summary>
     /// Add a single permission to the trie
     /// </summary>
     /// <param name="permission">Permission to add</param>

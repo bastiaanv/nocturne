@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
+using Nocturne.API.Authorization;
 using Nocturne.API.Extensions;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models;
@@ -16,7 +17,7 @@ namespace Nocturne.API.Controllers.V1;
 [Route("api/v1")]
 [Produces("application/json")]
 [Tags("V1 Notifications")]
-[Authorize]
+[Authorize(Policy = PolicyNames.HasPermissions)]
 public class NotificationsController : ControllerBase
 {
     private readonly INotificationV1Service _notificationService;
@@ -42,6 +43,7 @@ public class NotificationsController : ControllerBase
     /// <response code="400">Invalid acknowledgment request</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("notifications/ack")]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/notifications/ack")]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status400BadRequest)]
@@ -226,7 +228,6 @@ public class NotificationsController : ControllerBase
     /// <response code="200">Admin notifications retrieved successfully</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("adminnotifies")]
-    [AllowAnonymous]
     [NightscoutEndpoint("/api/v1/adminnotifies")]
     [ProducesResponseType(typeof(AdminNotifiesResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -287,6 +288,7 @@ public class NotificationsController : ControllerBase
     /// <response code="400">Invalid notification request</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("adminnotifies")]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/adminnotifies (POST)")]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status400BadRequest)]
@@ -372,6 +374,7 @@ public class NotificationsController : ControllerBase
     /// <response code="200">Admin notifications cleared successfully</response>
     /// <response code="500">Internal server error</response>
     [HttpDelete("adminnotifies")]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/adminnotifies (DELETE)")]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(
@@ -435,6 +438,7 @@ public class NotificationsController : ControllerBase
     /// <response code="400">Invalid notification request</response>
     /// <response code="500">Internal server error</response>
     [HttpPost("notifications/pushover")]
+    [Authorize]
     [NightscoutEndpoint("/api/v1/notifications/pushover")]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(NotificationAckResponse), StatusCodes.Status400BadRequest)]

@@ -19,6 +19,7 @@ public partial class TenantService : ITenantService
     private readonly MultitenancyConfiguration _config;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ITenantRoleService _roleService;
+    private readonly ILogger<TenantService> _logger;
 
     private static readonly HashSet<string> ReservedSlugs = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -34,13 +35,15 @@ public partial class TenantService : ITenantService
         IMemoryCache cache,
         IOptions<MultitenancyConfiguration> config,
         IHttpClientFactory httpClientFactory,
-        ITenantRoleService roleService)
+        ITenantRoleService roleService,
+        ILogger<TenantService> logger)
     {
         _factory = factory;
         _cache = cache;
         _config = config.Value;
         _httpClientFactory = httpClientFactory;
         _roleService = roleService;
+        _logger = logger;
     }
 
     public async Task<TenantCreatedDto> CreateAsync(
@@ -62,6 +65,9 @@ public partial class TenantService : ITenantService
 
         // Seed default roles for this tenant
         await _roleService.SeedRolesForTenantAsync(tenant.Id, ct);
+
+        // Create Public subject membership (no roles = unconfigured sentinel)
+        await CreatePublicSubjectMembershipAsync(context, tenant.Id, ct);
 
         // Assign creator as owner
         var ownerRole = await context.TenantRoles
@@ -90,6 +96,9 @@ public partial class TenantService : ITenantService
 
         // Seed default roles for this tenant (but don't assign an owner)
         await _roleService.SeedRolesForTenantAsync(tenant.Id, ct);
+
+        // Create Public subject membership (no roles = unconfigured sentinel)
+        await CreatePublicSubjectMembershipAsync(context, tenant.Id, ct);
 
         return ToCreatedDto(tenant, plaintextSecret);
     }
@@ -368,6 +377,29 @@ public partial class TenantService : ITenantService
                 }
                 await context.SaveChangesAsync(ct);
 
+                // Create Public subject membership (no roles = unconfigured sentinel)
+                var publicSubject = await context.Subjects
+                    .FirstOrDefaultAsync(s => s.IsSystemSubject && s.Name == "Public", ct);
+
+                if (publicSubject != null)
+                {
+                    context.TenantMembers.Add(new TenantMemberEntity
+                    {
+                        Id = Guid.CreateVersion7(),
+                        TenantId = tenant.Id,
+                        SubjectId = publicSubject.Id,
+                        LimitTo24Hours = true,
+                        Label = "Public Access",
+                        SysCreatedAt = now,
+                        SysUpdatedAt = now,
+                    });
+                    await context.SaveChangesAsync(ct);
+                }
+                else
+                {
+                    _logger.LogWarning("Public system subject not found — skipping public access membership for tenant {TenantId}", tenant.Id);
+                }
+
                 // 2. Find or create subject by email
                 var subject = await context.Subjects.FirstOrDefaultAsync(s => s.Email == ownerEmail, ct);
                 if (subject == null)
@@ -430,6 +462,32 @@ public partial class TenantService : ITenantService
                 throw;
             }
         });
+    }
+
+    private async Task CreatePublicSubjectMembershipAsync(
+        NocturneDbContext context, Guid tenantId, CancellationToken ct = default)
+    {
+        var publicSubject = await context.Subjects
+            .FirstOrDefaultAsync(s => s.IsSystemSubject && s.Name == "Public", ct);
+
+        if (publicSubject != null)
+        {
+            context.TenantMembers.Add(new TenantMemberEntity
+            {
+                Id = Guid.CreateVersion7(),
+                TenantId = tenantId,
+                SubjectId = publicSubject.Id,
+                LimitTo24Hours = true,
+                Label = "Public Access",
+                SysCreatedAt = DateTime.UtcNow,
+                SysUpdatedAt = DateTime.UtcNow,
+            });
+            await context.SaveChangesAsync(ct);
+        }
+        else
+        {
+            _logger.LogWarning("Public system subject not found — skipping public access membership for tenant {TenantId}", tenantId);
+        }
     }
 
     private static string GenerateApiSecret()

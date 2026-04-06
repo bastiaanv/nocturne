@@ -1,7 +1,9 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
+using Nocturne.API.Authorization;
 using Nocturne.API.Configuration;
 using Nocturne.API.Extensions;
 using Nocturne.API.Hubs;
@@ -207,7 +209,12 @@ builder
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddTransient<IAuthorizationHandler, HasPermissionsHandler>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(PolicyNames.HasPermissions, policy =>
+        policy.Requirements.Add(new HasPermissionsRequirement()));
+});
 
 // Configure CORS for frontend with credentials support
 // Note: AllowAnyOrigin() cannot be combined with AllowCredentials() per CORS spec

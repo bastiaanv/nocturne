@@ -58,6 +58,8 @@ public static class TenantPermissions
         public const string Admin = "admin";
         public const string Caretaker = "caretaker";
         public const string Follower = "follower";
+        public const string Readable = "readable";
+        public const string Denied = "denied";
     }
 
     /// <summary>
@@ -79,6 +81,12 @@ public static class TenantPermissions
             ProfileRead, NotificationsRead, ReportsRead, HealthRead,
         ],
         [SeedRoles.Follower] = [EntriesRead, HealthRead],
+        [SeedRoles.Readable] =
+        [
+            EntriesRead, TreatmentsRead, DeviceStatusRead,
+            ProfileRead, HealthRead,
+        ],
+        [SeedRoles.Denied] = [],
     };
 
     /// <summary>
@@ -90,6 +98,8 @@ public static class TenantPermissions
         [SeedRoles.Admin] = "Administrator",
         [SeedRoles.Caretaker] = "Caretaker",
         [SeedRoles.Follower] = "Follower",
+        [SeedRoles.Readable] = "Readable",
+        [SeedRoles.Denied] = "Denied",
     };
 
     /// <summary>
