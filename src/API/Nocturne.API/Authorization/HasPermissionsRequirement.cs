@@ -9,6 +9,11 @@ namespace Nocturne.API.Authorization;
 /// </summary>
 public class HasPermissionsRequirement : IAuthorizationRequirement;
 
+public static class PolicyNames
+{
+    public const string HasPermissions = "HasPermissions";
+}
+
 /// <summary>
 /// Handles <see cref="HasPermissionsRequirement"/> by checking for a non-empty
 /// PermissionTrie in HttpContext.Items.

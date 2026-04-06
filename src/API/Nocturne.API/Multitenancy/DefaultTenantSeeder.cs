@@ -67,12 +67,16 @@ public static class DefaultTenantSeeder
             await context.SaveChangesAsync();
             logger.LogInformation("Created Public subject membership for tenant {TenantId}", tenantId);
         }
+        else
+        {
+            logger.LogWarning("Public system subject not found — skipping public access membership for tenant {TenantId}", tenantId);
+        }
 
         var ownerRole = await context.TenantRoles
             .FirstAsync(r => r.TenantId == tenantId && r.Slug == TenantPermissions.SeedRoles.Owner);
 
         // Assign all existing subjects as owners of the default tenant
-        var subjects = await context.Subjects.ToListAsync();
+        var subjects = await context.Subjects.Where(s => !s.IsSystemSubject).ToListAsync();
         foreach (var subject in subjects)
         {
             var member = new TenantMemberEntity

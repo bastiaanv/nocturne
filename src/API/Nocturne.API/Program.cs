@@ -209,10 +209,10 @@ builder
         };
     });
 
-builder.Services.AddSingleton<IAuthorizationHandler, HasPermissionsHandler>();
+builder.Services.AddTransient<IAuthorizationHandler, HasPermissionsHandler>();
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("HasPermissions", policy =>
+    options.AddPolicy(PolicyNames.HasPermissions, policy =>
         policy.Requirements.Add(new HasPermissionsRequirement()));
 });
 
