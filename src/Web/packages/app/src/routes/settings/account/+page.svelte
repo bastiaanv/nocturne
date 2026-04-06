@@ -258,6 +258,7 @@
   }
 
   async function handleCompleteTotpSetup() {
+    if (totpSetupLoading) return;
     if (!totpSetupData?.challengeToken || totpVerifyCode.length !== 6) return;
     totpSetupLoading = true;
     totpSetupError = null;
