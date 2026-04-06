@@ -14,7 +14,7 @@ public interface IOAuthGrantService
     /// <param name="clientEntityId">The OAuth client entity ID</param>
     /// <param name="subjectId">The subject (user) ID who is granting access</param>
     /// <param name="scopes">The scopes being granted</param>
-    /// <param name="grantType">The type of grant (app or direct)</param>
+    /// <param name="grantType">The type of grant (app or follower)</param>
     /// <param name="label">Optional user-friendly label for the grant</param>
     /// <param name="ct">Cancellation token</param>
     Task<OAuthGrantInfo> CreateOrUpdateGrantAsync(
@@ -59,7 +59,7 @@ public interface IOAuthGrantService
     );
 
     /// <summary>
-    /// Update grant label, scopes, and/or 24-hour limit. Returns null if grant not found or not owned.
+    /// Update grant label and/or scopes. Returns null if grant not found or not owned.
     /// </summary>
     /// <param name="grantId">The grant ID to update</param>
     /// <param name="ownerSubjectId">The owner subject ID (for authorization check)</param>

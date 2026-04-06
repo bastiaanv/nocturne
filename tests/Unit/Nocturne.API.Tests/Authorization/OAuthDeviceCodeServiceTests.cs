@@ -113,6 +113,54 @@ public class OAuthDeviceCodeServiceTests : IDisposable
     }
 
     /// <summary>
+    /// Seed a SubjectEntity so FK constraints are satisfied.
+    /// </summary>
+    private async Task SeedSubjectAsync(NocturneDbContext db, Guid? id = null, string? name = null)
+    {
+        db.Subjects.Add(new SubjectEntity
+        {
+            Id = id ?? _testSubjectId,
+            Name = name ?? "Test User",
+        });
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Seed an OAuthClientEntity so FK constraints are satisfied.
+    /// </summary>
+    private async Task SeedClientAsync(NocturneDbContext db, Guid? id = null, string? clientId = null)
+    {
+        db.OAuthClients.Add(new OAuthClientEntity
+        {
+            Id = id ?? _testClientEntityId,
+            ClientId = clientId ?? TestClientId,
+            DisplayName = "Test App",
+            IsKnown = false,
+            RedirectUris = "[]",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Seed an OAuthGrantEntity so FK constraints are satisfied.
+    /// </summary>
+    private async Task SeedGrantAsync(NocturneDbContext db, Guid? id = null)
+    {
+        db.OAuthGrants.Add(new OAuthGrantEntity
+        {
+            Id = id ?? _testGrantId,
+            ClientEntityId = _testClientEntityId,
+            SubjectId = _testSubjectId,
+            Scopes = new List<string> { "entries.read" },
+            GrantType = "app",
+            CreatedAt = DateTime.UtcNow,
+        });
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Seed an OAuthDeviceCodeEntity into the database.
     /// </summary>
     private async Task SeedDeviceCodeAsync(
@@ -165,7 +213,7 @@ public class OAuthDeviceCodeServiceTests : IDisposable
         Assert.Equal(TestDeviceCode, result.DeviceCode);
         Assert.NotNull(result.UserCode);
         Assert.NotEmpty(result.UserCode);
-        Assert.Equal(900, result.ExpiresIn); // 15 minutes * 60 seconds
+        Assert.Equal(1800, result.ExpiresIn); // 30 minutes * 60 seconds
         Assert.Equal(5, result.Interval);
 
         // Verify entity was persisted with the hashed device code
@@ -264,8 +312,12 @@ public class OAuthDeviceCodeServiceTests : IDisposable
     [Fact]
     public async Task ApproveDeviceCodeAsync_ValidPendingCode_SetsApprovedAndCreatesGrant()
     {
-        // Arrange
+        // Arrange — seed client + subject + grant so FKs are satisfied when the
+        // service sets entity.GrantId = grant.Id (from the mocked grant service).
         using var db = CreateDbContext();
+        await SeedClientAsync(db);
+        await SeedSubjectAsync(db);
+        await SeedGrantAsync(db);
         await SeedDeviceCodeAsync(db, userCode: "PNDNG001");
 
         var service = CreateService(db);
@@ -487,6 +539,19 @@ public class OAuthDeviceCodeExchangeTests : IDisposable
     }
 
     /// <summary>
+    /// Seed a SubjectEntity so FK constraints are satisfied.
+    /// </summary>
+    private async Task SeedSubjectAsync(NocturneDbContext db, Guid? id = null, string? name = null)
+    {
+        db.Subjects.Add(new SubjectEntity
+        {
+            Id = id ?? _testSubjectId,
+            Name = name ?? "Test User",
+        });
+        await db.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// Seed an OAuthClientEntity into the database and return its entity Id.
     /// </summary>
     private async Task<Guid> SeedClientAsync(NocturneDbContext db, Guid? id = null, string? clientId = null)
@@ -577,9 +642,10 @@ public class OAuthDeviceCodeExchangeTests : IDisposable
     [Fact]
     public async Task ExchangeDeviceCodeAsync_ApprovedCode_ReturnsTokens()
     {
-        // Arrange - seed client, grant, and an approved device code linked to the grant
+        // Arrange - seed client, subject, grant, and an approved device code linked to the grant
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db);
         var grantId = await SeedGrantAsync(db);
         await SeedDeviceCodeAsync(db,
             approvedAt: DateTime.UtcNow.AddMinutes(-1),
@@ -606,12 +672,13 @@ public class OAuthDeviceCodeExchangeTests : IDisposable
         Assert.NotNull(refreshToken);
         Assert.Equal(grantId, refreshToken.GrantId);
 
-        // Verify grant last-used was updated
+        // Verify grant last-used was updated (called once in ExchangeDeviceCodeAsync
+        // and once in MintTokenPairAsync)
         _mockGrantService.Verify(g => g.UpdateLastUsedAsync(
             grantId,
             It.IsAny<string?>(),
             It.IsAny<string?>(),
-            It.IsAny<CancellationToken>()), Times.Once);
+            It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]

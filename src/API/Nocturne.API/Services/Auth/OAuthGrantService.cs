@@ -205,7 +205,7 @@ public class OAuthGrantService : IOAuthGrantService
             LastUsedAt = entity.LastUsedAt,
             LastUsedIp = entity.LastUsedIp,
             LastUsedUserAgent = entity.LastUsedUserAgent,
-            IsRevoked = entity.IsRevoked
+            IsRevoked = entity.IsRevoked,
         };
     }
 
@@ -233,8 +233,7 @@ public class OAuthGrantService : IOAuthGrantService
 
         if (scopes != null)
         {
-            var scopeList = scopes.ToList();
-            grant.Scopes = scopeList.Distinct().OrderBy(s => s).ToList();
+            grant.Scopes = scopes.Distinct().OrderBy(s => s).ToList();
         }
 
         await _dbContext.SaveChangesAsync(ct);
@@ -245,5 +244,4 @@ public class OAuthGrantService : IOAuthGrantService
 
         return MapToInfo(grant);
     }
-
 }

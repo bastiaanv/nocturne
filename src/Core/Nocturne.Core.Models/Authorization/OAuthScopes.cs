@@ -10,7 +10,9 @@ public static class OAuthScopes
     // Grant types
     /// <summary>App grant: third-party application authorized by the user.</summary>
     public const string GrantTypeApp = "app";
-    /// <summary>Direct grant: programmatic API token with no OAuth client.</summary>
+    /// <summary>Follower grant: user-to-user data sharing (data owner grants access to follower).</summary>
+    public const string GrantTypeFollower = "follower";
+    /// <summary>Direct grant: programmatic API token without an OAuth client.</summary>
     public const string GrantTypeDirect = "direct";
 
     // Core health data scopes

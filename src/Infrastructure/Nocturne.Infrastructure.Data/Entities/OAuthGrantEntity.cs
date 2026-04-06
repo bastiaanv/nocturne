@@ -6,6 +6,7 @@ namespace Nocturne.Infrastructure.Data.Entities;
 
 /// <summary>
 /// The core authorization record: "user X approved app Y for scopes Z."
+/// User-to-user shares (followers/caregivers) use the same table with grant_type = follower.
 /// </summary>
 [Table("oauth_grants")]
 public class OAuthGrantEntity
@@ -17,7 +18,7 @@ public class OAuthGrantEntity
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Foreign key to the OAuth client (null for direct grants which have no OAuth client)
+    /// Foreign key to the OAuth client (null for direct grants)
     /// </summary>
     [Column("client_id")]
     public Guid? ClientEntityId { get; set; }
@@ -30,7 +31,7 @@ public class OAuthGrantEntity
     public Guid SubjectId { get; set; }
 
     /// <summary>
-    /// Type of grant: app (third-party application) or direct (programmatic API token)
+    /// Type of grant: app (third-party application) or follower (user-to-user sharing)
     /// </summary>
     [Required]
     [MaxLength(50)]
@@ -83,7 +84,8 @@ public class OAuthGrantEntity
     public DateTime? RevokedAt { get; set; }
 
     /// <summary>
-    /// SHA-256 hash of opaque direct grant token for secure lookup
+    /// SHA-256 hash of the plaintext token (for direct grants only).
+    /// Used to look up grants by token without storing the plaintext.
     /// </summary>
     [MaxLength(128)]
     [Column("token_hash")]
@@ -119,13 +121,7 @@ public class OAuthGrantEntity
 /// </summary>
 public static class OAuthGrantTypes
 {
-    /// <summary>
-    /// Grant type for third-party application approvals.
-    /// </summary>
     public const string App = OAuthScopes.GrantTypeApp;
-
-    /// <summary>
-    /// Grant type for direct, programmatic API token approvals.
-    /// </summary>
+    public const string Follower = OAuthScopes.GrantTypeFollower;
     public const string Direct = OAuthScopes.GrantTypeDirect;
 }

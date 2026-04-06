@@ -1240,6 +1240,8 @@ public class NocturneDbContext : DbContext
             .HasDatabaseName("ix_oauth_grants_revoked_at")
             .HasFilter("revoked_at IS NULL");
 
+        // FollowerSubjectId indexes removed - follower sharing now uses TenantMembers
+
         // OAuth Refresh Token indexes
         modelBuilder
             .Entity<OAuthRefreshTokenEntity>()
@@ -2280,7 +2282,7 @@ public class NocturneDbContext : DbContext
                 .HasOne(e => e.Client)
                 .WithMany(c => c.Grants)
                 .HasForeignKey(e => e.ClientEntityId)
-                .OnDelete(DeleteBehavior.SetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired(false);
 
             entity

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Nocturne.API.Services.Auth;
 using Nocturne.Core.Contracts;
+using Nocturne.Core.Models.Authorization;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
 using Xunit;
@@ -13,7 +14,7 @@ namespace Nocturne.API.Tests.Authorization;
 
 /// <summary>
 /// Unit tests for OAuthGrantService covering grant management,
-/// scope validation, and ownership checks.
+/// scope updates, and ownership checks.
 /// </summary>
 [Trait("Category", "Unit")]
 [Trait("Category", "OAuth")]
@@ -90,6 +91,17 @@ public class OAuthGrantServiceTests : IDisposable
         await db.SaveChangesAsync();
     }
 
+    private async Task SeedSubjectAsync(NocturneDbContext db, Guid id, string name, string? email = null)
+    {
+        db.Subjects.Add(new SubjectEntity
+        {
+            Id = id,
+            Name = name,
+            Email = email,
+        });
+        await db.SaveChangesAsync();
+    }
+
     private async Task<Guid> SeedGrantAsync(
         NocturneDbContext db,
         Guid? clientEntityId = null,
@@ -124,6 +136,7 @@ public class OAuthGrantServiceTests : IDisposable
     {
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db, _ownerSubjectId, "Owner");
         await SeedGrantAsync(db, subjectId: _ownerSubjectId);
         await SeedGrantAsync(db, subjectId: _ownerSubjectId, revokedAt: DateTime.UtcNow);
 
@@ -152,6 +165,7 @@ public class OAuthGrantServiceTests : IDisposable
     {
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db, _ownerSubjectId, "Owner");
         var grantId = await SeedGrantAsync(db);
 
         var service = CreateService(db);
@@ -166,6 +180,7 @@ public class OAuthGrantServiceTests : IDisposable
     {
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db, _ownerSubjectId, "Owner");
         var grantId = await SeedGrantAsync(db);
 
         db.OAuthRefreshTokens.Add(new OAuthRefreshTokenEntity
@@ -202,6 +217,7 @@ public class OAuthGrantServiceTests : IDisposable
     {
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db, _ownerSubjectId, "Owner");
         var grantId = await SeedGrantAsync(db, label: "Old Label");
 
         var service = CreateService(db);
@@ -216,6 +232,7 @@ public class OAuthGrantServiceTests : IDisposable
     {
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db, _ownerSubjectId, "Owner");
         var grantId = await SeedGrantAsync(db,
             scopes: new List<string> { "entries.read" });
 
@@ -233,6 +250,7 @@ public class OAuthGrantServiceTests : IDisposable
     {
         using var db = CreateDbContext();
         await SeedClientAsync(db);
+        await SeedSubjectAsync(db, _ownerSubjectId, "Owner");
         var grantId = await SeedGrantAsync(db);
 
         var service = CreateService(db);
@@ -241,5 +259,4 @@ public class OAuthGrantServiceTests : IDisposable
 
         Assert.Null(result);
     }
-
 }

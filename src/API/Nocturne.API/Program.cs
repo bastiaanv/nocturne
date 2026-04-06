@@ -254,7 +254,7 @@ app.UseMiddleware<TenantSetupMiddleware>();
 // Add Nightscout authentication middleware
 app.UseMiddleware<AuthenticationMiddleware>();
 
-// Add member scope middleware (resolves membership role and restricts follower scopes)
+// Add member scope middleware (resolves membership role and restricts scopes)
 app.UseMiddleware<MemberScopeMiddleware>();
 
 // Add site security middleware (enforces authentication when site lockdown is enabled)

@@ -6774,7 +6774,7 @@ namespace Nocturne.Infrastructure.Data.Migrations
                     b.HasOne("Nocturne.Infrastructure.Data.Entities.OAuthClientEntity", "Client")
                         .WithMany("Grants")
                         .HasForeignKey("ClientEntityId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Nocturne.Infrastructure.Data.Entities.SubjectEntity", "Subject")
                         .WithMany()

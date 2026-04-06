@@ -20,6 +20,7 @@ using Nocturne.API.Services.V4;
 using Nocturne.API.Multitenancy;
 using Nocturne.Connectors.Core.Extensions;
 using Nocturne.Connectors.Core.Interfaces;
+using Nocturne.Connectors.HomeAssistant.WriteBack;
 using Nocturne.Connectors.Nightscout.Services.WriteBack;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Contracts.Entries;
@@ -188,6 +189,7 @@ public static class ServiceRegistrationExtensions
         services.AddSingleton<IAuthHandler, SessionCookieHandler>(); // Priority 50
         services.AddSingleton<IAuthHandler, InstanceKeyHandler>(); // Priority 55
         services.AddSingleton<IAuthHandler, OidcTokenHandler>(); // Priority 100
+        services.AddSingleton<IAuthHandler, OAuthAccessTokenHandler>(); // Priority 150
         services.AddSingleton<IAuthHandler, DirectGrantTokenHandler>(); // Priority 150
         services.AddSingleton<IAuthHandler, LegacyJwtHandler>(); // Priority 200
         services.AddSingleton<IAuthHandler, AccessTokenHandler>(); // Priority 300
@@ -313,12 +315,21 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<IEntryCache, Nocturne.API.Services.Entries.EntryCacheAdapter>();
         services.AddScoped<SignalREntryEventSink>();
         services.AddScoped<IDataEventSink<Entry>>(sp =>
-            new CompositeDataEventSink<Entry>(
-                [
-                    sp.GetRequiredService<SignalREntryEventSink>(),
-                    sp.GetRequiredService<NightscoutEntryWriteBackSink>()
-                ],
-                sp.GetService<ILogger<CompositeDataEventSink<Entry>>>()));
+        {
+            var sinks = new List<IDataEventSink<Entry>>
+            {
+                sp.GetRequiredService<SignalREntryEventSink>(),
+                sp.GetRequiredService<NightscoutEntryWriteBackSink>()
+            };
+
+            var haSink = sp.GetService<HomeAssistantWriteBackSink>();
+            if (haSink != null)
+                sinks.Add(haSink);
+
+            return new CompositeDataEventSink<Entry>(
+                sinks,
+                sp.GetService<ILogger<CompositeDataEventSink<Entry>>>());
+        });
         services.AddScoped<IStateSpanService, StateSpanService>();
         services.AddScoped<IDeviceStatusService, DeviceStatusService>();
         services.AddScoped<IDataEventSink<DeviceStatus>>(sp =>
@@ -370,6 +381,7 @@ public static class ServiceRegistrationExtensions
             MyFitnessPalMatchingSettingsService
         >();
         services.AddScoped<IClockFaceService, ClockFaceService>();
+        services.AddScoped<IWidgetSummaryService, WidgetSummaryService>();
         // Chart data pipeline stages (order matters!)
         services.AddScoped<ProfileLoadStage>();
         services.AddScoped<DataFetchStage>();
