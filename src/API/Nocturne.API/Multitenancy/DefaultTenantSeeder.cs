@@ -47,6 +47,27 @@ public static class DefaultTenantSeeder
         var roleService = scope.ServiceProvider.GetRequiredService<ITenantRoleService>();
         await roleService.SeedRolesForTenantAsync(tenantId);
 
+        // Create Public subject membership (no roles = unconfigured sentinel)
+        var publicSubject = await context.Subjects
+            .FirstOrDefaultAsync(s => s.IsSystemSubject && s.Name == "Public");
+
+        if (publicSubject != null)
+        {
+            var publicMember = new TenantMemberEntity
+            {
+                Id = Guid.CreateVersion7(),
+                TenantId = tenantId,
+                SubjectId = publicSubject.Id,
+                LimitTo24Hours = true,
+                Label = "Public Access",
+                SysCreatedAt = DateTime.UtcNow,
+                SysUpdatedAt = DateTime.UtcNow,
+            };
+            context.TenantMembers.Add(publicMember);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Created Public subject membership for tenant {TenantId}", tenantId);
+        }
+
         var ownerRole = await context.TenantRoles
             .FirstAsync(r => r.TenantId == tenantId && r.Slug == TenantPermissions.SeedRoles.Owner);
 
