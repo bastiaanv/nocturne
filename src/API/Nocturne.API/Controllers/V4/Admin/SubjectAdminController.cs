@@ -9,7 +9,7 @@ namespace Nocturne.API.Controllers.V4.Admin;
 [Route("api/v4/admin/subjects")]
 [Produces("application/json")]
 [Authorize(Roles = "platform_admin")]
-[Tags("Admin")]
+[Tags("Subject Admin")]
 public class SubjectAdminController : ControllerBase
 {
     private readonly NocturneDbContext _db;
