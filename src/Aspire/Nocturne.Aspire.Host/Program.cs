@@ -95,6 +95,17 @@ class Program
         var discordBotToken      = builder.AddParameter("discord-bot-token",      secret: true);
         var discordPublicKey     = builder.AddParameter("discord-public-key",     secret: false);
         var discordApplicationId = builder.AddParameter("discord-application-id", secret: false);
+        var discordClientSecret  = builder.AddParameter("discord-client-secret",  secret: true);
+
+        // Public base domain used by the bot package to build /connect and OAuth2
+        // redirect URLs. Default targets the local Aspire run (https://localhost:1612).
+        // Production should set this to e.g. "nocturne.run" via user-secrets.
+        var publicBaseDomain = builder.AddParameter("public-base-domain", "localhost:1612");
+
+        // HMAC secret used to sign the Discord OAuth2 state parameter on the apex
+        // callback, so an attacker can't forge callbacks that claim to be from an
+        // arbitrary tenant. Generate with: openssl rand -hex 32
+        var botLinkHmacSecret = builder.AddParameter("bot-link-hmac-secret", secret: true);
         var telegramBotToken          = builder.AddParameter("telegram-bot-token",          secret: true);
         var telegramWebhookSecretToken = builder.AddParameter("telegram-webhook-secret-token", secret: true);
         var slackBotToken             = builder.AddParameter("slack-bot-token",             secret: true);
@@ -163,6 +174,9 @@ class Program
                 .WithEnvironment("DISCORD_BOT_TOKEN",      discordBotToken)
                 .WithEnvironment("DISCORD_PUBLIC_KEY",     discordPublicKey)
                 .WithEnvironment("DISCORD_APPLICATION_ID", discordApplicationId)
+                .WithEnvironment("DISCORD_CLIENT_SECRET",  discordClientSecret)
+                .WithEnvironment("PUBLIC_BASE_DOMAIN",     publicBaseDomain)
+                .WithEnvironment("BOT_LINK_HMAC_SECRET",   botLinkHmacSecret)
                 .WithEnvironment("TELEGRAM_BOT_TOKEN",             telegramBotToken)
                 .WithEnvironment("TELEGRAM_WEBHOOK_SECRET_TOKEN",  telegramWebhookSecretToken)
                 .WithEnvironment("SLACK_BOT_TOKEN",                slackBotToken)

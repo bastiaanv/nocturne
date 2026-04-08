@@ -1,0 +1,82 @@
+import { createHmac, timingSafeEqual, randomBytes } from "node:crypto";
+
+/**
+ * HMAC-signed state token for the Discord OAuth2 link flow.
+ *
+ * Purpose: the Discord developer portal only accepts a single registered
+ * OAuth2 redirect URI per application. For SaaS deployments we register the
+ * apex `/auth/bot/discord/callback`. Users click "Link Discord" from their
+ * tenant subdomain, so the state parameter must carry the originating slug
+ * back to the apex callback in a tamper-proof way.
+ *
+ * Wire format: `base64url(json).hexSig`.
+ * Payload: `{ slug, nonce, exp }` (exp is a unix-ms deadline).
+ * Signature: HMAC-SHA256 over the base64url payload using BOT_LINK_HMAC_SECRET.
+ */
+
+export interface OAuthLinkStatePayload {
+	/** Tenant subdomain slug the user came from — the callback redirects back here. */
+	slug: string;
+	/** Random nonce to prevent replay. */
+	nonce: string;
+	/** Expiration timestamp in unix milliseconds. */
+	exp: number;
+}
+
+const STATE_LIFETIME_MS = 5 * 60 * 1000; // 5 minutes
+
+function getSecret(): string {
+	const secret = process.env.BOT_LINK_HMAC_SECRET;
+	if (!secret || secret.length < 16) {
+		throw new Error(
+			"BOT_LINK_HMAC_SECRET is required for Discord OAuth2 link flow. " +
+				"Generate one with: openssl rand -hex 32",
+		);
+	}
+	return secret;
+}
+
+export function signOAuthLinkState(slug: string): string {
+	const payload: OAuthLinkStatePayload = {
+		slug,
+		nonce: randomBytes(16).toString("hex"),
+		exp: Date.now() + STATE_LIFETIME_MS,
+	};
+	const payloadB64 = Buffer.from(JSON.stringify(payload), "utf-8").toString("base64url");
+	const sig = createHmac("sha256", getSecret()).update(payloadB64).digest("hex");
+	return `${payloadB64}.${sig}`;
+}
+
+export function verifyOAuthLinkState(state: string): OAuthLinkStatePayload | null {
+	const dot = state.indexOf(".");
+	if (dot < 0) return null;
+	const payloadB64 = state.slice(0, dot);
+	const sigHex = state.slice(dot + 1);
+
+	if (!payloadB64 || !sigHex) return null;
+
+	let expectedHex: string;
+	try {
+		expectedHex = createHmac("sha256", getSecret()).update(payloadB64).digest("hex");
+	} catch {
+		return null;
+	}
+
+	const actual = Buffer.from(sigHex, "hex");
+	const expected = Buffer.from(expectedHex, "hex");
+	if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+		return null;
+	}
+
+	let payload: OAuthLinkStatePayload;
+	try {
+		payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8")) as OAuthLinkStatePayload;
+	} catch {
+		return null;
+	}
+
+	if (typeof payload.slug !== "string" || typeof payload.exp !== "number") return null;
+	if (payload.exp < Date.now()) return null;
+
+	return payload;
+}

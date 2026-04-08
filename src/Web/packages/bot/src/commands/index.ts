@@ -3,8 +3,8 @@ import { registerGlucoseCommands } from "./glucose.js";
 import { registerAccountCommands } from "./account.js";
 import { registerAlertCommands } from "./alerts.js";
 
-export function registerAllCommands(bot: Chat, nocturneUrl: string) {
+export function registerAllCommands(bot: Chat, baseDomain: string) {
   registerGlucoseCommands(bot);
-  registerAccountCommands(bot, nocturneUrl);
+  registerAccountCommands(bot, baseDomain);
   registerAlertCommands(bot);
 }

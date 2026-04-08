@@ -39,6 +39,8 @@ public class TenantResolutionMiddleware
         "/api/v4/me/tenants/validate-slug",
         "/api/admin/tenants/validate-slug",
         "/api/metadata",
+        "/api/v4/chat-identity/directory/resolve",
+        "/api/v4/chat-identity/directory/pending-links",
     ];
 
     public async Task InvokeAsync(HttpContext context)

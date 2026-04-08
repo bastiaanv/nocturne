@@ -2394,6 +2394,7 @@ msgstr ""
 
 #: src/routes/clock/+page.svelte
 #: src/routes/settings/admin/+page.svelte
+#: src/routes/settings/integrations/discord/+page.svelte
 #: src/routes/settings/members/+page.svelte
 msgid "Edit"
 msgstr ""
@@ -3054,6 +3055,7 @@ msgstr ""
 #: src/routes/settings/admin/tenants/+page.svelte
 #: src/routes/settings/alerts/+page.svelte
 #: src/routes/settings/alerts/setup/+page.svelte
+#: src/routes/settings/integrations/discord/+page.svelte
 #: src/routes/settings/profile/+page.svelte
 #: src/routes/settings/setup/profile/+page.svelte
 #: src/routes/settings/setup/profile/+page.svelte
@@ -4112,6 +4114,7 @@ msgid "Log out"
 msgstr ""
 
 #: src/lib/components/layout/UserMenu.svelte
+#: src/routes/auth/bot/authorize/+page.svelte
 msgid "Sign in"
 msgstr ""
 
@@ -7472,6 +7475,7 @@ msgstr ""
 #: src/lib/components/settings/ConnectorConfigForm.svelte
 #: src/routes/settings/admin/tenants/+page.svelte
 #: src/routes/settings/alerts/+page.svelte
+#: src/routes/settings/integrations/discord/+page.svelte
 #: src/routes/settings/roles/+page.svelte
 msgid "<0/> Save"
 msgstr ""
@@ -18190,6 +18194,7 @@ msgstr ""
 
 #: src/routes/auth/recovery/+page.svelte
 #: src/routes/invite/[token]/+page.svelte
+#: src/routes/settings/integrations/discord/+page.svelte
 #: src/routes/settings/setup/passkey/+page.svelte
 #: src/routes/tenants/+page.svelte
 msgid "Display name"
@@ -20356,37 +20361,32 @@ msgstr ""
 msgid "<0/> Android"
 msgstr ""
 
-#: src/routes/auth/bot/authorize/+page.svelte
-msgid "Your chat account is now linked to Nocturne. You can close this tab."
-msgstr ""
+#~ msgid "Your chat account is now linked to Nocturne. You can close this tab."
+#~ msgstr ""
 
 #: src/routes/auth/bot/authorize/+page.svelte
 msgid "Connect Chat Account"
 msgstr ""
 
-#: src/routes/auth/bot/authorize/+page.svelte
-msgid "Allow the Nocturne bot to access your glucose data and send you alerts?"
-msgstr ""
+#~ msgid "Allow the Nocturne bot to access your glucose data and send you alerts?"
+#~ msgstr ""
 
-#: src/routes/auth/bot/authorize/+page.svelte
-msgid "Authorize"
-msgstr ""
+#~ msgid "Authorize"
+#~ msgstr ""
+
+#~ msgid "Not authenticated"
+#~ msgstr ""
 
 #: src/routes/auth/bot/authorize/+page.server.ts
-msgid "Not authenticated"
-msgstr ""
-
 #: src/routes/auth/bot/authorize/+page.server.ts
 msgid "Missing state parameter."
 msgstr ""
 
-#: src/routes/auth/bot/authorize/+page.server.ts
-msgid "Link expired or invalid. Please run /connect again in your chat app."
-msgstr ""
+#~ msgid "Link expired or invalid. Please run /connect again in your chat app."
+#~ msgstr ""
 
-#: src/routes/auth/bot/authorize/+page.server.ts
-msgid "Invalid platform identity format."
-msgstr ""
+#~ msgid "Invalid platform identity format."
+#~ msgstr ""
 
 #: src/routes/auth/bot/authorize/+page.server.ts
 msgid "Failed to link account. Please try again."
@@ -21411,6 +21411,7 @@ msgstr ""
 
 #: src/lib/components/settings/ApiTokens.svelte
 #: src/routes/settings/api-access/+page.svelte
+#: src/routes/settings/integrations/discord/+page.svelte
 msgid "Revoke"
 msgstr ""
 
@@ -21771,6 +21772,7 @@ msgstr ""
 msgid "Optional. Updates your display name if provided."
 msgstr ""
 
+#: src/routes/auth/bot/authorize/+page.svelte
 #: src/routes/auth/recovery/+page.svelte
 #: src/routes/auth/recovery/+page.svelte
 msgid "Continue"
@@ -23555,4 +23557,165 @@ msgstr ""
 #. placeholder {0}: subject.name
 #: src/routes/settings/admin/+page.svelte
 msgid "Grant platform admin to {0}"
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Your chat account is now linked to Nocturne. You can close this tab and head back to your chat app."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Can't Complete This Link"
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Which Nocturne Instance?"
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Enter the slug of the Nocturne instance you'd like to link your chat account to."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Instance slug"
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Sign in to your Nocturne account to finish connecting your chat account."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Allow the Nocturne bot to access glucose data on your behalf and send alerts to your <0/> account?"
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.svelte
+msgid "Connect"
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.server.ts
+msgid "Missing state token."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.server.ts
+msgid "This link is expired or invalid. Please run /connect in your chat app again."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.server.ts
+msgid "Not authenticated."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.server.ts
+msgid "Please enter a valid instance slug (letters, digits, hyphens)."
+msgstr ""
+
+#: src/routes/auth/bot/authorize/+page.server.ts
+msgid "Server misconfigured: PUBLIC_BASE_DOMAIN not set."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Discord Integration"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Link your Discord account to query glucose and receive alerts through the Nocturne bot."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Linked accounts"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid ""
+"Discord accounts linked to <0>this Nocturne instance</0>. Each one can be\n"
+"queried from Discord with <1/>."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "No Discord accounts linked yet. Use the button below to connect one."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Label (used in <0/>)"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "<0/> Cancel"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "· Discord <0/>"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Set as default"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "<0/> Link my Discord account"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Discord OAuth2 is not configured on this instance. Ask the administrator to set <0/> and <1/>, or run <2/> directly from Discord."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Add the bot to a Discord server"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Invite the Nocturne bot to a Discord server you manage so you can use <0/> there."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.svelte
+msgid "Open Discord invite"
+msgstr ""
+
+#: src/routes/auth/bot/discord/finalize/+page.svelte
+msgid "Discord account linked"
+msgstr ""
+
+#: src/routes/auth/bot/discord/finalize/+page.svelte
+msgid "Your Discord account is now linked as <0/> (label <1/>). Run <2/> in Discord to get started."
+msgstr ""
+
+#: src/routes/auth/bot/discord/finalize/+page.svelte
+#: src/routes/auth/bot/discord/finalize/+page.svelte
+msgid "Back to Settings"
+msgstr ""
+
+#: src/routes/auth/bot/discord/finalize/+page.svelte
+msgid "Link failed"
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Discord OAuth2 is not configured on this server."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Could not determine tenant slug from current host."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+#: src/routes/settings/integrations/discord/+page.server.ts
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Missing link id."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Failed to set default link."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Label must be lowercase letters, digits, or hyphens."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Failed to update link."
+msgstr ""
+
+#: src/routes/settings/integrations/discord/+page.server.ts
+msgid "Failed to revoke link."
+msgstr ""
+
+#: src/routes/auth/bot/discord/finalize/+page.server.ts
+msgid "We couldn't complete the Discord link. The token may have expired. Please try again from Settings."
 msgstr ""

@@ -5,93 +5,101 @@ using Nocturne.Infrastructure.Data.Entities;
 namespace Nocturne.API.Services.Chat;
 
 /// <summary>
-/// Manages chat platform identity links for bot-mediated interactions.
+/// Tenant-scoped facade over the chat identity directory. Handles claim flows,
+/// direct link creation, and pending-link lookups for the current tenant.
 /// </summary>
 public sealed class ChatIdentityService(
+    ChatIdentityDirectoryService directory,
+    ChatIdentityPendingLinkService pendingLinks,
     IDbContextFactory<NocturneDbContext> contextFactory,
     ILogger<ChatIdentityService> logger)
 {
-    public async Task<ChatIdentityLinkEntity?> FindByPlatformAsync(
-        Guid tenantId, string platform, string platformUserId, CancellationToken ct)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(ct);
-        db.TenantId = tenantId;
-
-        return await db.ChatIdentityLinks
-            .AsNoTracking()
-            .Where(l => l.Platform == platform && l.PlatformUserId == platformUserId && l.IsActive)
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<IReadOnlyList<ChatIdentityLinkEntity>> GetByUserAsync(
-        Guid tenantId, Guid userId, CancellationToken ct)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(ct);
-        db.TenantId = tenantId;
-
-        return await db.ChatIdentityLinks
-            .AsNoTracking()
-            .Where(l => l.NocturneUserId == userId && l.IsActive)
-            .OrderByDescending(l => l.CreatedAt)
-            .ToListAsync(ct);
-    }
-
-    public async Task<IReadOnlyList<ChatIdentityLinkEntity>> GetByTenantAsync(
+    public Task<IReadOnlyList<ChatIdentityDirectoryEntry>> GetByTenantAsync(
         Guid tenantId, CancellationToken ct)
+        => directory.GetByTenantAsync(tenantId, ct);
+
+    public async Task<ChatIdentityDirectoryEntry> ClaimPendingLinkAsync(
+        Guid tenantId, Guid userId, string token, CancellationToken ct)
     {
+        var pending = await pendingLinks.TryConsumeAsync(token, ct)
+            ?? throw new InvalidOperationException("Token expired or already used");
+
         await using var db = await contextFactory.CreateDbContextAsync(ct);
-        db.TenantId = tenantId;
+        var tenant = await db.Tenants.AsNoTracking()
+            .Where(t => t.Id == tenantId)
+            .Select(t => new { t.Slug, t.DisplayName })
+            .FirstAsync(ct);
 
-        return await db.ChatIdentityLinks
-            .AsNoTracking()
-            .Where(l => l.IsActive)
-            .OrderByDescending(l => l.CreatedAt)
-            .ToListAsync(ct);
-    }
-
-    public async Task<ChatIdentityLinkEntity> CreateLinkAsync(
-        Guid tenantId, Guid userId, string platform, string platformUserId,
-        string? platformChannelId, CancellationToken ct)
-    {
-        await using var db = await contextFactory.CreateDbContextAsync(ct);
-        db.TenantId = tenantId;
-
-        var entity = new ChatIdentityLinkEntity
+        if (pending.TenantSlug is not null &&
+            !string.Equals(pending.TenantSlug, tenant.Slug, StringComparison.OrdinalIgnoreCase))
         {
-            Id = Guid.CreateVersion7(),
-            TenantId = tenantId,
-            NocturneUserId = userId,
-            Platform = platform,
-            PlatformUserId = platformUserId,
-            PlatformChannelId = platformChannelId,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-        };
+            throw new InvalidOperationException("Token does not belong to this tenant");
+        }
 
-        db.ChatIdentityLinks.Add(entity);
-        await db.SaveChangesAsync(ct);
+        var entry = await directory.CreateLinkAsync(
+            pending.Platform,
+            pending.PlatformUserId,
+            tenantId,
+            userId,
+            suggestedLabel: tenant.Slug,
+            suggestedDisplayName: tenant.DisplayName,
+            ct);
 
         logger.LogInformation(
-            "Created chat identity link {LinkId} for user {UserId} on {Platform}",
-            entity.Id, userId, platform);
+            "Claimed pending link token -> tenant {TenantId}, label {Label}",
+            tenantId, entry.Label);
 
-        return entity;
+        return entry;
     }
 
-    public async Task RevokeLinkAsync(Guid tenantId, Guid linkId, CancellationToken ct)
+    public async Task<ChatIdentityDirectoryEntry> CreateDirectLinkAsync(
+        Guid tenantId, Guid userId, string platform, string platformUserId, CancellationToken ct)
     {
         await using var db = await contextFactory.CreateDbContextAsync(ct);
-        db.TenantId = tenantId;
+        var tenant = await db.Tenants.AsNoTracking()
+            .Where(t => t.Id == tenantId)
+            .Select(t => new { t.Slug, t.DisplayName })
+            .FirstAsync(ct);
 
-        var link = await db.ChatIdentityLinks
-            .FirstOrDefaultAsync(l => l.Id == linkId, ct);
-
-        if (link is null) return;
-
-        link.IsActive = false;
-        link.RevokedAt = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-
-        logger.LogInformation("Revoked chat identity link {LinkId}", linkId);
+        return await directory.CreateLinkAsync(
+            platform, platformUserId, tenantId, userId, tenant.Slug, tenant.DisplayName, ct);
     }
+
+    public Task SetDefaultAsync(Guid tenantId, Guid linkId, CancellationToken ct)
+        => directory.SetDefaultAsync(linkId, ct);
+
+    public Task RenameLabelAsync(Guid tenantId, Guid linkId, string newLabel, CancellationToken ct)
+        => directory.RenameLabelAsync(linkId, newLabel, ct);
+
+    public Task UpdateDisplayNameAsync(Guid tenantId, Guid linkId, string newDisplayName, CancellationToken ct)
+        => directory.UpdateDisplayNameAsync(linkId, newDisplayName, ct);
+
+    public Task RevokeAsync(Guid tenantId, Guid linkId, CancellationToken ct)
+        => directory.RevokeAsync(linkId, ct);
+
+    /// <summary>
+    /// Read-only lookup for the authorize page. Does NOT consume the token.
+    /// </summary>
+    public async Task<ChatIdentityPendingLinkView?> GetPendingAsync(string token, CancellationToken ct)
+    {
+        await using var db = await contextFactory.CreateDbContextAsync(ct);
+        var row = await db.ChatIdentityPendingLinks.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Token == token, ct);
+        if (row is null || row.ExpiresAt < DateTime.UtcNow) return null;
+        return new ChatIdentityPendingLinkView
+        {
+            Platform = row.Platform,
+            PlatformUserId = row.PlatformUserId,
+            TenantSlug = row.TenantSlug,
+            Source = row.Source,
+        };
+    }
+}
+
+public class ChatIdentityPendingLinkView
+{
+    public string Platform { get; set; } = string.Empty;
+    public string PlatformUserId { get; set; } = string.Empty;
+    public string? TenantSlug { get; set; }
+    public string Source { get; set; } = string.Empty;
 }

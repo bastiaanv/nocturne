@@ -24,6 +24,7 @@ import {
   CalibrationClient,
   ChartDataClient,
   ChatIdentityClient,
+  ChatIdentityDirectoryClient,
   ClockFacesClient,
   CompatibilityClient,
   CompressionLowClient,
@@ -128,6 +129,7 @@ export class ApiClient {
   public readonly calibrations: CalibrationClient;
   public readonly chartData: ChartDataClient;
   public readonly chatIdentity: ChatIdentityClient;
+  public readonly chatIdentityDirectory: ChatIdentityDirectoryClient;
   public readonly clockFaces: ClockFacesClient;
   public readonly compatibility: CompatibilityClient;
   public readonly compressionLows: CompressionLowClient;
@@ -232,6 +234,7 @@ export class ApiClient {
     this.calibrations = new CalibrationClient(apiBaseUrl, http);
     this.chartData = new ChartDataClient(apiBaseUrl, http);
     this.chatIdentity = new ChatIdentityClient(apiBaseUrl, http);
+    this.chatIdentityDirectory = new ChatIdentityDirectoryClient(apiBaseUrl, http);
     this.clockFaces = new ClockFacesClient(apiBaseUrl, http);
     this.compatibility = new CompatibilityClient(apiBaseUrl, http);
     this.compressionLows = new CompressionLowClient(apiBaseUrl, http);
