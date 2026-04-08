@@ -1,6 +1,5 @@
 import type { BotApiClient, DirectoryCandidate } from "@nocturne/bot";
 import type { ApiClient } from "$lib/api";
-import { env as publicEnv } from "$env/dynamic/public";
 import {
   createServerApiClient,
   getApiBaseUrl,
@@ -112,7 +111,7 @@ export function buildScopedBotApiClient(
     throw new Error("API base URL not configured");
   }
 
-  const baseDomain: string | undefined = publicEnv.PUBLIC_BASE_DOMAIN;
+  const baseDomain = process.env.PUBLIC_BASE_DOMAIN;
   if (!baseDomain) {
     throw new Error(
       "PUBLIC_BASE_DOMAIN is required to build scoped bot api client",

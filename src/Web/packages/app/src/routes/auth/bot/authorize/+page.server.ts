@@ -1,6 +1,5 @@
 import type { PageServerLoad, Actions } from "./$types";
 import { redirect, fail } from "@sveltejs/kit";
-import { env as publicEnv } from "$env/dynamic/public";
 
 /**
  * Three-state authorize page for the Discord bot link flow.
@@ -21,7 +20,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	// Detect apex: if the request host matches PUBLIC_BASE_DOMAIN exactly (no
 	// subdomain), we know there's no tenant context and we need the slug-prompt
 	// fallback so the user can tell us which instance they're on.
-	const baseDomain = publicEnv.PUBLIC_BASE_DOMAIN;
+	const baseDomain = process.env.PUBLIC_BASE_DOMAIN;
 	if (baseDomain) {
 		const currentHost = url.host.toLowerCase();
 		const expectedApex = baseDomain.toLowerCase();
@@ -102,7 +101,7 @@ export const actions: Actions = {
 			return fail(400, { error: "Please enter a valid instance slug (letters, digits, hyphens)." });
 		}
 
-		const baseDomain = publicEnv.PUBLIC_BASE_DOMAIN;
+		const baseDomain = process.env.PUBLIC_BASE_DOMAIN;
 		if (!baseDomain) {
 			return fail(500, { error: "Server misconfigured: PUBLIC_BASE_DOMAIN not set." });
 		}

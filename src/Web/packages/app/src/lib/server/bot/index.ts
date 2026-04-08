@@ -1,7 +1,6 @@
 import { createBot, registerAllCommands, AlertDeliveryHandler, type BotOptions } from "@nocturne/bot";
 import type { BotApiClient, AlertDispatchEvent } from "@nocturne/bot";
 import { env } from "$env/dynamic/private";
-import { env as publicEnv } from "$env/dynamic/public";
 
 type Bot = ReturnType<typeof createBot>;
 
@@ -29,7 +28,7 @@ export function getBot(): Bot {
 				"",
 		};
 		botInstance = createBot(options);
-		const baseDomain = publicEnv.PUBLIC_BASE_DOMAIN;
+		const baseDomain = process.env.PUBLIC_BASE_DOMAIN;
 		if (!baseDomain) {
 			throw new Error(
 				"PUBLIC_BASE_DOMAIN is required for bot /connect link generation. " +
