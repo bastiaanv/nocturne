@@ -1,0 +1,70 @@
+import { createHash } from "crypto";
+import { env } from "$env/dynamic/private";
+import { env as publicEnv } from "$env/dynamic/public";
+import { ApiClient } from "$lib/api/api-client.generated";
+import { AUTH_COOKIE_NAMES } from "$lib/config/auth-cookies";
+
+/**
+ * Helper to get the API base URL (server-side internal or public).
+ */
+export function getApiBaseUrl(): string | null {
+  return env.NOCTURNE_API_URL || publicEnv.PUBLIC_API_URL || null;
+}
+
+/**
+ * Helper to get the hashed instance key for service authentication.
+ */
+export function getHashedInstanceKey(): string | null {
+  const instanceKey = env.INSTANCE_KEY;
+  return instanceKey
+    ? createHash("sha1").update(instanceKey).digest("hex").toLowerCase()
+    : null;
+}
+
+/**
+ * Create an API client with custom fetch that includes auth headers.
+ */
+export function createServerApiClient(
+  baseUrl: string,
+  fetchFn: typeof fetch,
+  options?: {
+    accessToken?: string;
+    refreshToken?: string;
+    hashedInstanceKey?: string | null;
+    extraHeaders?: Record<string, string>;
+  }
+): ApiClient {
+  const httpClient = {
+    fetch: async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
+      const headers = new Headers(init?.headers);
+
+      if (options?.hashedInstanceKey) {
+        headers.set("X-Instance-Key", options.hashedInstanceKey);
+      }
+
+      if (options?.extraHeaders) {
+        for (const [key, value] of Object.entries(options.extraHeaders)) {
+          headers.set(key, value);
+        }
+      }
+
+      const cookies: string[] = [];
+      if (options?.accessToken) {
+        cookies.push(`${AUTH_COOKIE_NAMES.accessToken}=${options.accessToken}`);
+      }
+      if (options?.refreshToken) {
+        cookies.push(`${AUTH_COOKIE_NAMES.refreshToken}=${options.refreshToken}`);
+      }
+      if (cookies.length > 0) {
+        headers.set("Cookie", cookies.join("; "));
+      }
+
+      return fetchFn(url, {
+        ...init,
+        headers,
+      });
+    },
+  };
+
+  return new ApiClient(baseUrl, httpClient);
+}

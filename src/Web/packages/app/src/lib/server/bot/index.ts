@@ -28,10 +28,14 @@ export function getBot(): Bot {
 				"",
 		};
 		botInstance = createBot(options);
-		// No dedicated public-URL env var exists yet; fall back to SvelteKit's
-		// ORIGIN (set in adapter-node configs). If empty, the /connect command
-		// will produce a relative authorize link.
-		registerAllCommands(botInstance, env.ORIGIN ?? "");
+		const baseDomain = env.PUBLIC_BASE_DOMAIN;
+		if (!baseDomain) {
+			throw new Error(
+				"PUBLIC_BASE_DOMAIN is required for bot /connect link generation. " +
+					"Set it via Aspire AppHost parameters or your .env file (e.g. localhost:1612 for dev).",
+			);
+		}
+		registerAllCommands(botInstance, baseDomain);
 	}
 	return botInstance;
 }
