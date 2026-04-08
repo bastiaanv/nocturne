@@ -22,9 +22,30 @@ export interface BotApiClient {
     markFailed(deliveryId: string, request: MarkFailedRequest, signal?: AbortSignal): Promise<void>;
     getPendingDeliveries(channelType?: string[], signal?: AbortSignal): Promise<PendingDeliveryResponse[]>;
   };
-  chatIdentity: {
-    resolve(platform?: string, platformUserId?: string, signal?: AbortSignal): Promise<ChatIdentityLinkResponse>;
-    createLink(request: CreateChatIdentityLinkRequest, signal?: AbortSignal): Promise<ChatIdentityLinkResponse>;
+  directory: {
+    /** Returns ALL candidates for a (platform, platformUserId). Returns null on 404. */
+    resolve(
+      platform: string,
+      platformUserId: string,
+      signal?: AbortSignal,
+    ): Promise<DirectoryCandidate[] | null>;
+
+    /** Revoke a link by id, passing the (platform, platformUserId) on the row as a consistency check. */
+    revokeByPlatformUser(
+      linkId: string,
+      platform: string,
+      platformUserId: string,
+      signal?: AbortSignal,
+    ): Promise<void>;
+  };
+  pendingLinks: {
+    create(
+      platform: string,
+      platformUserId: string,
+      tenantSlug: string | null,
+      source: "connect-slash" | "oauth2-finalize",
+      signal?: AbortSignal,
+    ): Promise<{ token: string }>;
   };
   system: {
     heartbeat(request: HeartbeatRequest, signal?: AbortSignal): Promise<void>;
@@ -70,22 +91,14 @@ export interface PendingDeliveryResponse {
   retryCount?: number;
 }
 
-export interface ChatIdentityLinkResponse {
-  id?: string;
-  nocturneUserId?: string;
-  platform?: string;
-  platformUserId?: string;
-  platformChannelId?: string;
-  displayUnit?: string;
-  isActive?: boolean;
-  createdAt?: Date;
-}
-
-export interface CreateChatIdentityLinkRequest {
-  nocturneUserId?: string;
-  platform?: string;
-  platformUserId?: string;
-  platformChannelId?: string;
+export interface DirectoryCandidate {
+  id: string;
+  tenantId: string;
+  tenantSlug: string;
+  nocturneUserId: string;
+  label: string;
+  displayName: string;
+  isDefault: boolean;
 }
 
 export interface HeartbeatRequest {
