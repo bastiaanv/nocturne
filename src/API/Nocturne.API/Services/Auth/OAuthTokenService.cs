@@ -368,6 +368,8 @@ public class OAuthTokenService : IOAuthTokenService
             ClientEntityId = grantEntity.ClientEntityId,
             ClientId = grantEntity.Client?.ClientId ?? string.Empty,
             ClientDisplayName = grantEntity.Client?.DisplayName,
+            ClientUri = grantEntity.Client?.ClientUri,
+            LogoUri = grantEntity.Client?.LogoUri,
             IsKnownClient = grantEntity.Client?.IsKnown ?? false,
             SubjectId = grantEntity.SubjectId,
             GrantType = grantEntity.GrantType,

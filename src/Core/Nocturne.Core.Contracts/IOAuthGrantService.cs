@@ -85,6 +85,8 @@ public class OAuthGrantInfo
     public Guid? ClientEntityId { get; set; }
     public string ClientId { get; set; } = string.Empty;
     public string? ClientDisplayName { get; set; }
+    public string? ClientUri { get; set; }
+    public string? LogoUri { get; set; }
     public bool IsKnownClient { get; set; }
     public Guid SubjectId { get; set; }
     public string GrantType { get; set; } = OAuthScopes.GrantTypeApp;
