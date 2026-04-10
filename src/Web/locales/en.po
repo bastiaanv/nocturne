@@ -15013,6 +15013,7 @@ msgid "Coming Soon"
 msgstr "Coming Soon"
 
 #: src/routes/settings/alerts/setup/+page.svelte
+#: src/routes/settings/connectors/+page.svelte
 msgid "Discord"
 msgstr "Discord"
 
@@ -19074,3 +19075,15 @@ msgstr "Failed to revoke link."
 #: src/routes/auth/bot/discord/finalize/+page.server.ts
 msgid "We couldn't complete the Discord link. The token may have expired. Please try again from Settings."
 msgstr "We couldn't complete the Discord link. The token may have expired. Please try again from Settings."
+
+#: src/routes/settings/connectors/+page.svelte
+msgid "<0/> Integrations"
+msgstr "<0/> Integrations"
+
+#: src/routes/settings/connectors/+page.svelte
+msgid "Connect Nocturne to chat platforms and other external services"
+msgstr "Connect Nocturne to chat platforms and other external services"
+
+#: src/routes/settings/connectors/+page.svelte
+msgid "Link a Discord account to receive alerts and use the Nocturne bot"
+msgstr "Link a Discord account to receive alerts and use the Nocturne bot"

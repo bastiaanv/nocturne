@@ -19627,6 +19627,7 @@ msgid "Webhook URL"
 msgstr ""
 
 #: src/routes/settings/alerts/setup/+page.svelte
+#: src/routes/settings/connectors/+page.svelte
 msgid "Discord"
 msgstr ""
 
@@ -23698,4 +23699,16 @@ msgstr ""
 
 #: src/routes/auth/bot/discord/finalize/+page.server.ts
 msgid "We couldn't complete the Discord link. The token may have expired. Please try again from Settings."
+msgstr ""
+
+#: src/routes/settings/connectors/+page.svelte
+msgid "<0/> Integrations"
+msgstr ""
+
+#: src/routes/settings/connectors/+page.svelte
+msgid "Connect Nocturne to chat platforms and other external services"
+msgstr ""
+
+#: src/routes/settings/connectors/+page.svelte
+msgid "Link a Discord account to receive alerts and use the Nocturne bot"
 msgstr ""
