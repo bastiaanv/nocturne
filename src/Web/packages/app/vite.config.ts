@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => {
       {
         name: "websocket-bridge",
         configureServer(server) {
-          const API_URL = env.PUBLIC_API_URL || "https://localhost:1613";
+          const API_URL = env.PUBLIC_API_URL || env.NOCTURNE_API_URL || "http://localhost:5000";
           const SIGNALR_HUB_URL = `${API_URL}/hubs/data`;
           const SIGNALR_ALARM_HUB_URL = `${API_URL}/hubs/alarms`;
           const SIGNALR_CONFIG_HUB_URL = `${API_URL}/hubs/config`;
@@ -79,39 +79,18 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: "0.0.0.0",
-      port: parseInt(process.env.PORT || "1612", 10),
-      strictPort: true, // Fail if port is already in use instead of trying another
+      port: parseInt(process.env.PORT || "5173", 10),
       allowedHosts: true,
+      hmr: process.env.VITE_HMR_CLIENT_PORT
+        ? {
+            protocol: "wss",
+            host: process.env.VITE_HMR_HOST || "localhost",
+            clientPort: parseInt(process.env.VITE_HMR_CLIENT_PORT, 10),
+          }
+        : undefined,
       watch: {
         ignored: ["**/node_modules/**", "**/.git/**"],
         usePolling: false,
-      },
-      proxy: {
-        // Proxy API requests to backend (not /api/v4/webhooks or /api/v4/bot, which are SvelteKit routes)
-        "^/api/(?!v4/webhooks|v4/bot)": {
-          target: env.PUBLIC_API_URL || "https://localhost:1613",
-          changeOrigin: true,
-          secure: false,
-        },
-        // Proxy SignalR hubs to backend
-        "^/hubs/.*": {
-          target: env.PUBLIC_API_URL || "https://localhost:1613",
-          changeOrigin: true,
-          secure: false,
-          ws: true,
-        },
-        // Proxy OpenAPI docs to backend
-        "^/openapi/.*": {
-          target: env.PUBLIC_API_URL || "https://localhost:1613",
-          changeOrigin: true,
-          secure: false,
-        },
-        // Proxy Scalar API reference to backend
-        "^/scalar.*": {
-          target: env.PUBLIC_API_URL || "https://localhost:1613",
-          changeOrigin: true,
-          secure: false,
-        },
       },
       fs: {
         allow: [

@@ -283,7 +283,6 @@ class Program
             var viteWeb = JavaScriptHostingExtensions
                 .AddViteApp(builder, ServiceNames.NocturneWeb, webPackagePath)
                 .WithPnpm()
-                .WithHttpEndpoint(env: "PORT")
                 .WaitFor(api)
                 .WaitFor(bridge)
                 .WithReference(bridge);
@@ -399,6 +398,13 @@ class Program
                 $"{gatewayEndpoint.Property(EndpointProperty.Host)}:{gatewayEndpoint.Property(EndpointProperty.Port)}");
             ((IResourceBuilder<IResourceWithEnvironment>)web)
                 .WithEnvironment("PUBLIC_BASE_DOMAIN", baseDomainExpr);
+
+            if (builder.ExecutionContext.IsRunMode)
+            {
+                ((IResourceBuilder<IResourceWithEnvironment>)web)
+                    .WithEnvironment("VITE_HMR_CLIENT_PORT", gatewayEndpoint.Property(EndpointProperty.Port))
+                    .WithEnvironment("VITE_HMR_HOST", "localhost");
+            }
         }
 
         // ------------------------------------------------------------------
