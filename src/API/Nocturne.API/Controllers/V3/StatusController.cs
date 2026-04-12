@@ -41,15 +41,17 @@ public class StatusController : ControllerBase
 
             _logger.LogDebug("Successfully generated V3 status response");
 
-            return Ok(status);
+            return Ok(new { status = 200, result = status });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating V3 status response");
 
             // Return minimal status response even on error to maintain compatibility
-            return Ok(
-                new V3StatusResponse
+            return Ok(new
+            {
+                status = 200,
+                result = new V3StatusResponse
                 {
                     Status = "error",
                     Name = "Nocturne",
@@ -67,8 +69,8 @@ public class StatusController : ControllerBase
                         Collections = new List<string>(),
                         ApiVersions = new Dictionary<string, bool> { ["v3"] = true },
                     },
-                }
-            );
+                },
+            });
         }
     }
 }
