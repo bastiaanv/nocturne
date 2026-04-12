@@ -1,0 +1,39 @@
+---
+title: Quick Start
+---
+
+# Quick Start
+
+Get Nocturne up and running in just a few minutes.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Docker and Docker Compose installed
+- A server or VPS with at least 1 GB RAM
+- A domain name (recommended) or static IP
+
+## Step 1: Create your project
+
+```
+mkdir nocturne && cd nocturne
+```
+
+## Step 2: Deploy
+
+Follow one of our [installation guides](/docs/installation) to set up the Docker Compose stack and configure your environment variables.
+
+## Step 3: Access Your Instance
+
+Once the containers are running, access your Nocturne instance at:
+
+```
+https://your-server-ip:8443
+```
+
+## Next Steps
+
+- Configure your data connectors (Dexcom, LibreLinkUp, etc.)
+- Set up HTTPS with a reverse proxy
+- Configure your CGM app to point to your new instance

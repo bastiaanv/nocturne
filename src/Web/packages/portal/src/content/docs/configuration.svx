@@ -1,0 +1,64 @@
+---
+title: Configuration Guide
+---
+
+<script>
+  import Callout from '@nocturne/cms/components/Callout.svelte';
+</script>
+
+# Configuration Guide
+
+Learn how to configure connectors, settings, and customize your Nocturne instance.
+
+<Callout type="warning" title="Placeholder content">
+  This guide will be expanded with detailed instructions.
+</Callout>
+
+## Environment Variables
+
+Nocturne is configured primarily through environment variables. Key settings include:
+
+| Variable | Description |
+|---|---|
+| `INSTANCE_KEY` | Instance key for JWT signing, encryption, and service authentication |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `DISPLAY_UNITS` | mg/dL or mmol/L |
+| `TIME_FORMAT` | 12 or 24 hour format |
+
+## Data Connectors
+
+Connectors pull data from external sources. Each connector has its own configuration:
+
+### Dexcom Share
+
+Connect to Dexcom Share to automatically sync your G6, G7, or ONE data.
+
+- Requires Dexcom account username and password
+- Select US or International server based on your account region
+- Data syncs every 5 minutes
+
+### LibreView / LibreLinkUp
+
+Connect to Abbott's LibreView or LibreLinkUp for Freestyle Libre data.
+
+- Requires LibreView/LibreLinkUp credentials
+- Supports Libre 2 and Libre 3 sensors
+
+### Nightscout Proxy
+
+Pull data from an existing Nightscout instance.
+
+- Requires Nightscout URL and API secret
+- Great for running Nocturne alongside existing Nightscout
+
+## Nightscout Compatibility
+
+Nocturne aims for full compatibility with Nightscout clients. To configure your existing apps:
+
+1. Change the Nightscout URL to your Nocturne instance
+2. Use the same API secret you configured for Nocturne
+3. Enable any required plugins in the Nocturne settings
+
+## Advanced Configuration
+
+For advanced configuration options including HTTPS setup, reverse proxy configuration, and multi-user setups, see the detailed guides in the documentation.
