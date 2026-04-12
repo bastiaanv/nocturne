@@ -8,6 +8,7 @@ using Nocturne.API.Extensions;
 using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models.Configuration;
 using Nocturne.Infrastructure.Data.Entities;
 using SameSiteMode = Nocturne.Core.Models.Configuration.SameSiteMode;
@@ -103,7 +104,8 @@ public class OidcController : ControllerBase
 
         try
         {
-            var authRequest = await _authService.GenerateAuthorizationUrlAsync(provider, returnUrl);
+            var tenantSlug = (HttpContext.Items["TenantContext"] as TenantContext)?.Slug;
+            var authRequest = await _authService.GenerateAuthorizationUrlAsync(provider, returnUrl, tenantSlug: tenantSlug);
 
             // Store state in a secure cookie for verification on callback
             SetStateCookie(authRequest.State, authRequest.ExpiresAt);
@@ -243,8 +245,9 @@ public class OidcController : ControllerBase
 
         try
         {
+            var tenantSlug = (HttpContext.Items["TenantContext"] as TenantContext)?.Slug;
             var req = await _authService.GenerateLinkAuthorizationUrlAsync(
-                provider, auth.SubjectId.Value, returnUrl);
+                provider, auth.SubjectId.Value, returnUrl, tenantSlug);
             SetLinkStateCookie(req.State, req.ExpiresAt);
 
             _logger.LogInformation(

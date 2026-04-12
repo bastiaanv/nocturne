@@ -52,7 +52,8 @@ public class OidcAuthService : IOidcAuthService
     public async Task<OidcAuthorizationRequest> GenerateAuthorizationUrlAsync(
         Guid? providerId,
         string? returnUrl = null,
-        string? state = null
+        string? state = null,
+        string? tenantSlug = null
     )
     {
         OidcProvider provider;
@@ -92,6 +93,7 @@ public class OidcAuthService : IOidcAuthService
             CreatedAt = DateTimeOffset.UtcNow,
             ExpiresAt = DateTimeOffset.UtcNow.Add(_options.State.Lifetime),
             Intent = "login",
+            TenantSlug = tenantSlug,
         };
 
         return await BuildAuthorizationUrlAsync(provider, stateData, returnUrl, state);
@@ -480,7 +482,7 @@ public class OidcAuthService : IOidcAuthService
 
     /// <inheritdoc />
     public async Task<OidcAuthorizationRequest> GenerateLinkAuthorizationUrlAsync(
-        Guid providerId, Guid subjectId, string? returnUrl = null)
+        Guid providerId, Guid subjectId, string? returnUrl = null, string? tenantSlug = null)
     {
         var provider =
             await _providerService.GetProviderByIdAsync(providerId)
@@ -500,6 +502,7 @@ public class OidcAuthService : IOidcAuthService
             ExpiresAt = DateTimeOffset.UtcNow.Add(_options.State.Lifetime),
             Intent = "link",
             SubjectId = subjectId,
+            TenantSlug = tenantSlug,
         };
 
         return await BuildAuthorizationUrlAsync(provider, stateData, returnUrl, callbackPath: LinkCallbackPath);
@@ -782,6 +785,7 @@ public class OidcAuthService : IOidcAuthService
         public DateTimeOffset ExpiresAt { get; set; }
         public string Intent { get; set; } = "login";
         public Guid? SubjectId { get; set; }
+        public string? TenantSlug { get; set; }
     }
 
     /// <summary>
