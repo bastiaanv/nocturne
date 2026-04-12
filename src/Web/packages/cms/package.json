@@ -5,6 +5,7 @@
   "description": "Nocturne content toolkit — blog, docs, and email rendering",
   "exports": {
     ".": "./src/index.ts",
+    "./components/*.svelte": "./src/components/*.svelte",
     "./components/*": "./src/components/*.svelte",
     "./remark/vars": "./src/remark/vars.ts",
     "./blog/vite-plugin": "./src/blog/vite-plugin.ts",
