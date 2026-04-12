@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Options;
 using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts;
@@ -793,10 +794,15 @@ public class OidcAuthService : IOidcAuthService
     /// </summary>
     private class OidcProviderTokenResponse
     {
+        [JsonPropertyName("access_token")]
         public string AccessToken { get; set; } = string.Empty;
+        [JsonPropertyName("refresh_token")]
         public string? RefreshToken { get; set; }
+        [JsonPropertyName("id_token")]
         public string IdToken { get; set; } = string.Empty;
+        [JsonPropertyName("token_type")]
         public string TokenType { get; set; } = "Bearer";
+        [JsonPropertyName("expires_in")]
         public int ExpiresIn { get; set; }
     }
 
