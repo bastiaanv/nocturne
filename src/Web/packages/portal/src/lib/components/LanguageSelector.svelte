@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Globe } from "@lucide/svelte";
-  import * as Select from "@nocturne/app/ui/select";
+  import * as Select from "@nocturne/ui/ui/select";
   import {
     preferredLanguage,
     supportedLocales,

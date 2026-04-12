@@ -17,6 +17,6 @@ export default defineConfig({
     strictPort: true,
   },
   ssr: {
-    noExternal: ['@nocturne/app', 'lucide-svelte']
+    noExternal: ['@nocturne/app', '@nocturne/ui', 'lucide-svelte']
   }
 });
