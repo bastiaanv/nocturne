@@ -53,6 +53,9 @@ importers:
       '@nocturne/bridge':
         specifier: workspace:*
         version: link:../bridge
+      '@nocturne/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@opentelemetry/auto-instrumentations-node':
         specifier: ^0.57.0
         version: 0.57.1(@opentelemetry/api@1.9.0)(@opentelemetry/core@2.6.0(@opentelemetry/api@1.9.0))(encoding@0.1.13)
@@ -421,6 +424,9 @@ importers:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^5.0.3
         version: 5.1.1(svelte@5.50.0)(vite@7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.2))
+      '@tailwindcss/typography':
+        specifier: ^0.5.19
+        version: 0.5.19(tailwindcss@4.1.18)
       bits-ui:
         specifier: ^2.15.5
         version: 2.15.5(@internationalized/date@3.11.0)(@sveltejs/kit@2.50.2(@opentelemetry/api@1.9.0)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.50.0)(vite@7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.2)))(svelte@5.50.0)(typescript@5.9.3)(vite@7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.2)))(svelte@5.50.0)
@@ -442,6 +448,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.7
         version: 4.1.18
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
       typescript:
         specifier: ^5.8.3
         version: 5.9.3
