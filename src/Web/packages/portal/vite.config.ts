@@ -2,6 +2,8 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { wuchale } from '@wuchale/vite-plugin';
 import lingo from 'vite-plugin-lingo';
+import { blogManifest } from '@nocturne/cms/blog/vite-plugin';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
 
@@ -10,13 +12,13 @@ export default defineConfig({
     lingo({
       route: '/_translations',  // Route where editor UI is served
       localesDir: '../../locales',  // Path to .po files
-    }), sveltekit()],
+    }), blogManifest({ contentDir: resolve(__dirname, 'src/content/blog') }), sveltekit()],
   server: {
     host: "0.0.0.0",
     port: parseInt(process.env.PORT || "5173", 10),
     strictPort: true,
   },
   ssr: {
-    noExternal: ['@nocturne/app', '@nocturne/ui', 'lucide-svelte']
+    noExternal: ['@nocturne/app', '@nocturne/ui', '@nocturne/cms', 'lucide-svelte']
   }
 });

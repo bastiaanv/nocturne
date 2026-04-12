@@ -10,6 +10,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
 	},
 	"devDependencies": {
+		"@nocturne/cms": "workspace:*",
 		"@sveltejs/adapter-node": "^5.2.0",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
@@ -26,6 +27,7 @@
 		"sveltekit-superforms": "^2.28.1",
 		"tailwind-merge": "^3.4.0",
 		"tailwind-variants": "^3.2.2",
+		"mdsvex": "^0.12.3",
 		"tailwindcss": "^4.1.7",
 		"typescript": "^5.8.3",
 		"vite": "^7.2.6"
