@@ -221,7 +221,7 @@ importers:
         version: 5.50.0
       svelte-check:
         specifier: ^4.3.6
-        version: 4.3.6(picomatch@4.0.3)(svelte@5.50.0)(typescript@5.9.3)
+        version: 4.3.6(picomatch@4.0.4)(svelte@5.50.0)(typescript@5.9.3)
       svelte-sonner:
         specifier: ^1.0.7
         version: 1.0.7(svelte@5.50.0)
@@ -315,8 +315,8 @@ importers:
         specifier: ^1.6.0
         version: 1.7.5
       '@lucide/svelte':
-        specifier: ^1.8.0
-        version: 1.8.0(svelte@5.50.0)
+        specifier: ^0.563.1
+        version: 0.563.1(svelte@5.50.0)
       '@nocturne/ui':
         specifier: workspace:*
         version: link:../ui
@@ -400,7 +400,7 @@ importers:
         version: 5.50.0
       svelte-check:
         specifier: ^4.3.6
-        version: 4.4.6(picomatch@4.0.3)(svelte@5.50.0)(typescript@5.9.3)
+        version: 4.4.6(picomatch@4.0.4)(svelte@5.50.0)(typescript@5.9.3)
       svelte-sonner:
         specifier: ^0.3.0
         version: 0.3.28(svelte@5.50.0)
@@ -519,7 +519,7 @@ importers:
         version: 5.45.2
       svelte-check:
         specifier: ^4.3.4
-        version: 4.3.4(picomatch@4.0.4)(svelte@5.45.2)(typescript@5.9.3)
+        version: 4.3.4(picomatch@4.0.3)(svelte@5.45.2)(typescript@5.9.3)
       svelte-sonner:
         specifier: ^1.0.7
         version: 1.0.7(svelte@5.45.2)
@@ -1120,11 +1120,6 @@ packages:
 
   '@lucide/svelte@0.563.1':
     resolution: {integrity: sha512-Kt+MbnE5D9RsuI/csmf7M+HWxALe57x3A0DhQ8pPnnUpneh7zuldrYjlT+veWtk+tVnp5doQtaAAxLujzIlhBw==}
-    peerDependencies:
-      svelte: ^5.37.0
-
-  '@lucide/svelte@1.8.0':
-    resolution: {integrity: sha512-+zYQUKqEOVP5lxbGmxL1OVgGMQtRK91eIJ0bR+3Cr1ts4oQEsQfxyzzd5X47psJlblAuGFrl2xm4YuATjR9oaA==}
     peerDependencies:
       svelte: ^5.37.0
 
@@ -6455,10 +6450,6 @@ snapshots:
     dependencies:
       svelte: 5.50.0
 
-  '@lucide/svelte@1.8.0(svelte@5.50.0)':
-    dependencies:
-      svelte: 5.50.0
-
   '@microsoft/signalr@8.0.17(encoding@0.1.13)':
     dependencies:
       abort-controller: 3.0.0
@@ -11381,11 +11372,11 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@4.3.4(picomatch@4.0.4)(svelte@5.45.2)(typescript@5.9.3):
+  svelte-check@4.3.4(picomatch@4.0.3)(svelte@5.45.2)(typescript@5.9.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       chokidar: 4.0.3
-      fdir: 6.5.0(picomatch@4.0.4)
+      fdir: 6.5.0(picomatch@4.0.3)
       picocolors: 1.1.1
       sade: 1.8.1
       svelte: 5.45.2
@@ -11393,23 +11384,11 @@ snapshots:
     transitivePeerDependencies:
       - picomatch
 
-  svelte-check@4.3.6(picomatch@4.0.3)(svelte@5.50.0)(typescript@5.9.3):
+  svelte-check@4.3.6(picomatch@4.0.4)(svelte@5.50.0)(typescript@5.9.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       chokidar: 4.0.3
-      fdir: 6.5.0(picomatch@4.0.3)
-      picocolors: 1.1.1
-      sade: 1.8.1
-      svelte: 5.50.0
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - picomatch
-
-  svelte-check@4.4.6(picomatch@4.0.3)(svelte@5.50.0)(typescript@5.9.3):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      chokidar: 4.0.3
-      fdir: 6.5.0(picomatch@4.0.3)
+      fdir: 6.5.0(picomatch@4.0.4)
       picocolors: 1.1.1
       sade: 1.8.1
       svelte: 5.50.0
