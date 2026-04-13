@@ -1,6 +1,7 @@
 <script lang="ts">
   import ContentEditor from '@nocturne/cms/editor/ContentEditor.svelte';
   import { blogMetadataFields } from '@nocturne/cms/editor/types';
+  import { toSvx } from '@nocturne/cms/editor/markdown';
   import type { ContentTypeConfig, EditorCallbacks, ContentItem, ContentData } from '@nocturne/cms/editor/types';
 
   const STORAGE_KEY = 'nocturne-studio-blog';
@@ -46,10 +47,25 @@
     },
     async publish(id: string) {
       const storage = getStorage();
-      if (storage[id]) {
-        storage[id].metadata.draft = false;
-        setStorage(storage);
+      const item = storage[id];
+      if (!item) return;
+
+      const slug = String(item.metadata.slug || id);
+      const svxContent = toSvx(item.metadata, item.content);
+
+      const res = await fetch('/studio/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, content: svxContent }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: 'Failed to publish' }));
+        throw new Error(err.message || 'Failed to publish');
       }
+
+      item.metadata.draft = false;
+      setStorage(storage);
     },
     async create(metadata: Record<string, unknown>): Promise<string> {
       const id = crypto.randomUUID();
