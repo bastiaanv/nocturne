@@ -1577,4 +1577,66 @@ public class DeviceStatusDecomposerTests : IDisposable
     }
 
     #endregion
+
+    #region AAPS Date Normalization
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsWithMillsZeroAndDateSet_UsesDateForTimestamp()
+    {
+        // Arrange — AAPS sends "date" instead of "mills"
+        var expectedMills = 1712925027741L;
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-date-1",
+            Mills = 0,
+            Date = expectedMills,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 3.4 },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.05,
+                    Duration = 30,
+                    Bg = 200,
+                    Timestamp = "2026-04-12T09:30:28.167Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.Timestamp.Should().Be(DateTimeOffset.FromUnixTimeMilliseconds(expectedMills).UtcDateTime);
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsWithMillsAndDateBothSet_PrefersExistingMills()
+    {
+        // Arrange — both mills and date present; mills takes precedence
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-both-1",
+            Mills = 1700000000000,
+            Date = 9999999999999,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 1.0 },
+                Enacted = new OpenApsEnacted { Received = true, Rate = 0.5, Duration = 30, Bg = 120, Timestamp = "2023-11-14T12:00:00Z" }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.Timestamp.Should().Be(DateTimeOffset.FromUnixTimeMilliseconds(1700000000000).UtcDateTime);
+    }
+
+    #endregion
 }
