@@ -84,7 +84,7 @@
     label={config.label}
   />
 
-  <div class="flex flex-1 flex-col min-w-0">
+  <div class="flex flex-1 flex-col min-w-0 basis-1/2">
     {#if editor}
       <div class="border-b border-border/40">
         <EdraToolBar {editor} />
