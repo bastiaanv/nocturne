@@ -250,7 +250,12 @@ public class TreatmentDecomposer : ITreatmentDecomposer, IDecomposer<Treatment>
 
     private async Task DecomposeBolusAsync(Treatment treatment, V4Models.DecompositionResult result, CancellationToken ct)
     {
-        if (treatment.IsBasalInsulin == true && treatment.Insulin > 0)
+        // AAPS uses "Correction Bolus" exclusively for algorithm-delivered SMBs (BolusExtension.kt:28).
+        // The isBasalInsulin flag is never set true on real AAPS treatments.
+        var isAlgorithmBolus = (treatment.IsBasalInsulin == true && treatment.Insulin > 0)
+            || (string.Equals(treatment.EventType, "Correction Bolus", StringComparison.OrdinalIgnoreCase) && IsAapsUpload(treatment));
+
+        if (isAlgorithmBolus)
         {
             await DecomposeMicroBolusAsync(treatment, result, ct);
             return;
@@ -732,6 +737,29 @@ public class TreatmentDecomposer : ITreatmentDecomposer, IDecomposer<Treatment>
     #endregion
 
     #region Helper Methods
+
+    /// <summary>
+    /// Returns true if the treatment was uploaded by AAPS (AndroidAPS).
+    /// AAPS sets "app": "AAPS" on all treatment uploads (NSAndroidClientImpl.kt:296).
+    /// </summary>
+    internal static bool IsAapsUpload(Treatment treatment)
+    {
+        if (treatment.AdditionalProperties is null)
+            return false;
+
+        if (!treatment.AdditionalProperties.TryGetValue("app", out var appValue))
+            return false;
+
+        // System.Text.Json deserializes unknown properties as JsonElement
+        var appString = appValue switch
+        {
+            string s => s,
+            System.Text.Json.JsonElement { ValueKind: System.Text.Json.JsonValueKind.String } je => je.GetString(),
+            _ => null
+        };
+
+        return string.Equals(appString, "AAPS", StringComparison.OrdinalIgnoreCase);
+    }
 
     private static bool IsTempBasal(string? eventType)
     {
