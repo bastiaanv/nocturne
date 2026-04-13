@@ -114,7 +114,9 @@ public class DeviceStatusDecomposer : IDeviceStatusDecomposer, IDecomposer<Devic
                 && (ds.OpenAps.Enacted.Received == true || ds.OpenAps.Enacted.Recieved == true),
             EnactedRate = ds.OpenAps.Enacted?.Rate,
             EnactedDuration = ds.OpenAps.Enacted?.Duration,
-            EnactedBolusVolume = ds.OpenAps.Enacted?.Smb,
+            EnactedBolusVolume = ds.OpenAps.Enacted?.Smb is > 0
+                ? ds.OpenAps.Enacted.Smb
+                : ds.OpenAps.Enacted?.Units,
             SuggestedJson = SerializeOrNull(ds.OpenAps.Suggested),
             EnactedJson = SerializeOrNull(ds.OpenAps.Enacted),
             // Trio uses oref multi-curve predictions exclusively; PredictedDefaultJson

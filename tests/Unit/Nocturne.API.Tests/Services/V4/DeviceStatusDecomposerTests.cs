@@ -1709,4 +1709,74 @@ public class DeviceStatusDecomposerTests : IDisposable
     }
 
     #endregion
+
+    #region AAPS SMB Volume Fallback
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsEnactedSmbZeroWithUnits_UsesUnitsForBolusVolume()
+    {
+        // Arrange — AAPS: smb = 0 (bolusDelivered from TBR), units = 0.2 (actual SMB from APS request)
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-smb-1",
+            Mills = 1712925027741,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 3.4 },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.05,
+                    Duration = 30,
+                    Smb = 0,
+                    Units = 0.2,
+                    Bg = 200,
+                    Timestamp = "2026-04-12T09:30:28.167Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.EnactedBolusVolume.Should().Be(0.2);
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsEnactedSmbNullWithUnits_UsesUnitsForBolusVolume()
+    {
+        // Arrange — smb is null, units has the value
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-smb-2",
+            Mills = 1712925027741,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 1.0 },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.5,
+                    Duration = 30,
+                    Smb = null,
+                    Units = 0.15,
+                    Bg = 150,
+                    Timestamp = "2026-04-12T10:00:00Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.EnactedBolusVolume.Should().Be(0.15);
+    }
+
+    #endregion
 }
