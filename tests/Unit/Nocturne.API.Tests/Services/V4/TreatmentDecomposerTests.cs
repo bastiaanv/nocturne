@@ -2029,4 +2029,59 @@ public class TreatmentDecomposerTests : IDisposable
     }
 
     #endregion
+
+    #region AAPS Correction Bolus Classification
+
+    [Fact]
+    public async Task DecomposeAsync_AapsCorrectionBolus_CreatesAlgorithmBolus()
+    {
+        // Arrange — AAPS "Correction Bolus" with app = "AAPS" is always an algorithm-delivered SMB
+        var treatment = new Treatment
+        {
+            Id = "aaps-smb-bolus-1",
+            EventType = "Correction Bolus",
+            Mills = 1775994909183,
+            Insulin = 0.2,
+            UtcOffset = 0,
+            AdditionalProperties = new Dictionary<string, object>
+            {
+                ["app"] = "AAPS"
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(treatment);
+
+        // Assert
+        result.CreatedRecords.Should().HaveCount(1);
+        var bolus = result.CreatedRecords[0].Should().BeOfType<V4Models.Bolus>().Subject;
+        bolus.Insulin.Should().Be(0.2);
+        bolus.Kind.Should().Be(V4Models.BolusKind.Algorithm);
+        bolus.Automatic.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_NonAapsCorrectionBolus_CreatesManualBolus()
+    {
+        // Arrange — "Correction Bolus" without app = "AAPS" stays manual (could be xDrip+, Spike, etc.)
+        var treatment = new Treatment
+        {
+            Id = "other-correction-1",
+            EventType = "Correction Bolus",
+            Mills = 1700000000000,
+            Insulin = 1.5,
+            UtcOffset = 0,
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(treatment);
+
+        // Assert
+        result.CreatedRecords.Should().HaveCount(1);
+        var bolus = result.CreatedRecords[0].Should().BeOfType<V4Models.Bolus>().Subject;
+        bolus.Kind.Should().Be(V4Models.BolusKind.Manual);
+        bolus.Automatic.Should().BeFalse();
+    }
+
+    #endregion
 }

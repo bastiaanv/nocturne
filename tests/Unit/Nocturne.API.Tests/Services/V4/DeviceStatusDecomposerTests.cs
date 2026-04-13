@@ -1577,4 +1577,206 @@ public class DeviceStatusDecomposerTests : IDisposable
     }
 
     #endregion
+
+    #region AAPS Date Normalization
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsWithMillsZeroAndDateSet_UsesDateForTimestamp()
+    {
+        // Arrange — AAPS sends "date" instead of "mills"
+        var expectedMills = 1712925027741L;
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-date-1",
+            Mills = 0,
+            Date = expectedMills,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 3.4 },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.05,
+                    Duration = 30,
+                    Bg = 200,
+                    Timestamp = "2026-04-12T09:30:28.167Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.Timestamp.Should().Be(DateTimeOffset.FromUnixTimeMilliseconds(expectedMills).UtcDateTime);
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsWithMillsAndDateBothSet_PrefersExistingMills()
+    {
+        // Arrange — both mills and date present; mills takes precedence
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-both-1",
+            Mills = 1700000000000,
+            Date = 9999999999999,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 1.0 },
+                Enacted = new OpenApsEnacted { Received = true, Rate = 0.5, Duration = 30, Bg = 120, Timestamp = "2023-11-14T12:00:00Z" }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.Timestamp.Should().Be(DateTimeOffset.FromUnixTimeMilliseconds(1700000000000).UtcDateTime);
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsWithJsonDateField_NormalizesMillsFromDate()
+    {
+        // Arrange — simulate actual AAPS JSON payload (no "mills" field, only "date")
+        var json = """
+        {
+            "_id": "aaps-json-1",
+            "date": 1712925027741,
+            "device": "openaps://samsung SM-A525F",
+            "openaps": {
+                "iob": { "iob": 3.4 },
+                "enacted": {
+                    "received": true,
+                    "rate": 0.05,
+                    "duration": 30,
+                    "bg": 200,
+                    "timestamp": "2026-04-12T09:30:28.167Z"
+                }
+            }
+        }
+        """;
+        var ds = System.Text.Json.JsonSerializer.Deserialize<DeviceStatus>(json)!;
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.Timestamp.Should().Be(DateTimeOffset.FromUnixTimeMilliseconds(1712925027741).UtcDateTime);
+    }
+
+    #endregion
+
+    #region Timestamp Fallback
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsWithMillsZeroNoDate_FallsBackToIobTime()
+    {
+        // Arrange — neither mills nor date set; should fall back to OpenAps.Iob.Time
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-fallback-1",
+            Mills = 0,
+            CreatedAt = "2026-04-12T12:34:27.741Z",
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 3.4, Time = "2026-04-12T09:30:30.549Z" },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.05,
+                    Duration = 30,
+                    Bg = 200,
+                    Timestamp = "2026-04-12T09:30:28.167Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert — should use OpenAps.Iob.Time as fallback (most precise APS timestamp)
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.Timestamp.Should().NotBe(DateTime.UnixEpoch);
+        aps.Timestamp.Year.Should().Be(2026);
+        aps.Timestamp.Month.Should().Be(4);
+        aps.Timestamp.Day.Should().Be(12);
+    }
+
+    #endregion
+
+    #region AAPS SMB Volume Fallback
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsEnactedSmbZeroWithUnits_UsesUnitsForBolusVolume()
+    {
+        // Arrange — AAPS: smb = 0 (bolusDelivered from TBR), units = 0.2 (actual SMB from APS request)
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-smb-1",
+            Mills = 1712925027741,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 3.4 },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.05,
+                    Duration = 30,
+                    Smb = 0,
+                    Units = 0.2,
+                    Bg = 200,
+                    Timestamp = "2026-04-12T09:30:28.167Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.EnactedBolusVolume.Should().Be(0.2);
+    }
+
+    [Fact]
+    public async Task DecomposeAsync_OpenApsEnactedSmbNullWithUnits_UsesUnitsForBolusVolume()
+    {
+        // Arrange — smb is null, units has the value
+        var ds = new DeviceStatus
+        {
+            Id = "aaps-smb-2",
+            Mills = 1712925027741,
+            Device = "openaps://samsung SM-A525F",
+            OpenAps = new OpenApsStatus
+            {
+                Iob = new OpenApsIobData { Iob = 1.0 },
+                Enacted = new OpenApsEnacted
+                {
+                    Received = true,
+                    Rate = 0.5,
+                    Duration = 30,
+                    Smb = null,
+                    Units = 0.15,
+                    Bg = 150,
+                    Timestamp = "2026-04-12T10:00:00Z"
+                }
+            }
+        };
+
+        // Act
+        var result = await _decomposer.DecomposeAsync(ds);
+
+        // Assert
+        var aps = result.CreatedRecords[0].Should().BeOfType<V4Models.ApsSnapshot>().Subject;
+        aps.EnactedBolusVolume.Should().Be(0.15);
+    }
+
+    #endregion
 }
