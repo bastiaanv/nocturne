@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { RoadmapMilestone, GitHubIssue } from "$lib/data/portal.remote";
-    import * as Collapsible from "@nocturne/app/ui/collapsible";
+    import * as Collapsible from "@nocturne/ui/ui/collapsible";
     import {
         Circle,
         CheckCircle2,

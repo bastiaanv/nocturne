@@ -10,9 +10,6 @@ import {
   AlertTriangle,
 } from "lucide-svelte";
 
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SvelteComponent = any;
 
@@ -230,24 +227,15 @@ export function timeAgo(timestamp: number | string, locale?: string): string {
   }
 }
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChild<T> = T extends { child?: any } ? Omit<T, "child"> : T;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WithoutChildren<T> = T extends { children?: any }
-  ? Omit<T, "children">
-  : T;
-export type WithoutChildrenOrChild<T> = WithoutChildren<WithoutChild<T>>;
-export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & {
-  ref?: U | null;
-};
-
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
+// Re-export UI utilities from shared package
+export {
+  cn,
+  type WithoutChild,
+  type WithoutChildren,
+  type WithoutChildrenOrChild,
+  type WithElementRef,
+  type Prettify,
+} from "@nocturne/ui/utils";
 
 export interface DateRange {
   /** ISO 8601 */

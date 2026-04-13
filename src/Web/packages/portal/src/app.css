@@ -1,4 +1,4 @@
-/* Import shared styles from main app */
-@source "../../app/src";
-@import "@nocturne/app/src/app.css";
+@import "@nocturne/ui/theme.css";
+@source "../node_modules/@nocturne/ui/src";
+@source "../node_modules/@nocturne/cms/src";
 @source not "../locales/";

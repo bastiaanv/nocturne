@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button } from "@nocturne/app/ui/button";
+    import Content from "../../content/docs/index.svx";
     import {
         ArrowRight,
         Book,
@@ -15,10 +15,7 @@
 </script>
 
 <div class="max-w-3xl">
-    <h1 class="text-4xl font-bold tracking-tight mb-4">Documentation</h1>
-    <p class="text-lg text-muted-foreground mb-8">
-        Learn how to set up, configure, and get the most out of Nocturne.
-    </p>
+    <Content />
 
     <div class="grid gap-4 not-prose">
         <a

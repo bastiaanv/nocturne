@@ -1,6 +1,6 @@
 <script lang="ts">
-    import * as Accordion from "@nocturne/app/ui/accordion";
-    import { Button } from "@nocturne/app/ui/button";
+    import * as Accordion from "@nocturne/ui/ui/accordion";
+    import { Button } from "@nocturne/ui/ui/button";
     import { ArrowRight, HelpCircle, Download, RefreshCw, Code } from "@lucide/svelte";
 
     const faqCategories = [

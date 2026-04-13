@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/state";
-    import { Button } from "@nocturne/app/ui/button";
+    import { Button } from "@nocturne/ui/ui/button";
     import { Menu, X } from "@lucide/svelte";
     import {
         DEMO_ENABLED,

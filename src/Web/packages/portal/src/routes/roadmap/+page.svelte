@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getRoadmapData, type RoadmapMilestone } from "$lib/data/portal.remote";
-    import { Button } from "@nocturne/app/ui/button";
+    import { Button } from "@nocturne/ui/ui/button";
     import MilestoneCard from "$lib/components/MilestoneCard.svelte";
     import {
         Milestone,

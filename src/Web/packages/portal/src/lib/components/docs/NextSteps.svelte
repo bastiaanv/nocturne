@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { Button } from "@nocturne/app/ui/button";
+    import { Button } from "@nocturne/ui/ui/button";
     import { ArrowRight } from "@lucide/svelte";
 </script>
 

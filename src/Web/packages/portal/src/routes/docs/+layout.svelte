@@ -1,6 +1,6 @@
 <script lang="ts">
     import DocsSidebar from "$lib/components/DocsSidebar.svelte";
-    import { Button } from "@nocturne/app/ui/button";
+    import { Button } from "@nocturne/ui/ui/button";
     import { Menu, X } from "@lucide/svelte";
 
     let { children } = $props();
