@@ -285,10 +285,10 @@ jobs:
               });
             }
 
-  publish-aspire-manifest:
+  publish-compose:
     needs: [build-and-push]
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false)
+    if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main') && github.event_name != 'pull_request'
     permissions:
       contents: write
 
@@ -338,127 +338,21 @@ jobs:
       - name: Build Aspire AppHost
         run: dotnet build -c Debug src/Aspire/Nocturne.Aspire.Host/Nocturne.Aspire.Host.csproj
 
-      - name: Determine version tag
-        id: version
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            VERSION="pr-${{ github.event.pull_request.number }}-${GITHUB_SHA::7}"
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif [[ "${{ github.ref }}" == refs/heads/master ]] || [[ "${{ github.ref }}" == refs/heads/main ]]; then
-            VERSION=latest
-          else
-            SAFE_REF=$(echo "${GITHUB_REF_NAME}" | tr '/_' '-' | tr -cd '[:alnum:].-')
-            VERSION="${SAFE_REF}-${GITHUB_SHA::7}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      # Use Aspire's publish command to generate deployment manifests
-      - name: Generate Aspire deployment artifacts
+      - name: Generate docker-compose via aspire publish
         working-directory: src/Aspire/Nocturne.Aspire.Host
-        env:
-          ContainerRegistry: ${{ env.REGISTRY }}
-          ContainerRepository: ${{ env.IMAGE_REPOSITORY }}
-          IMAGE_TAG: ${{ steps.version.outputs.version }}
+        run: aspire publish --project . --publisher docker-compose --output-path aspire-output --no-build --non-interactive
+
+      - name: Commit updated compose file
         run: |
-          mkdir -p ../../../release
-
-          # Generate docker-compose artifacts using Aspire CLI
-          # Output to repo root for easy access
-          aspire publish \
-            --project . \
-            --publisher docker-compose \
-            --output-path ../../../ \
-            --no-build
-
-          # Rename .env to .env.example (users copy and customize)
-          if [ -f ../../../.env ]; then
-            mv ../../../.env ../../../.env.example
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/Aspire/Nocturne.Aspire.Host/aspire-output/docker-compose.yaml
+          if git diff --cached --quiet; then
+            echo "No changes to docker-compose.yaml"
+          else
+            git commit -m "chore: regenerate aspire-output compose [skip ci]"
+            git push
           fi
-
-          # Generate production docker-compose (no dashboard/scalar, with watchtower,
-          # random passwords, pre-filled image names)
-          ../../../scripts/publish-production.sh ../../../
-
-          # Also generate the Aspire manifest for advanced deployments
-          aspire publish \
-            --project . \
-            --publisher manifest \
-            --output-path ../../../release
-
-      - name: Create deployment documentation
-        run: |
-          cat > release/README.md << 'EOF'
-          # Nocturne Deployment
-
-          Version: ${{ github.ref_name }}
-          Registry: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
-
-          ## Quick Start (Production)
-
-          1. Review `.env.production` — random PostgreSQL passwords are pre-generated
-          2. Set `PUBLIC_BASE_DOMAIN` to your domain (e.g. `nocturne.example.com`)
-          3. Copy `container-init/` next to `docker-compose.production.yaml`
-          4. Run: `docker compose -f docker-compose.production.yaml up -d`
-
-          ## Container Images
-
-          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nocturne-api:${{ steps.version.outputs.version }}`
-          - `${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/nocturne-web:${{ steps.version.outputs.version }}`
-
-          ## Files in this release
-
-          - `docker-compose.production.yaml` - Production compose (Watchtower, no dashboard/Scalar)
-          - `docker-compose.yaml` - Development compose (includes Aspire dashboard + Scalar)
-          - `.env.production` - Production env with pre-generated passwords
-          - `.env.example` - Development env template (empty, fill in manually)
-          - `container-init/` - PostgreSQL init scripts (bind-mounted into Postgres)
-          - `aspire-manifest.json` - Aspire deployment manifest (for advanced scenarios)
-
-          ## Deployment Options
-
-          ### Docker Compose — Production (Recommended)
-          ```bash
-          docker compose -f docker-compose.production.yaml up -d
-          ```
-
-          ### Docker Compose — Development
-          ```bash
-          cp .env.example .env
-          # Fill in .env values
-          docker compose up -d
-          ```
-
-          ### Aspire Deploy (Advanced)
-          ```bash
-          aspire deploy --manifest aspire-manifest.json
-          ```
-          EOF
-
-          # Copy artifacts into release/
-          for f in docker-compose.yaml docker-compose.production.yaml .env.example .env.production; do
-            [ -f "$f" ] && cp "$f" release/
-          done
-          # Include container-init scripts so the release is self-contained
-          cp -r docs/postgres/container-init release/container-init
-
-      - name: Upload deployment artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nocturne-deployment-${{ steps.version.outputs.version }}
-          path: release/
-          retention-days: 90
-
-      - name: Attach artifacts to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            release/docker-compose.production.yaml
-            release/.env.production
-            release/docker-compose.yaml
-            release/.env.example
-            release/aspire-manifest.json
 
   publish-glucose-chart:
     needs: [build-and-push]
@@ -538,52 +432,3 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # security-scan:
-  #   needs: build-and-push
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name != 'pull_request'
-  #   permissions:
-  #     contents: read
-  #     packages: read
-  #     security-events: write
-  #     actions: read
-  #   strategy:
-  #     matrix:
-  #       image-name:
-  #         - nocturne-api
-  #         - nocturne-web
-
-  #   steps:
-  #     - name: Log in to GitHub Container Registry
-  #       uses: docker/login-action@v3
-  #       with:
-  #         registry: ${{ env.REGISTRY }}
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: Determine version tag
-  #       id: version
-  #       run: |
-  #         if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-  #           VERSION=${GITHUB_REF#refs/tags/v}
-  #         elif [[ "${{ github.ref }}" == refs/heads/master ]] || [[ "${{ github.ref }}" == refs/heads/main ]]; then
-  #           VERSION=latest
-  #         else
-  #           VERSION=${GITHUB_REF#refs/heads/}
-  #         fi
-  #         echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-  #     - name: Run Trivy vulnerability scanner
-  #       uses: aquasecurity/trivy-action@master
-  #       with:
-  #         image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}/${{ matrix.image-name }}:${{ steps.version.outputs.version }}'
-  #         format: 'sarif'
-  #         output: 'trivy-results.sarif'
-  #         severity: 'CRITICAL,HIGH'
-
-  #     - name: Upload Trivy results to GitHub Security
-  #       uses: github/codeql-action/upload-sarif@v4
-  #       if: always()
-  #       with:
-  #         sarif_file: 'trivy-results.sarif'
-  #         category: ${{ matrix.image-name }}
