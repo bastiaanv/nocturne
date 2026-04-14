@@ -121,13 +121,18 @@ class SocketIOServer {
     });
   }
 
-  /** Extract tenant slug from the Socket.IO handshake X-Forwarded-Host header. */
+  /** Extract tenant slug from the Socket.IO handshake headers.
+   *  Checks X-Forwarded-Host first (set by YARP's X-Forwarded transform),
+   *  then falls back to Host (preserved by RequestHeaderOriginalHost). */
   private extractTenantSlug(socket: Socket): string | null {
-    const forwardedHost = socket.handshake.headers['x-forwarded-host'];
-    const host = Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost;
-    if (!host || !this.baseDomain) return null;
+    if (!this.baseDomain) return null;
 
-    const hostname = host.split(':')[0];
+    const forwardedHost = socket.handshake.headers['x-forwarded-host'];
+    const rawHost = socket.handshake.headers['host'];
+    const candidate = Array.isArray(forwardedHost) ? forwardedHost[0] : (forwardedHost || rawHost);
+    if (!candidate) return null;
+
+    const hostname = candidate.split(':')[0];
     const suffix = `.${this.baseDomain.split(':')[0]}`;
     if (!hostname.endsWith(suffix)) return null;
 
