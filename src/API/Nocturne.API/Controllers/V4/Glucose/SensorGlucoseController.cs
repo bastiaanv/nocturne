@@ -42,6 +42,9 @@ public class SensorGlucoseController(
         Direction = request.Direction,
         TrendRate = request.TrendRate,
         Noise = request.Noise,
+        Filtered = request.Filtered,
+        Unfiltered = request.Unfiltered,
+        Delta = request.Delta,
     };
 
     protected override SensorGlucose MapUpdateToModel(Guid id, UpsertSensorGlucoseRequest request, SensorGlucose existing) => new()
@@ -56,6 +59,9 @@ public class SensorGlucoseController(
         Direction = request.Direction,
         TrendRate = request.TrendRate,
         Noise = request.Noise,
+        Filtered = request.Filtered,
+        Unfiltered = request.Unfiltered,
+        Delta = request.Delta,
         CorrelationId = existing.CorrelationId,
         LegacyId = existing.LegacyId,
         CreatedAt = existing.CreatedAt,
