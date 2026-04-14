@@ -60,11 +60,11 @@ export const getTreatmentsData = query(
 		const { startDate, endDate } = calculateDateRange(input, timezone);
 		const [bolusResponse, carbResponse, bgCheckResponse, noteResponse, deviceEventResponse] =
 			await Promise.all([
-				apiClient.boluses.getAll(startDate, endDate, 10000),
+				apiClient.bolus.getAll(startDate, endDate, 10000),
 				apiClient.nutrition.getCarbIntakes(startDate, endDate, 10000),
-				apiClient.bGChecks.getAll(startDate, endDate, 10000),
-				apiClient.notes.getAll(startDate, endDate, 10000),
-				apiClient.deviceEvents.getAll(startDate, endDate, 10000),
+				apiClient.bGCheck.getAll(startDate, endDate, 10000),
+				apiClient.note.getAll(startDate, endDate, 10000),
+				apiClient.deviceEvent.getAll(startDate, endDate, 10000),
 			]);
 
 		const boluses = bolusResponse.data ?? [];
@@ -73,10 +73,9 @@ export const getTreatmentsData = query(
 		const notes = noteResponse.data ?? [];
 		const deviceEvents = deviceEventResponse.data ?? [];
 
-		const treatmentSummary =
-			boluses.length > 0 || carbIntakes.length > 0
-				? await apiClient.statistics.calculateTreatmentSummary({ boluses, carbIntakes })
-				: null;
+		// TODO: calculateTreatmentSummary endpoint no longer exists
+		// This needs to be re-implemented using the available summary or retrospective endpoints
+		const treatmentSummary = null;
 
 		return {
 			boluses,
@@ -108,19 +107,19 @@ export const deleteEntryForm = form(
 		try {
 			switch (entryKind) {
 				case 'bolus':
-					await apiClient.boluses.delete(entryId);
+					await apiClient.bolus.delete(entryId);
 					break;
 				case 'carbs':
 					await apiClient.nutrition.deleteCarbIntake(entryId);
 					break;
 				case 'bgCheck':
-					await apiClient.bGChecks.delete(entryId);
+					await apiClient.bGCheck.delete(entryId);
 					break;
 				case 'note':
-					await apiClient.notes.delete(entryId);
+					await apiClient.note.delete(entryId);
 					break;
 				case 'deviceEvent':
-					await apiClient.deviceEvents.delete(entryId);
+					await apiClient.deviceEvent.delete(entryId);
 					break;
 			}
 
@@ -157,19 +156,19 @@ export const bulkDeleteEntries = command(
 			try {
 				switch (item.kind) {
 					case 'bolus':
-						await apiClient.boluses.delete(item.id);
+						await apiClient.bolus.delete(item.id);
 						break;
 					case 'carbs':
 						await apiClient.nutrition.deleteCarbIntake(item.id);
 						break;
 					case 'bgCheck':
-						await apiClient.bGChecks.delete(item.id);
+						await apiClient.bGCheck.delete(item.id);
 						break;
 					case 'note':
-						await apiClient.notes.delete(item.id);
+						await apiClient.note.delete(item.id);
 						break;
 					case 'deviceEvent':
-						await apiClient.deviceEvents.delete(item.id);
+						await apiClient.deviceEvent.delete(item.id);
 						break;
 				}
 				deletedIds.push(item.id);
@@ -211,15 +210,15 @@ export const updateEntry = command(
 
 		switch (kind) {
 			case 'bolus':
-				return await apiClient.boluses.update(id, data as Bolus);
+				return await apiClient.bolus.update(id, data as Bolus);
 			case 'carbs':
 				return await apiClient.nutrition.updateCarbIntake(id, data as CarbIntake);
 			case 'bgCheck':
-				return await apiClient.bGChecks.update(id, data as BGCheck);
+				return await apiClient.bGCheck.update(id, data as BGCheck);
 			case 'note':
-				return await apiClient.notes.update(id, data as Note);
+				return await apiClient.note.update(id, data as Note);
 			case 'deviceEvent':
-				return await apiClient.deviceEvents.update(id, data as DeviceEvent);
+				return await apiClient.deviceEvent.update(id, data as DeviceEvent);
 		}
 	}
 );

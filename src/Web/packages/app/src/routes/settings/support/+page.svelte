@@ -28,10 +28,8 @@
     HelpCircle,
     CheckCircle,
   } from "lucide-svelte";
-  import { getExternalUrls } from "$api";
-  import { onMount } from "svelte";
-  import { getApiClient } from "$lib/api/client";
-  import type { ExternalUrls } from "$lib/api";
+  import { getServicesOverview } from "$api";
+  import type { ServicesOverview } from "$api";
 
   let includeDeviceInfo = $state(true);
   let includeRecentLogs = $state(true);
@@ -39,33 +37,15 @@
   let additionalDetails = $state("");
   let logsCopied = $state(false);
 
-  let serverVersion = $state("Loading...");
-  let buildDate = $state("Loading...");
-  let commitHash = $state("Loading...");
-  let apiCompat = $state("Loading...");
-  let externalUrls = $state<ExternalUrls | null>(null);
+  let apiBaseUrl = $state<string | null>(null);
 
-  onMount(async () => {
-    try {
-      const api = getApiClient();
-      // Cast to any to access new fields before client regeneration
-      const meta = (await api.version.getVersion()) as any;
-      serverVersion = meta.version || "Unknown";
-      buildDate = meta.build || "Dev";
-      commitHash = meta.head ? meta.head.substring(0, 7) : "Unknown";
-      apiCompat = meta.apiCompatibility || "Nightscout v3 (Legacy)";
-    } catch (e) {
-      console.error("Failed to load version info", e);
-      serverVersion = "Error";
-      buildDate = "Error";
-      commitHash = "Error";
-      apiCompat = "Error";
-    }
+  const servicesOverviewQuery = $derived(getServicesOverview());
 
-    try {
-      externalUrls = await getExternalUrls();
-    } catch (e) {
-      console.error("Failed to load external URLs", e);
+  const services = $derived(servicesOverviewQuery.current as ServicesOverview | undefined);
+
+  $effect(() => {
+    if (services?.apiEndpoint) {
+      apiBaseUrl = services.apiEndpoint.baseUrl || null;
     }
   });
 
@@ -88,7 +68,7 @@
       name: "Documentation",
       description: "Guides, tutorials, and API reference",
       icon: BookOpen,
-      href: externalUrls?.docsBase ?? "#",
+      href: "https://docs.nightscout.info/",
     },
     {
       name: "Nightscout Foundation",
@@ -361,25 +341,19 @@
       <CardTitle>About Nocturne</CardTitle>
     </CardHeader>
     <CardContent class="space-y-4">
-      <div class="flex items-center justify-between py-2 border-b">
-        <span class="text-muted-foreground">Version</span>
-        <span class="font-mono">{serverVersion}</span>
-      </div>
-      <div class="flex items-center justify-between py-2 border-b">
-        <span class="text-muted-foreground">Build</span>
-        <span class="font-mono">{buildDate}</span>
-      </div>
-      <div class="flex items-center justify-between py-2 border-b">
-        <span class="text-muted-foreground">Commit</span>
-        <span class="font-mono">{commitHash}</span>
-      </div>
+      {#if apiBaseUrl}
+        <div class="flex items-center justify-between py-2 border-b">
+          <span class="text-muted-foreground">API Endpoint</span>
+          <span class="font-mono text-sm">{apiBaseUrl}</span>
+        </div>
+      {/if}
       <div class="flex items-center justify-between py-2 border-b">
         <span class="text-muted-foreground">License</span>
         <span>AGPL-3.0</span>
       </div>
       <div class="flex items-center justify-between py-2">
         <span class="text-muted-foreground">API Compatibility</span>
-        <Badge variant="secondary">{apiCompat}</Badge>
+        <Badge variant="secondary">Nightscout v1-v4</Badge>
       </div>
 
       <Separator class="my-4" />

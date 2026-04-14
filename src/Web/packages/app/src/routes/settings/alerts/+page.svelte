@@ -4,7 +4,7 @@
     getRules,
     deleteRule,
     toggleRule,
-  } from "$api/generated/alertRules.generated.remote";
+  } from "$api/generated/alertrules.generated.remote";
   import {
     getActiveAlerts,
     getAlertHistory,

@@ -9,12 +9,19 @@
  */
 
 import { glucoseUnits, type GlucoseUnits } from "$lib/stores/appearance-store.svelte";
-import type { Treatment, TreatmentSummary as ApiTreatmentSummary, OverallAverages as ApiOverallAverages } from "$lib/api";
+import type { Treatment } from "$lib/api";
 
 // Re-export for backward compatibility
 export type { GlucoseUnits, Treatment };
-export type TreatmentSummary = ApiTreatmentSummary;
-export type OverallAverages = ApiOverallAverages;
+
+// Local type definitions for treatment summaries
+export interface TreatmentSummary {
+  [key: string]: any;
+}
+
+export interface OverallAverages {
+  [key: string]: any;
+}
 
 // =============================================================================
 // Glucose Conversion & Formatting

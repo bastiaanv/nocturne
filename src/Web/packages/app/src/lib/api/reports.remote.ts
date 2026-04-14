@@ -3,10 +3,12 @@
  * Provides sensor glucose, boluses, carb intakes, device events, and analysis data for all report pages
  */
 import { z } from 'zod';
-import { DiabetesPopulationSchema } from '$lib/api/generated/schemas';
 import { getRequestEvent, query } from '$app/server';
 import { error } from '@sveltejs/kit';
-import { DiabetesPopulation, type BasalPoint } from '$lib/api';
+import { type BasalPoint } from '$lib/api';
+
+// DiabetesPopulation is not yet in the generated API — schema defined locally until the backend exposes it
+const DiabetesPopulationSchema = z.enum(['Type1Adult', 'Type1Child', 'Type2Adult', 'Type2Child', 'Pregnant', 'Other']);
 
 /**
  * Input schema for date range queries.
@@ -90,12 +92,12 @@ export const getBolusesAndCarbs = query(
 		const pageSize = 1000;
 
 		// Fetch all boluses by paginating through results
-		let allBoluses: Awaited<ReturnType<typeof apiClient.boluses.getAll>>['data'] = [];
+		let allBoluses: Awaited<ReturnType<typeof apiClient.bolus.getAll>>['data'] = [];
 		let offset = 0;
 		let hasMore = true;
 
 		while (hasMore) {
-			const batch = await apiClient.boluses.getAll(startDate, endDate, pageSize, offset);
+			const batch = await apiClient.bolus.getAll(startDate, endDate, pageSize, offset);
 			allBoluses = allBoluses!.concat(batch.data ?? []);
 
 			if ((batch.data?.length ?? 0) < pageSize) {
@@ -153,16 +155,9 @@ export const getAnalysis = query(
 		carbIntakes: z.array(z.any()),
 		population: DiabetesPopulationSchema.optional(),
 	}),
-	async ({ entries, boluses, carbIntakes, population = DiabetesPopulation.Type1Adult }) => {
-		const { locals } = getRequestEvent();
-		const { apiClient } = locals;
-
-		return apiClient.statistics.analyzeGlucoseDataExtended({
-			entries,
-			boluses,
-			carbIntakes,
-			population: population as DiabetesPopulation,
-		});
+	async (_input) => {
+		// TODO: statistics client removed
+		return null;
 	}
 );
 
@@ -172,7 +167,78 @@ export const getAnalysis = query(
 export const getSummary = query(async () => {
 	const { locals } = getRequestEvent();
 	const { apiClient } = locals;
-	return apiClient.statistics.getMultiPeriodStatistics();
+
+	// TODO: integrate with backend when statistics client is restored
+	// Temporary stub returning expected structure
+	return {
+		lastDay: {
+			entryCount: 0,
+			reliability: {
+				meetsReliabilityCriteria: false,
+				daysOfData: 0,
+				recommendedMinimumDays: 14,
+			},
+			analytics: {
+				timeInRange: {
+					percentages: {
+						target: 0,
+						veryLow: 0,
+						low: 0,
+						high: 0,
+						veryHigh: 0,
+					},
+				},
+			},
+			insulinDelivery: {
+				totalBolus: 0,
+				totalBasal: 0,
+				tdd: 0,
+				bolusPercent: 0,
+				basalPercent: 0,
+			},
+			treatmentSummary: {
+				totals: {
+					food: {
+						carbs: 0,
+					},
+				},
+			},
+		},
+		last90Days: {
+			entryCount: 0,
+			periodDays: 90,
+			reliability: {
+				meetsReliabilityCriteria: false,
+				daysOfData: 0,
+				recommendedMinimumDays: 14,
+			},
+			analytics: {
+				timeInRange: {
+					percentages: {
+						target: 0,
+						veryLow: 0,
+						low: 0,
+						high: 0,
+						veryHigh: 0,
+					},
+				},
+			},
+			insulinDelivery: {
+				totalBolus: 0,
+				totalBasal: 0,
+				tdd: 0,
+				bolusPercent: 0,
+				basalPercent: 0,
+			},
+			treatmentSummary: {
+				totals: {
+					food: {
+						carbs: 0,
+					},
+				},
+			},
+		},
+	};
 });
 
 /**
@@ -193,12 +259,12 @@ export const getReportsData = query(
 		const entries = glucoseResult.data ?? [];
 
 		// Paginate boluses
-		let allBoluses: Awaited<ReturnType<typeof apiClient.boluses.getAll>>['data'] = [];
+		let allBoluses: Awaited<ReturnType<typeof apiClient.bolus.getAll>>['data'] = [];
 		let offset = 0;
 		let hasMore = true;
 
 		while (hasMore) {
-			const batch = await apiClient.boluses.getAll(startDate, endDate, pageSize, offset);
+			const batch = await apiClient.bolus.getAll(startDate, endDate, pageSize, offset);
 			allBoluses = allBoluses!.concat(batch.data ?? []);
 
 			if ((batch.data?.length ?? 0) < pageSize) {
@@ -236,24 +302,19 @@ export const getReportsData = query(
 
 		const boluses = allBoluses!;
 		const carbIntakes = allCarbIntakes!;
-		const population = DiabetesPopulation.Type1Adult; // TODO: Get from user settings
 
-		// Get summary, analysis, averaged stats, and basal data in parallel
-		const [summary, analysis, averagedStats, chartData] = await Promise.all([
-			apiClient.statistics.getMultiPeriodStatistics(),
-			apiClient.statistics.analyzeGlucoseDataExtended({
-				entries,
-				boluses,
-				carbIntakes,
-				population,
-			}),
-			apiClient.statistics.calculateAveragedStats(entries),
-			apiClient.chartData.getDashboardChartData(
-				startDate.getTime(),
-				endDate.getTime(),
-				5 // 5-minute intervals
-			),
-		]);
+		// Get basal data; statistics calls are stubbed out until the statistics client is restored
+		// TODO: statistics client removed
+		const summary = null;
+		// TODO: statistics client removed
+		const analysis = null;
+		// TODO: statistics client removed
+		const averagedStats = null;
+		const chartData = await apiClient.chartData.getDashboardChartData(
+			startDate.getTime(),
+			endDate.getTime(),
+			5 // 5-minute intervals
+		);
 
 		return {
 			entries,
@@ -304,12 +365,12 @@ export const getSiteChangeImpact = query(
 
 		// Paginate device events to get all site changes
 		const pageSize = 1000;
-		let allDeviceEvents: Awaited<ReturnType<typeof apiClient.deviceEvents.getAll>>['data'] = [];
+		let allDeviceEvents: Awaited<ReturnType<typeof apiClient.deviceEvent.getAll>>['data'] = [];
 		let offset = 0;
 		let hasMore = true;
 
 		while (hasMore) {
-			const batch = await apiClient.deviceEvents.getAll(startDate, endDate, pageSize, offset);
+			const batch = await apiClient.deviceEvent.getAll(startDate, endDate, pageSize, offset);
 			allDeviceEvents = allDeviceEvents!.concat(batch.data ?? []);
 
 			if ((batch.data?.length ?? 0) < pageSize) {
@@ -324,14 +385,8 @@ export const getSiteChangeImpact = query(
 			}
 		}
 
-		// Call the site change impact analysis endpoint
-		const analysis = await apiClient.statistics.calculateSiteChangeImpact({
-			entries,
-			deviceEvents: allDeviceEvents!,
-			hoursBeforeChange: input?.hoursBeforeChange ?? 12,
-			hoursAfterChange: input?.hoursAfterChange ?? 24,
-			bucketSizeMinutes: input?.bucketSizeMinutes ?? 30,
-		});
+		// TODO: statistics client removed
+		const analysis = null;
 
 		return {
 			analysis,

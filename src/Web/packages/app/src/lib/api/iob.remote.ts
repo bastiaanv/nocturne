@@ -1,9 +1,25 @@
 /**
  * Remote functions for IOB (Insulin on Board) data
+ *
+ * Note: IOB calculations are provided through the ChartDataClient endpoint.
+ * This file is kept for backward compatibility.
  */
-import { getRequestEvent, query } from '$app/server';
+import { query } from '$app/server';
 import { z } from 'zod';
 import { error } from '@sveltejs/kit';
+
+/**
+ * Hourly IOB data structure
+ */
+export interface HourlyIobData {
+	timeSlot: number;
+	hour: number;
+	minute: number;
+	timeLabel: string;
+	totalIOB: number;
+	bolusIOB: number;
+	basalIOB: number;
+}
 
 const hourlyIobSchema = z.object({
 	intervalMinutes: z.number().optional().default(5),
@@ -13,29 +29,16 @@ const hourlyIobSchema = z.object({
 
 /**
  * Get hourly IOB data for charting
+ *
+ * Note: This endpoint is not currently implemented in V4.
+ * IOB data should be retrieved from the chart data endpoint instead.
  */
-export const getHourlyIob = query(hourlyIobSchema, async (props) => {
-	const { locals } = getRequestEvent();
-	const { apiClient } = locals;
-
+export const getHourlyIob = query(hourlyIobSchema, async () => {
 	try {
-		const response = await apiClient.iob.getHourlyIob(
-			props.intervalMinutes,
-			props.hours,
-			props.startTime
-		);
-
-		// Transform API response to match chart data format
+		// Return empty data structure - IOB is calculated server-side
+		// and returned through the chart data endpoint
 		return {
-			data: response.data?.map((item) => ({
-				timeSlot: item.timeSlot || 0,
-				hour: item.hour || 0,
-				minute: item.minute || 0,
-				timeLabel: item.timeLabel || '',
-				totalIOB: item.totalIOB || 0,
-				bolusIOB: item.bolusIOB || 0,
-				basalIOB: item.basalIOB || 0,
-			})) || [],
+			data: [] as HourlyIobData[],
 		};
 	} catch (err) {
 		console.error('Error loading IOB data:', err);

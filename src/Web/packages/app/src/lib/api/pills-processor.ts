@@ -19,8 +19,56 @@ import type {
 	AlertLevel,
 	StatusPillsConfig
 } from '$lib/types/status-pills';
-import type { Bolus, CarbIntake, DeviceEvent, DeviceStatus, Profile } from '$lib/api';
+import type { Bolus, CarbIntake, DeviceEvent } from '$lib/api';
 import { DeviceEventType } from '$lib/api';
+
+/**
+ * DeviceStatus represents device state data from Loop, OpenAPS, or pump systems
+ * Contains nested structures for loop, openaps, and pump data
+ */
+export interface DeviceStatus {
+	mills?: number;
+	created_at?: string;
+	device?: string;
+	loop?: {
+		timestamp?: string;
+		name?: string;
+		iob?: { iob?: number; timestamp?: string };
+		cob?: { cob?: number; timestamp?: string };
+		enacted?: any;
+		predicted?: { values?: number[] };
+	};
+	openaps?: {
+		timestamp?: string;
+		iob?: any;
+		suggested?: any;
+		enacted?: any;
+	};
+	pump?: {
+		iob?: number | { iob?: number; bolusiob?: number };
+		bolusiob?: number;
+	};
+	connect?: any;
+}
+
+/**
+ * Profile represents therapy settings/profile data
+ * Mirrors Nightscout profile structure
+ */
+export interface Profile {
+	_id?: string;
+	defaultProfile?: string;
+	startDate?: string;
+	mills?: number;
+	created_at?: string;
+	units?: string;
+	store?: Record<string, any>;
+	enteredBy?: string;
+	loopSettings?: any;
+	isExternallyManaged?: boolean;
+	icon?: string;
+	timezone?: string;
+}
 
 // Re-export the default config
 export { DEFAULT_PILLS_CONFIG } from '$lib/types/status-pills';

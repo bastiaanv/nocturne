@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { page } from "$app/state";
+  import { goto } from "$app/navigation";
   import { Button } from "$lib/components/ui/button";
   import * as Card from "$lib/components/ui/card";
   import { Input } from "$lib/components/ui/input";
@@ -17,29 +19,20 @@
     approveDeviceForm,
     denyDeviceForm,
   } from "../oauth.remote";
+  import { getOAuthScopeDescription } from "$lib/constants/oauth-scopes";
 
-  const { data } = $props();
+  // Auth guard: redirect to login if not authenticated
+  $effect(() => {
+    if (!page.data.isAuthenticated) {
+      const returnUrl = encodeURIComponent(page.url.pathname + page.url.search);
+      goto(`/auth/login?returnUrl=${returnUrl}`, { replaceState: true });
+    }
+  });
 
-  /** Human-readable descriptions for each OAuth scope. */
-  const scopeDescriptions: Record<string, string> = {
-    "entries.read": "View your glucose readings",
-    "entries.readwrite": "View and record glucose readings",
-    "treatments.read": "View your treatments",
-    "treatments.readwrite": "View and record treatments",
-    "devicestatus.read": "View device status",
-    "devicestatus.readwrite": "View and update device status",
-    "profile.read": "View your profile settings",
-    "profile.readwrite": "View and update profile settings",
-    "notifications.read": "View notifications",
-    "notifications.readwrite": "Manage notifications",
-    "reports.read": "View reports and analytics",
-    "identity.read": "View basic account info",
-    "sharing.readwrite": "Manage sharing settings",
-    "health.read": "View all health data (read-only)",
-    "*": "Full access including delete",
-  };
+  // Read the prefilled code from URL instead of server data
+  const prefilledCode = $derived(page.url.searchParams.get("user_code") ?? "");
 
-  let codeInput = $state(data.prefilledCode ?? "");
+  let codeInput = $state(prefilledCode);
 
   // Get device info from lookup form result
   const deviceInfo = $derived(
@@ -158,7 +151,7 @@
               <li class="flex items-start gap-3 text-sm">
                 <Check class="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <span class="text-muted-foreground">
-                  {scopeDescriptions[scope] ?? scope}
+                  {getOAuthScopeDescription(scope)}
                 </span>
               </li>
             {/each}

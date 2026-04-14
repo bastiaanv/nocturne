@@ -20,8 +20,11 @@
   } from "lucide-svelte";
   import * as Alert from "$lib/components/ui/alert";
   import * as tenantRemote from "$api/generated/tenants.generated.remote";
-  import { getMultitenancyInfo } from "$api/generated/metadatas.generated.remote";
   import type { TenantDetailDto } from "$api";
+  import { getCurrentTenantId } from "../../current-tenant.remote";
+
+  const tenantIdQuery = $derived(getCurrentTenantId());
+  const currentTenantId = $derived(tenantIdQuery.current ?? undefined);
 
   // State
   let loading = $state(true);
@@ -35,15 +38,16 @@
   let editSaving = $state(false);
 
   async function loadTenant() {
+    if (!currentTenantId) {
+      loadError = "Could not determine the current tenant.";
+      loading = false;
+      return;
+    }
+
     loading = true;
     loadError = null;
     try {
-      const mtInfo = await getMultitenancyInfo();
-      if (!mtInfo?.currentTenantId) {
-        loadError = "Could not determine the current tenant.";
-        return;
-      }
-      tenant = await tenantRemote.getById(mtInfo.currentTenantId);
+      tenant = await tenantRemote.getById(currentTenantId);
     } catch {
       loadError = "Failed to load tenant details.";
     } finally {
@@ -52,7 +56,9 @@
   }
 
   $effect(() => {
-    loadTenant();
+    if (currentTenantId) {
+      loadTenant();
+    }
   });
 
   function openEditDialog() {

@@ -5,7 +5,28 @@
     formatCarbDisplay,
   } from "$lib/utils/formatting";
   import type { DayToDayDailyData } from "./types";
-  import type { TreatmentSummary as TreatmentSummaryType } from "$lib/api";
+
+  // Local type definition for treatment summary
+  interface TreatmentSummaryType {
+    id?: string;
+    mills?: number;
+    eventType?: string;
+    insulin?: number;
+    carbs?: number;
+    totals?: {
+      insulin?: {
+        bolus?: number;
+        basal?: number;
+      };
+      food?: {
+        carbs?: number;
+        protein?: number;
+        fat?: number;
+      };
+    };
+    treatmentCount?: number;
+    [key: string]: any;
+  }
 
   interface Props {
     dailyDataPoints: DayToDayDailyData[];

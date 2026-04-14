@@ -149,7 +149,24 @@ public class WellKnownController : ControllerBase
                     "urn:ietf:params:oauth:grant-type:device_code",
                 },
                 TokenEndpointAuthMethodsSupported = new[] { "none" },
-                ScopesSupported = OAuthScopes.ValidRequestScopes.OrderBy(s => s).ToArray(),
+                ScopesSupported = new[]
+                {
+                    OAuthScope.EntriesRead,
+                    OAuthScope.EntriesReadWrite,
+                    OAuthScope.TreatmentsRead,
+                    OAuthScope.TreatmentsReadWrite,
+                    OAuthScope.DeviceStatusRead,
+                    OAuthScope.DeviceStatusReadWrite,
+                    OAuthScope.ProfileRead,
+                    OAuthScope.ProfileReadWrite,
+                    OAuthScope.NotificationsRead,
+                    OAuthScope.NotificationsReadWrite,
+                    OAuthScope.ReportsRead,
+                    OAuthScope.IdentityRead,
+                    OAuthScope.SharingReadWrite,
+                    OAuthScope.HealthRead,
+                    OAuthScope.FullAccess,
+                },
                 CodeChallengeMethodsSupported = new[] { "S256" },
                 ServiceDocumentation = "https://github.com/nightscout/nocturne",
             }
@@ -233,7 +250,7 @@ public class OAuthAuthorizationServerMetadata
     public string[] ResponseTypesSupported { get; set; } = Array.Empty<string>();
     public string[] GrantTypesSupported { get; set; } = Array.Empty<string>();
     public string[] TokenEndpointAuthMethodsSupported { get; set; } = Array.Empty<string>();
-    public string[] ScopesSupported { get; set; } = Array.Empty<string>();
+    public OAuthScope[] ScopesSupported { get; set; } = Array.Empty<OAuthScope>();
     public string[] CodeChallengeMethodsSupported { get; set; } = Array.Empty<string>();
     public string? ServiceDocumentation { get; set; }
 }

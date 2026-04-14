@@ -5,7 +5,7 @@
 import { getRequestEvent, query, command } from '$app/server';
 import { z } from 'zod';
 import { error } from '@sveltejs/kit';
-import { list } from "$api/generated/clockFaces.generated.remote";
+import { list } from "$api/generated/clockfaces.generated.remote";
 
 /**
  * Get a clock face by ID for editing (requires auth, includes name)

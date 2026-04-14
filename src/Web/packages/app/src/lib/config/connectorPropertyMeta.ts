@@ -3,7 +3,50 @@
  * Maps backend ConnectorPropertyKey enum values to localized labels, descriptions, and categories.
  */
 
-import { ConnectorPropertyKey } from '$api/generated/nocturne-api-client';
+// Local type definition for connector property keys
+export enum ConnectorPropertyKey {
+  TimezoneOffset = "TimezoneOffset",
+  Enabled = "Enabled",
+  MaxRetryAttempts = "MaxRetryAttempts",
+  BatchSize = "BatchSize",
+  SyncIntervalMinutes = "SyncIntervalMinutes",
+  SyncGlucose = "SyncGlucose",
+  SyncManualBG = "SyncManualBG",
+  SyncBoluses = "SyncBoluses",
+  SyncCarbIntake = "SyncCarbIntake",
+  SyncBolusCalculations = "SyncBolusCalculations",
+  SyncNotes = "SyncNotes",
+  SyncDeviceEvents = "SyncDeviceEvents",
+  SyncStateSpans = "SyncStateSpans",
+  SyncProfiles = "SyncProfiles",
+  SyncDeviceStatus = "SyncDeviceStatus",
+  SyncActivity = "SyncActivity",
+  SyncFood = "SyncFood",
+  Username = "Username",
+  Password = "Password",
+  Email = "Email",
+  Server = "Server",
+  Region = "Region",
+  PatientId = "PatientId",
+  UserId = "UserId",
+  Url = "Url",
+  ApiSecret = "ApiSecret",
+  MaxCount = "MaxCount",
+  UseV3Api = "UseV3Api",
+  V3IncludeCgmBackfill = "V3IncludeCgmBackfill",
+  ServiceUrl = "ServiceUrl",
+  EnableMealCarbConsolidation = "EnableMealCarbConsolidation",
+  EnableTempBasalConsolidation = "EnableTempBasalConsolidation",
+  TempBasalConsolidationWindowMinutes = "TempBasalConsolidationWindowMinutes",
+  AppPlatform = "AppPlatform",
+  AppVersion = "AppVersion",
+  LookbackDays = "LookbackDays",
+  AccessToken = "AccessToken",
+  WebhookEnabled = "WebhookEnabled",
+  WebhookSecret = "WebhookSecret",
+  WriteBackEnabled = "WriteBackEnabled",
+  WriteBackBatchSize = "WriteBackBatchSize",
+}
 
 /** String key names derived from the generated enum */
 type ConnectorPropertyKeyName = keyof typeof ConnectorPropertyKey;

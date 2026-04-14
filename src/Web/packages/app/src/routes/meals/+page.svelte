@@ -26,8 +26,8 @@
     CarbIntakeFoodRequest,
     SuggestedMealMatch,
   } from "$lib/api";
-  import { getMeals } from "$api/generated/nutritions.generated.remote";
-  import { getSuggestions as getMealMatchingSuggestions, acceptMatch, dismissMatch } from "$api/generated/mealMatchings.generated.remote";
+  import { getMeals, addCarbIntakeFood, deleteCarbIntakeFood } from "$api/generated/nutritions.generated.remote";
+  import { getSuggestions as getMealMatchingSuggestions, acceptMatch, dismissMatch } from "$api/generated/mealmatchings.generated.remote";
   import { toast } from "svelte-sonner";
   import {
     TreatmentFoodSelectorDialog,
@@ -35,12 +35,12 @@
     CarbBreakdownBar,
     FoodEntryDetails,
   } from "$lib/components/treatments";
-  import { addCarbIntakeFood } from "$api/generated/nutritions.generated.remote";
+  // addCarbIntakeFood imported above
   import { getMealNameForTime } from "$lib/constants/meal-times";
   import { cn } from "$lib/utils";
   import { MealMatchReviewDialog } from "$lib/components/meal-matching";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
-  import { deleteCarbIntakeFood } from "$api/treatment-foods.remote";
+  // deleteCarbIntakeFood imported above
 
   let dateRange = $state<{ from?: string; to?: string }>({});
   let filterMode = $state<"all" | "unattributed">("all");
@@ -334,8 +334,8 @@
     isUnlinking = true;
     try {
       await deleteCarbIntakeFood({
-        carbIntakeId: meal.carbIntake.id,
-        entryId: food.id,
+        id: meal.carbIntake.id,
+        foodEntryId: food.id,
       });
       toast.success("Food unlinked");
       showUnlinkConfirm = false;

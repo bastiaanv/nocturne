@@ -10,7 +10,7 @@
   import { Check } from "lucide-svelte";
   import { CompletionReason, TrackerCategory } from "$api";
   import * as trackersRemote from "$api/generated/trackers.generated.remote";
-  import { create as createDeviceEventForm } from "$api/generated/deviceEvents.generated.remote";
+  import { create as createDeviceEventForm } from "$api/generated/deviceevents.generated.remote";
 
   interface TrackerCompletionDialogProps {
     open: boolean;

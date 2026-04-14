@@ -7,10 +7,10 @@
     type TreatmentFoodBreakdown,
     type CarbIntakeFoodRequest,
   } from "$lib/api";
-  import { deleteCarbIntakeFood } from "$api/treatment-foods.remote";
   import {
     addCarbIntakeFood,
     getCarbIntakeFoods as getCarbIntakeFoodBreakdown,
+    deleteCarbIntakeFood,
   } from "$api/generated/nutritions.generated.remote";
   import {
     TreatmentFoodSelectorDialog,
@@ -76,8 +76,8 @@
     if (!carbIntakeId || !entry.id) return;
     try {
       await deleteCarbIntakeFood({
-        carbIntakeId,
-        entryId: entry.id!,
+        id: carbIntakeId,
+        foodEntryId: entry.id!,
       });
       await loadBreakdown(carbIntakeId);
     } catch (err) {

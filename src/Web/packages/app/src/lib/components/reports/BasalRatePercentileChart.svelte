@@ -1,8 +1,18 @@
 <script lang="ts">
   import { AreaChart, Legend } from "layerchart";
   import { scaleOrdinal } from "d3-scale";
-  import type { HourlyBasalPercentileData } from "$lib/api";
   import { Layers, Loader2 } from "lucide-svelte";
+
+  // Local type definition for hourly basal percentile data
+  interface HourlyBasalPercentileData {
+    hour?: number;
+    p10?: number;
+    p25?: number;
+    median?: number;
+    p75?: number;
+    p90?: number;
+    count?: number;
+  }
 
   interface Props {
     data: HourlyBasalPercentileData[];

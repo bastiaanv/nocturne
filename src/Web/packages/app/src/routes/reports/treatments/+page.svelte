@@ -1,7 +1,13 @@
 <script lang="ts">
   import { page } from "$app/state";
 
-  import type { TreatmentSummary } from "$lib/api";
+  interface TreatmentSummary {
+    totals?: {
+      insulin?: { bolus?: number; basal?: number; scheduledBasal?: number; additionalBasal?: number };
+      food?: { carbs?: number };
+    };
+    treatmentCount?: number;
+  }
   import {
     TreatmentsDataTable,
     TreatmentEditDialog,

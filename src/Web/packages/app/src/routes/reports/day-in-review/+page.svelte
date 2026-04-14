@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import type { Bolus } from "$lib/api";
+  import type { Bolus, CarbIntake } from "$lib/api";
   import type { EntryRecord } from "$lib/constants/entry-categories";
   import * as Card from "$lib/components/ui/card";
   import * as Table from "$lib/components/ui/table";
@@ -53,10 +53,12 @@
   const dayData = $derived(dayDataResource.current);
 
   // Short aliases for deeply-nested backend data
-  const analysis = $derived(dayData?.analysis);
+  // Note: analysis, insulinDelivery, and treatmentSummary are currently null
+  // until the statistics client is migrated to use summary/retrospective clients
+  const analysis = $derived(dayData?.analysis as any);
   const basicStats = $derived(analysis?.basicStats);
-  const delivery = $derived(dayData?.insulinDelivery);
-  const summary = $derived(dayData?.treatmentSummary);
+  const delivery = $derived(dayData?.insulinDelivery as any);
+  const summary = $derived(dayData?.treatmentSummary as any);
 
   // Parse current date from URL
   const currentDate = $derived(new Date(dateParam));
@@ -174,8 +176,8 @@
     const record: EntryRecord = { kind: "bolus", data: bolus };
     const correlated: EntryRecord[] = [];
     if (bolus.correlationId) {
-      const linkedCarb = (dayData?.carbIntakes ?? []).find(
-        (c) => c.correlationId === bolus.correlationId
+      const linkedCarb = (dayData?.carbIntakes ?? [] as CarbIntake[]).find(
+        (c: CarbIntake) => c.correlationId === bolus.correlationId
       );
       if (linkedCarb) correlated.push({ kind: "carbs", data: linkedCarb });
     }
@@ -191,8 +193,8 @@
       editDialogRecord = { kind: "carbs", data: row };
       const correlated: EntryRecord[] = [];
       if (row.correlationId) {
-        const linkedBolus = (dayData?.boluses ?? []).find(
-          (b) => b.correlationId === row.correlationId
+        const linkedBolus = (dayData?.boluses ?? [] as Bolus[]).find(
+          (b: Bolus) => b.correlationId === row.correlationId
         );
         if (linkedBolus) correlated.push({ kind: "bolus", data: linkedBolus });
       }
@@ -378,7 +380,7 @@
           <div>
             <div class="text-muted-foreground">Boluses</div>
             <div class="font-medium tabular-nums">
-              {delivery?.bolusCount ?? dayData?.boluses?.filter(b => (b.insulin ?? 0) > 0).length ?? 0}
+              {delivery?.bolusCount ?? dayData?.boluses?.filter((b: Bolus) => (b.insulin ?? 0) > 0).length ?? 0}
             </div>
           </div>
         </div>

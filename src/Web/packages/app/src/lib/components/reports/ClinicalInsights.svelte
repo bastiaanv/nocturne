@@ -63,12 +63,40 @@
     Dumbbell,
     Pill,
   } from "lucide-svelte";
-  import type { GlucoseAnalytics } from "$lib/api";
   import {
     formatInsight,
     getInsightTypeFromKey,
     type FormattedInsight,
   } from "$lib/utils/insight-localization";
+
+  // Local types for glucose analytics and insights
+  interface ClinicalAssessment {
+    strengths?: Strength[];
+    priorityAreas?: PriorityArea[];
+    actionableInsights?: ActionableInsight[];
+  }
+
+  interface Strength {
+    title?: string;
+    description?: string;
+    key?: string;
+  }
+
+  interface PriorityArea {
+    title?: string;
+    description?: string;
+    key?: string;
+  }
+
+  interface ActionableInsight {
+    title?: string;
+    description?: string;
+    key?: string;
+  }
+
+  interface GlucoseAnalytics {
+    clinicalAssessment?: ClinicalAssessment;
+  }
 
   interface Insight extends FormattedInsight {
     clinicalNote?: string;
@@ -107,7 +135,7 @@
 
     // Add strengths
     if (assessment.strengths?.length) {
-      assessment.strengths.forEach((strength) => {
+      assessment.strengths.forEach((strength: Strength) => {
         const formattedInsight = formatInsight(strength, "success", "pattern", priority);
         result.push(formattedInsight);
         priority++;
@@ -116,7 +144,7 @@
 
     // Add priority areas
     if (assessment.priorityAreas?.length) {
-      assessment.priorityAreas.forEach((area) => {
+      assessment.priorityAreas.forEach((area: PriorityArea) => {
         const type = getInsightTypeFromKey(area.key ?? "", "priority");
         const formattedInsight = formatInsight(area, type, "pattern", priority);
         result.push(formattedInsight);
@@ -126,7 +154,7 @@
 
     // Add actionable insights
     if (assessment.actionableInsights?.length) {
-      assessment.actionableInsights.forEach((action) => {
+      assessment.actionableInsights.forEach((action: ActionableInsight) => {
         const type = getInsightTypeFromKey(action.key ?? "", "actionable");
         const formattedInsight = formatInsight(action, type, "pattern", priority);
         result.push(formattedInsight);

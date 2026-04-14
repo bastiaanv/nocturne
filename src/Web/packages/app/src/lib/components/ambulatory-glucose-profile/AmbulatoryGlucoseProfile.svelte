@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { AveragedStats } from "$lib/api";
   import { DEFAULT_THRESHOLDS } from "$lib/constants";
   import { AreaChart } from "layerchart";
   import { BarChart3 } from "lucide-svelte";
@@ -8,6 +7,18 @@
     timeFormat,
   } from "$lib/stores/appearance-store.svelte";
   import { convertToDisplayUnits } from "$lib/utils/formatting";
+
+  // Local type definition for averaged statistics
+  interface AveragedStats {
+    hour: number;
+    median: number;
+    percentiles?: {
+      p10: number;
+      p25: number;
+      p75: number;
+      p90: number;
+    };
+  }
 
   let {
     averagedStats,

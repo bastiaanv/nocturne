@@ -16,7 +16,7 @@
   } from "lucide-svelte";
   import { Button } from "$lib/components/ui/button";
   import { goto } from "$app/navigation";
-  import * as patientRemote from "$lib/api/generated/patientRecords.generated.remote";
+  import * as patientRemote from "$lib/api/generated/patientrecords.generated.remote";
   import * as servicesRemote from "$lib/api/generated/services.generated.remote";
   import * as profileRemote from "$lib/api/generated/profiles.generated.remote";
   import { markSetupComplete } from "./setup.remote";

@@ -1,9 +1,15 @@
 <script lang="ts">
   import { Info } from "lucide-svelte";
   import { Badge } from "$lib/components/ui/badge";
-  import type { StatisticReliability } from "$lib/api/generated/nocturne-api-client";
 
-  let { reliability }: { reliability?: StatisticReliability | null } = $props();
+  // Local type definition for statistic reliability
+  interface StatisticReliability {
+    meetsReliabilityCriteria?: boolean;
+    daysOfData?: number;
+    recommendedMinimumDays?: number;
+  }
+
+  let { reliability } = $props<{ reliability?: StatisticReliability | null }>();
 </script>
 
 {#if reliability && reliability.meetsReliabilityCriteria === false}

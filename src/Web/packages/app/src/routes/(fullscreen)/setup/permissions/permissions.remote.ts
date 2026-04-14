@@ -16,7 +16,7 @@ export const getPublicAccessConfig = query(async () => {
   // Fall back to direct API call if query cache isn't populated
   const memberList =
     members ??
-    (await getRequestEvent().locals.apiClient.memberInvites.getMembers());
+    (await getRequestEvent().locals.apiClient.memberInvite.getMembers());
   const publicMember = (memberList ?? []).find(
     (m: any) => m.name === "Public",
   );
@@ -54,7 +54,7 @@ export const getPublicAccessConfig = query(async () => {
  */
 export const getTenantRoles = query(async () => {
   const { apiClient } = getRequestEvent().locals;
-  const members = await apiClient.memberInvites.getMembers();
+  const members = await apiClient.memberInvite.getMembers();
   const roleMap = new Map<string, { id: string; slug: string; name: string }>();
   for (const m of members) {
     for (const r of m.roles ?? []) {

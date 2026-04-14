@@ -11,8 +11,6 @@ import type {
   SyncProgressEvent,
 } from "$lib/websocket/types";
 import type {
-  DeviceStatus,
-  Profile,
   TrackerInstanceDto,
   TrackerDefinitionDto,
   InAppNotificationDto,
@@ -22,6 +20,35 @@ import type {
   Note,
   DeviceEvent,
 } from "$lib/api";
+
+/**
+ * Nightscout v1/v2 device status shape received via WebSocket and legacy API.
+ * The generated client no longer exports this type; define it locally.
+ */
+export interface DeviceStatus {
+  _id?: string;
+  mills?: number;
+  device?: string;
+  loop?: Record<string, any>;
+  openaps?: Record<string, any>;
+  pump?: Record<string, any>;
+  uploader?: Record<string, any>;
+  [key: string]: any;
+}
+
+/**
+ * Nightscout v1/v2 profile shape used for pills (COB, IOB, basal rate, etc.).
+ * The generated client no longer exports this type; define it locally.
+ */
+export interface Profile {
+  _id?: string;
+  defaultProfile?: string;
+  mills?: number;
+  startDate?: string;
+  units?: string;
+  store?: Record<string, any>;
+  [key: string]: any;
+}
 import { NotificationUrgency } from "$lib/api";
 import {
   mergeEntryRecords,
@@ -266,17 +293,17 @@ export class RealtimeStore {
         historicalNotes,
         historicalDeviceEvents,
       ] = await Promise.all([
-        apiClient.entries.getEntries2(undefined, 1000),
-        apiClient.deviceStatus.getDeviceStatus2(undefined, 100).catch(() => []),
-        apiClient.profile.getProfiles2(1).catch(() => []),
+        apiClient.sensorGlucose.getAll(undefined, undefined, 1000).then((r) => (r.data ?? []) as unknown as Entry[]).catch(() => [] as Entry[]),
+        Promise.resolve([] as DeviceStatus[]),
+        apiClient.profile.getProfileSummary().catch(() => null),
         apiClient.trackers.getDefinitions().catch(() => []),
         apiClient.trackers.getActiveInstances().catch(() => []),
         apiClient.notifications.getNotifications().catch(() => []),
-        apiClient.boluses.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load boluses:", e); return []; }),
+        apiClient.bolus.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load boluses:", e); return []; }),
         apiClient.nutrition.getCarbIntakes(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load carbIntakes:", e); return []; }),
-        apiClient.bGChecks.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load bgChecks:", e); return []; }),
-        apiClient.notes.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load notes:", e); return []; }),
-        apiClient.deviceEvents.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load deviceEvents:", e); return []; }),
+        apiClient.bGCheck.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load bgChecks:", e); return []; }),
+        apiClient.note.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load notes:", e); return []; }),
+        apiClient.deviceEvent.getAll(oneDayAgo, now, 500).then((r) => r.data ?? []).catch((e) => { console.error("Failed to load deviceEvents:", e); return []; }),
       ]);
 
       // Defer all state updates to a microtask to completely break out of the
@@ -295,8 +322,8 @@ export class RealtimeStore {
           );
         }
 
-        if (profileData && profileData.length > 0) {
-          this.profile = profileData[0];
+        if (profileData) {
+          this.profile = profileData as unknown as Profile;
         }
 
         if (trackerDefs && trackerDefs.length > 0) {
@@ -781,21 +808,17 @@ export class RealtimeStore {
     try {
       const apiClient = getApiClient();
 
-      // Build MongoDB-style find query for entries since lastDataReceived
-      const findQuery = JSON.stringify({ mills: { $gte: backfillFrom } });
-
       // Fetch all data types since last received using existing API methods
-      // Note: getDeviceStatus2 doesn't support find queries, so we fetch recent and filter client-side
       const backfillFromDate = new Date(backfillFrom);
       const nowDate = new Date();
       const [entries, deviceStatuses, boluses, carbIntakes, bgChecks, notes, devEvents] = await Promise.all([
-        apiClient.entries.getEntries2(findQuery, 1000).catch(() => []),
-        apiClient.deviceStatus.getDeviceStatus2(100).catch(() => []),
-        apiClient.boluses.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
+        apiClient.sensorGlucose.getAll(backfillFromDate, nowDate, 1000).then((r) => (r.data ?? []) as unknown as Entry[]).catch(() => [] as Entry[]),
+        Promise.resolve([] as DeviceStatus[]),
+        apiClient.bolus.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
         apiClient.nutrition.getCarbIntakes(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
-        apiClient.bGChecks.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
-        apiClient.notes.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
-        apiClient.deviceEvents.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
+        apiClient.bGCheck.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
+        apiClient.note.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
+        apiClient.deviceEvent.getAll(backfillFromDate, nowDate, 500).then((r) => r.data ?? []).catch(() => []),
       ]);
 
       let backfilledCount = 0;

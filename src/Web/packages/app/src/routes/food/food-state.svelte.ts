@@ -126,8 +126,7 @@ export class FoodState {
 
 				const result = await createFood(foodToSave);
 
-				if (result.success && result.record) {
-					this.currentFood._id = result.record._id;
+				if (result.success) {
 					this.foodList.push({ ...this.currentFood });
 
 					// Update categories
@@ -207,8 +206,7 @@ export class FoodState {
 
 			const result = await createQuickPickRemote(newQuickPick);
 
-			if (result.success && result.record) {
-				newQuickPick._id = result.record._id;
+			if (result.success) {
 				this.quickPickList.unshift(newQuickPick);
 				toast.success('Quick pick created');
 				this.status = 'OK';

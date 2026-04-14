@@ -3,11 +3,11 @@
   import {
     createRule,
     updateRule,
-  } from "$api/generated/alertRules.generated.remote";
+  } from "$api/generated/alertrules.generated.remote";
   import {
     getSounds,
     deleteSound,
-  } from "$api/generated/alertSounds.generated.remote";
+  } from "$api/generated/alertcustomsounds.generated.remote";
   import type {
     AlertRuleResponse,
     AlertCustomSoundResponse,

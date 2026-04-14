@@ -1,4 +1,9 @@
-import type { DeviceStatus, Entry, Treatment } from "$lib/api";
+import type { Entry, Treatment } from "$lib/api";
+
+// Local type definition for device status
+export interface DeviceStatus {
+  [key: string]: any;
+}
 
 export interface ServerSettings {
   name?: string;

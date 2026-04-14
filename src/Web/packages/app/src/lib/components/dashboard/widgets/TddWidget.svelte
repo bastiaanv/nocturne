@@ -1,7 +1,7 @@
 <script lang="ts">
   import WidgetCard from "./WidgetCard.svelte";
   import { Text, PieChart } from "layerchart";
-  import { getMultiPeriodStatistics } from "$api";
+  import { getSummary } from "$api/reports.remote";
   import { Button } from "$lib/components/ui/button";
   import ReliabilityBadge from "$lib/components/reports/ReliabilityBadge.svelte";
 
@@ -9,7 +9,7 @@
   let showAverage = $state(false);
 
   // Fetch TDD data from backend statistics
-  const statsPromise = $derived(getMultiPeriodStatistics());
+  const statsPromise = $derived(getSummary());
 
   function toggleView() {
     showAverage = !showAverage;

@@ -6,7 +6,18 @@
 import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
 import { error } from '@sveltejs/kit';
-import { DiabetesPopulation } from '$lib/api';
+
+// DiabetesPopulation is not yet in the generated API — defined locally until the backend exposes it
+const DiabetesPopulationSchema = z.enum(['Type1Adult', 'Type1Child', 'Type2Adult', 'Type2Child', 'Pregnant', 'Other']);
+type DiabetesPopulation = z.infer<typeof DiabetesPopulationSchema>;
+const DiabetesPopulation = {
+	Type1Adult: 'Type1Adult',
+	Type1Child: 'Type1Child',
+	Type2Adult: 'Type2Adult',
+	Type2Child: 'Type2Child',
+	Pregnant: 'Pregnant',
+	Other: 'Other',
+} as const satisfies Record<string, DiabetesPopulation>;
 
 /**
  * Input schema for date range queries.
@@ -72,12 +83,12 @@ export const getIdpData = query(
 		const entries = glucoseResult.data ?? [];
 
 		// Paginate boluses
-		let allBoluses: Awaited<ReturnType<typeof apiClient.boluses.getAll>>['data'] = [];
+		let allBoluses: Awaited<ReturnType<typeof apiClient.bolus.getAll>>['data'] = [];
 		let offset = 0;
 		let hasMore = true;
 
 		while (hasMore) {
-			const batch = await apiClient.boluses.getAll(startDate, endDate, pageSize, offset);
+			const batch = await apiClient.bolus.getAll(startDate, endDate, pageSize, offset);
 			allBoluses = allBoluses!.concat(batch.data ?? []);
 
 			if ((batch.data?.length ?? 0) < pageSize) {
@@ -117,22 +128,14 @@ export const getIdpData = query(
 		const carbIntakes = allCarbIntakes!;
 		const population = DiabetesPopulation.Type1Adult; // TODO: Get from user settings
 
-		// Fetch insulin delivery stats, profile summary, extended glucose analytics,
-		// averaged stats, and basal analysis in parallel
-		const [insulinDeliveryStats, profileSummary, analysis, averagedStats, basalAnalysis, aidSystemMetrics] =
-			await Promise.all([
-				apiClient.statistics.getInsulinDeliveryStatistics(startDate, endDate),
-				apiClient.profile.getProfileSummary(startDate, endDate),
-				apiClient.statistics.analyzeGlucoseDataExtended({
-					entries,
-					boluses,
-					carbIntakes,
-					population,
-				}),
-				apiClient.statistics.calculateAveragedStats(entries),
-				apiClient.statistics.getBasalAnalysis(startDate, endDate),
-				apiClient.statistics.getAidSystemMetrics(startDate, endDate),
-			]);
+		// Fetch profile summary in parallel
+		// TODO: statistics client removed
+		const insulinDeliveryStats = null;
+		const profileSummary = await apiClient.profile.getProfileSummary(startDate, endDate);
+		const analysis = null;
+		const averagedStats = null;
+		const basalAnalysis = null;
+		const aidSystemMetrics = null;
 
 		return {
 			entries,

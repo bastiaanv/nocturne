@@ -8,7 +8,12 @@ import {
   Sparkles,
 } from "lucide-svelte";
 import type { DataSourceStatus } from "$lib/components/settings/DataSourceRow.svelte";
-import type { ConnectorStatusDto } from "$lib/api/generated/nocturne-api-client";
+
+/** Minimal connector status shape needed for display mapping */
+interface ConnectorDisplayStatus {
+  state?: string;
+  isHealthy?: boolean;
+}
 
 export function getCategoryIcon(category: string | undefined) {
   switch (category) {
@@ -30,7 +35,7 @@ export function getCategoryIcon(category: string | undefined) {
 }
 
 export function mapConnectorStatus(
-  connectorStatus: ConnectorStatusDto
+  connectorStatus: ConnectorDisplayStatus
 ): DataSourceStatus {
   if (connectorStatus.state === "Syncing") return "syncing";
   if (connectorStatus.state === "BackingOff") return "backing-off";

@@ -26,6 +26,7 @@
     ShieldAlert,
   } from "lucide-svelte";
   import { formatDate } from "$lib/utils/formatting";
+  import { getCurrentTenantId } from "../current-tenant.remote";
   import { getMembers } from "$lib/api/generated/memberinvites.generated.remote";
   import {
     listInvites,
@@ -33,7 +34,6 @@
     revokeInvite,
     removeMember,
   } from "$api/generated/tenants.generated.remote";
-  import { getMultitenancyInfo } from "$api/generated/metadatas.generated.remote";
   import { getRoles } from "$lib/api/generated/roles.generated.remote";
   import {
     setMemberRoles,
@@ -57,8 +57,8 @@
   );
 
   // Tenant
-  const multitenancyQuery = $derived(getMultitenancyInfo());
-  const tenantId = $derived(multitenancyQuery.current?.currentTenantId ?? null);
+  const tenantIdQuery = $derived(getCurrentTenantId());
+  const tenantId = $derived(tenantIdQuery.current ?? undefined);
 
   // Queries
   const membersQuery = $derived(getMembers());
@@ -217,10 +217,10 @@
     errorMessage = null;
     try {
       await Promise.all([
-        setMemberRoles({ memberId, roleIds: editingRoleIds }),
+        setMemberRoles({ id: memberId, request: { roleIds: editingRoleIds } }),
         setMemberPermissions({
-          memberId,
-          directPermissions: editingPermissions,
+          id: memberId,
+          request: { directPermissions: editingPermissions },
         }),
       ]);
       successMessage = "Member updated successfully.";

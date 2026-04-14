@@ -9,11 +9,8 @@
     type TreatmentFood,
     type Food,
   } from "$lib/api";
-  import {
-    updateCarbIntakeFood,
-    getFoodById,
-    getAllFoods,
-  } from "$api/treatment-foods.remote";
+  import { updateCarbIntakeFood } from "$api/generated/nutritions.generated.remote";
+  import { getFood as getFoodById, getFoods as getAllFoods } from "$api/generated/foods.generated.remote";
   import { toast } from "svelte-sonner";
   import { AddFoodDialog } from "$lib/components/food";
 
@@ -59,8 +56,7 @@
   let isLoadingFood = $state(false);
   let categories = $state<Record<string, Record<string, boolean>>>({});
 
-  // Form object for updating carb intake food
-  const editForm = updateCarbIntakeFood;
+  let isSubmitting = $state(false);
 
   // Initialize form when entry changes
   $effect(() => {
@@ -185,6 +181,36 @@
     open = false;
     onOpenChange(false);
   }
+
+  async function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    if (!treatmentId || !entry?.id) return;
+
+    isSubmitting = true;
+    try {
+      await updateCarbIntakeFood({
+        id: treatmentId,
+        foodEntryId: entry.id,
+        request: {
+          foodId: entry.foodId ?? null,
+          portions: submitPortions,
+          carbs: submitCarbs,
+          timeOffsetMinutes: editOffset ?? 0,
+          note: editNote.trim() || null,
+          inputMode,
+        },
+      });
+
+      toast.success("Food entry updated");
+      onSave?.();
+      resetAndClose();
+    } catch (err) {
+      console.error("Failed to update food entry:", err);
+      toast.error("Failed to update food entry");
+    } finally {
+      isSubmitting = false;
+    }
+  }
 </script>
 
 <Dialog.Root bind:open onOpenChange={(value) => !value && resetAndClose()}>
@@ -193,30 +219,7 @@
       <Dialog.Title>Edit Food Entry</Dialog.Title>
     </Dialog.Header>
 
-    <form
-      {...editForm.enhance(async ({ submit }) => {
-        await submit();
-        if (editForm.result) {
-          toast.success("Food entry updated");
-          onSave?.();
-          resetAndClose();
-        }
-      })}
-      class="space-y-4"
-    >
-      <!-- Hidden fields for IDs and computed values -->
-      <input type="hidden" name="carbIntakeId" value={treatmentId ?? ""} />
-      <input type="hidden" name="entryId" value={entry?.id ?? ""} />
-      <input type="hidden" name="foodId" value={entry?.foodId ?? ""} />
-      <input type="hidden" name="inputMode" value={inputMode} />
-      {#if submitPortions !== undefined}
-        <input type="hidden" name="portions" value={submitPortions} />
-      {/if}
-      {#if submitCarbs !== undefined}
-        <input type="hidden" name="carbs" value={submitCarbs} />
-      {/if}
-      <input type="hidden" name="timeOffsetMinutes" value={editOffset ?? 0} />
-      <input type="hidden" name="note" value={editNote.trim()} />
+    <form class="space-y-4" onsubmit={handleSubmit}>
 
       {#if entry}
         <!-- Show carbs context -->
@@ -329,8 +332,8 @@
         <Button type="button" variant="outline" onclick={resetAndClose}>
           Cancel
         </Button>
-        <Button type="submit" disabled={!!editForm.pending}>
-          {#if editForm.pending}
+        <Button type="submit" disabled={isSubmitting}>
+          {#if isSubmitting}
             <Loader2 class="mr-2 h-4 w-4 animate-spin" />
             Saving...
           {:else}

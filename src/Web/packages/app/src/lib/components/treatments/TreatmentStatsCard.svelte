@@ -1,14 +1,32 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
   import { Badge } from "$lib/components/ui/badge";
-  import type { TreatmentSummary } from "$lib/api";
   import type { EntryCategoryId } from "$lib/constants/entry-categories";
   import { ENTRY_CATEGORIES } from "$lib/constants/entry-categories";
   import { Activity } from "lucide-svelte";
   import { BolusIcon, CarbsIcon } from "$lib/components/icons";
 
+  // Local type definition for treatment summary
+  interface TreatmentSummaryData {
+    id?: string;
+    mills?: number;
+    eventType?: string;
+    insulin?: number;
+    carbs?: number;
+    totals?: {
+      insulin?: {
+        bolus?: number;
+        basal?: number;
+      };
+      food?: {
+        carbs?: number;
+      };
+    };
+    [key: string]: any;
+  }
+
   interface Props {
-    treatmentSummary: TreatmentSummary;
+    treatmentSummary: TreatmentSummaryData;
     counts: Record<EntryCategoryId | "all", number>;
     dateRange: { from: string; to: string };
   }

@@ -1,19 +1,28 @@
-import type { PageServerLoad } from "./$types";
+/**
+ * Remote function for the packing calculator tool.
+ *
+ * Fetches TDD averages and device event intervals server-side
+ */
+import { getRequestEvent, query } from "$app/server";
 import { redirect } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ locals, url }) => {
+/**
+ * Get packing hints: average TDD from 14-day daily summary,
+ * and device event change intervals from 90-day history.
+ */
+export const getPackingHints = query(async () => {
+  const { locals, url } = getRequestEvent();
+
   if (!locals.isAuthenticated) {
-    const returnUrl = url.pathname + url.search;
-    redirect(303, `/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+    throw redirect(303, `/auth/login?returnUrl=${encodeURIComponent(url.pathname + url.search)}`);
   }
 
   const { apiClient } = locals;
-
-  // Fetch 14-day daily summary for TDD average
   const now = new Date();
   const year = now.getFullYear();
   let avgTdd: number | null = null;
 
+  // Fetch 14-day daily summary for TDD average
   try {
     const summary = await apiClient.dataOverview.getDailySummary(year);
     const fourteenDaysAgo = new Date(now);
@@ -43,7 +52,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const eventIntervals: Record<string, number> = {};
 
   try {
-    const events = await apiClient.deviceEvents.getAll(
+    const events = await apiClient.deviceEvent.getAll(
       ninetyDaysAgo,
       now,
       500,
@@ -85,4 +94,4 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     avgTdd,
     eventIntervals,
   };
-};
+});

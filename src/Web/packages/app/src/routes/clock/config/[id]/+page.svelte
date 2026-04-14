@@ -8,7 +8,7 @@
   import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
   import { getDefinitions } from "$api";
   import { getByIdForEdit as getClockFaceById } from "$api/clockfaces.remote";
-  import { update as updateClockFace } from "$api/generated/clockFaces.generated.remote";
+  import { update as updateClockFace } from "$api/generated/clockfaces.generated.remote";
   import GlucoseChartCard from "$lib/components/dashboard/glucose-chart/GlucoseChartCard.svelte";
   import type { ClockElement, TrackerDefinitionDto } from "$lib/api";
 

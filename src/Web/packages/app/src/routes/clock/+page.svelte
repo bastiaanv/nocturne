@@ -16,7 +16,7 @@
     list as listClockFaces,
     create as createClockFace,
     getById as getClockFaceById,
-  } from "$api/generated/clockFaces.generated.remote";
+  } from "$api/generated/clockfaces.generated.remote";
   import ClockFaceRenderer from "$lib/components/clock/ClockFaceRenderer.svelte";
   import type { ClockFaceListItem, ClockFaceConfig } from "$lib/api";
 

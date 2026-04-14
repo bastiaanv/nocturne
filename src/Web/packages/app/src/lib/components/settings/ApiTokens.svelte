@@ -24,48 +24,17 @@
     revoke as revokeGrant,
   } from "$lib/api/generated/directgrants.generated.remote";
   import type { DirectGrantDto } from "$api";
+  import {
+    getOAuthScopeDescription,
+    OAUTH_AVAILABLE_SCOPES,
+  } from "$lib/constants/oauth-scopes";
 
   // ============================================================================
   // Constants
   // ============================================================================
 
-  /** Human-readable descriptions for each OAuth scope. */
-  const scopeDescriptions: Record<string, string> = {
-    "entries.read": "View glucose readings",
-    "entries.readwrite": "View and record glucose readings",
-    "treatments.read": "View treatments",
-    "treatments.readwrite": "View and record treatments",
-    "devicestatus.read": "View device status",
-    "devicestatus.readwrite": "View and update device status",
-    "profile.read": "View profile settings",
-    "profile.readwrite": "View and update profile settings",
-    "notifications.read": "View notifications",
-    "notifications.readwrite": "Manage notifications",
-    "reports.read": "View reports and analytics",
-    "identity.read": "View basic account info",
-    "sharing.readwrite": "Manage sharing settings",
-    "health.read": "View all health data (read-only)",
-    "*": "Full access (including delete)",
-  };
-
   /** Available scopes for API tokens. */
-  const availableScopes = [
-    "entries.read",
-    "entries.readwrite",
-    "treatments.read",
-    "treatments.readwrite",
-    "devicestatus.read",
-    "devicestatus.readwrite",
-    "profile.read",
-    "profile.readwrite",
-    "notifications.read",
-    "notifications.readwrite",
-    "reports.read",
-    "identity.read",
-    "sharing.readwrite",
-    "health.read",
-    "*",
-  ] as const;
+  const availableScopes = OAUTH_AVAILABLE_SCOPES;
 
   // ============================================================================
   // State
@@ -390,7 +359,7 @@
                     {scope}
                   </span>
                   <span class="text-muted-foreground ml-1">
-                    — {scopeDescriptions[scope] ?? scope}
+                    — {getOAuthScopeDescription(scope)}
                   </span>
                 </label>
               </div>

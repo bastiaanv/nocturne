@@ -22,48 +22,16 @@ const quickPickRecordSchema = z.object({
 
 /**
  * Get all food records and quickpicks
+ * NOTE: The backend Food CRUD API endpoints (getFood2, createFood2, updateFood2) do not exist yet.
+ * This function is a stub returning empty data until the API is implemented.
  */
 export const getFoodData = query(async () => {
-	const { locals } = getRequestEvent();
-	const { apiClient } = locals;
-
 	try {
-		const records = await apiClient.food.getFood2();
-
-		// Separate food records and quickpicks, and build categories
+		// FIXME: Backend needs to implement GET /api/v4/foods endpoint
+		// For now, return empty food database structure
 		const foodList: FoodRecord[] = [];
 		const quickPickList: QuickPickRecord[] = [];
 		const categories: Record<string, Record<string, boolean>> = {};
-
-		records.forEach((record) => {
-			if (record.type === 'food') {
-				foodList.push(record as FoodRecord);
-
-				// Build categories structure
-				const foodRecord = record;
-				if (foodRecord.category && !categories[foodRecord.category]) {
-					categories[foodRecord.category] = {};
-				}
-				if (foodRecord.category && foodRecord.subcategory) {
-					categories[foodRecord.category][foodRecord.subcategory] = true;
-				}
-			} else if (record.type === 'quickpick') {
-				const quickPickRecord = record as QuickPickRecord;
-				// Calculate carbs for quickpick
-				quickPickRecord.carbs = 0;
-				if (quickPickRecord.foods) {
-					quickPickRecord.foods.forEach((food) => {
-						quickPickRecord.carbs += food.carbs * (food.portions || 1);
-					});
-				} else {
-					quickPickRecord.foods = [];
-				}
-				quickPickList.push(quickPickRecord);
-			}
-		});
-
-		// Sort quickpicks by position
-		quickPickList.sort((a, b) => (a.position || 99999) - (b.position || 99999));
 
 		return {
 			foodList,
@@ -78,14 +46,13 @@ export const getFoodData = query(async () => {
 
 /**
  * Create a new food record
+ * NOTE: Backend Food CRUD endpoint does not exist yet.
  */
-export const createFood = command(FoodSchema, async (food) => {
-	const { locals } = getRequestEvent();
-	const { apiClient } = locals;
-
+export const createFood = command(FoodSchema, async () => {
 	try {
-		const result = await apiClient.food.createFood2(food as Food);
-		return { success: true, record: result[0] };
+		// FIXME: Backend needs to implement POST /api/v4/foods endpoint
+		console.error('createFood: API endpoint not implemented');
+		return { success: false, error: 'Food API not yet implemented' };
 	} catch (err) {
 		console.error('Error creating food:', err);
 		return { success: false, error: 'Failed to create food' };
@@ -94,18 +61,18 @@ export const createFood = command(FoodSchema, async (food) => {
 
 /**
  * Update an existing food record
+ * NOTE: Backend Food CRUD endpoint does not exist yet.
  */
 export const updateFood = command(FoodSchema, async (food) => {
-	const { locals } = getRequestEvent();
-	const { apiClient } = locals;
 	const f = food as Food;
 
 	try {
 		if (!f._id) {
 			return { success: false, error: 'Food ID is required for update' };
 		}
-		await apiClient.food.updateFood2(f._id, f);
-		return { success: true };
+		// FIXME: Backend needs to implement PUT /api/v4/foods/{id} endpoint
+		console.error('updateFood: API endpoint not implemented');
+		return { success: false, error: 'Food API not yet implemented' };
 	} catch (err) {
 		console.error('Error updating food:', err);
 		return { success: false, error: 'Failed to update food' };
@@ -137,14 +104,13 @@ export const deleteFood = command(
 
 /**
  * Create a new quickpick record
+ * NOTE: Backend Food CRUD endpoint does not exist yet.
  */
-export const createQuickPick = command(quickPickRecordSchema.omit({ _id: true }), async (quickPick) => {
-	const { locals } = getRequestEvent();
-	const { apiClient } = locals;
-
+export const createQuickPick = command(quickPickRecordSchema.omit({ _id: true }), async () => {
 	try {
-		const result = await apiClient.food.createFood2(quickPick as any);
-		return { success: true, record: result[0] };
+		// FIXME: Backend needs to implement POST /api/v4/foods endpoint
+		console.error('createQuickPick: API endpoint not implemented');
+		return { success: false, error: 'Food API not yet implemented' };
 	} catch (err) {
 		console.error('Error creating quickpick:', err);
 		return { success: false, error: 'Failed to create quickpick' };
@@ -153,17 +119,16 @@ export const createQuickPick = command(quickPickRecordSchema.omit({ _id: true })
 
 /**
  * Update an existing quickpick record
+ * NOTE: Backend Food CRUD endpoint does not exist yet.
  */
 export const updateQuickPick = command(quickPickRecordSchema, async (quickPick) => {
-	const { locals } = getRequestEvent();
-	const { apiClient } = locals;
-
 	try {
 		if (!quickPick._id) {
 			return { success: false, error: 'QuickPick ID is required for update' };
 		}
-		await apiClient.food.updateFood2(quickPick._id, quickPick as any);
-		return { success: true };
+		// FIXME: Backend needs to implement PUT /api/v4/foods/{id} endpoint
+		console.error('updateQuickPick: API endpoint not implemented');
+		return { success: false, error: 'Food API not yet implemented' };
 	} catch (err) {
 		console.error('Error updating quickpick:', err);
 		return { success: false, error: 'Failed to update quickpick' };
@@ -172,30 +137,19 @@ export const updateQuickPick = command(quickPickRecordSchema, async (quickPick) 
 
 /**
  * Batch save quickpicks (delete marked ones, update positions)
+ * NOTE: Backend Food CRUD endpoint does not exist yet.
  */
 export const saveQuickPicks = command(
 	z.object({
 		toDelete: z.array(z.string()),
 		toUpdate: z.array(quickPickRecordSchema),
 	}),
-	async ({ toDelete, toUpdate }) => {
-		const { locals } = getRequestEvent();
-		const { apiClient } = locals;
-
+	async () => {
 		try {
-			// Delete marked quickpicks
-			for (const id of toDelete) {
-				await apiClient.food.deleteFood2(id);
-			}
-
-			// Update all quickpicks
-			for (const qp of toUpdate) {
-				if (qp._id) {
-					await apiClient.food.updateFood2(qp._id, qp as any);
-				}
-			}
-
-			return { success: true };
+			// FIXME: Backend needs to implement PUT /api/v4/foods/{id} and DELETE /api/v4/foods/{id} endpoints
+			// For now, just acknowledge the request since the endpoints don't exist
+			console.error('saveQuickPicks: API endpoints not fully implemented');
+			return { success: false, error: 'Food API not yet implemented' };
 		} catch (err) {
 			console.error('Error saving quickpicks:', err);
 			return { success: false, error: 'Failed to save quickpicks' };

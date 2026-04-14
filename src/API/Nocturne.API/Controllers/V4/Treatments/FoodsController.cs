@@ -37,6 +37,81 @@ public class FoodsController : ControllerBase
         _foodService = foodService;
     }
 
+    #region Food Catalog (V4, non-legacy)
+
+    /// <summary>
+    /// List foods with optional filtering and pagination.
+    /// This is a V4 endpoint (not Nightscout-legacy) used by the meal attribution UI.
+    /// </summary>
+    [HttpGet]
+    [RemoteQuery]
+    [Authorize]
+    [ProducesResponseType(typeof(Food[]), StatusCodes.Status200OK)]
+    public async Task<ActionResult<Food[]>> GetFoods(
+        [FromQuery] string? find = null,
+        [FromQuery] int? count = null,
+        [FromQuery] int? skip = null,
+        CancellationToken ct = default)
+    {
+        var foods = await _foodService.GetFoodAsync(find, count, skip, ct);
+        return Ok(foods.ToArray());
+    }
+
+    /// <summary>
+    /// Get a single food by ID.
+    /// </summary>
+    [HttpGet("{foodId}")]
+    [RemoteQuery]
+    [Authorize]
+    [ProducesResponseType(typeof(Food), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Food>> GetFood(string foodId, CancellationToken ct = default)
+    {
+        var food = await _foodService.GetFoodByIdAsync(foodId, ct);
+        return food is null ? NotFound() : Ok(food);
+    }
+
+    /// <summary>
+    /// Create a new food record.
+    /// </summary>
+    [HttpPost]
+    [RemoteForm(Invalidates = ["GetFoods", "GetFavorites", "GetRecentFoods"])]
+    [Authorize]
+    [ProducesResponseType(typeof(Food), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<Food>> CreateFood([FromBody] Food food, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(food.Name))
+            return Problem(detail: "Name is required", statusCode: 400, title: "Bad Request");
+
+        var created = (await _foodService.CreateFoodAsync([food], ct)).ToArray();
+        var first = created.FirstOrDefault();
+        if (first is null)
+            return Problem(detail: "Failed to create food", statusCode: 500, title: "Internal Server Error");
+
+        return StatusCode(StatusCodes.Status201Created, first);
+    }
+
+    /// <summary>
+    /// Update an existing food record by ID.
+    /// </summary>
+    [HttpPut("{foodId}")]
+    [RemoteForm(Invalidates = ["GetFoods", "GetFood", "GetFavorites", "GetRecentFoods"])]
+    [Authorize]
+    [ProducesResponseType(typeof(Food), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<Food>> UpdateFood(string foodId, [FromBody] Food food, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(food.Name))
+            return Problem(detail: "Name is required", statusCode: 400, title: "Bad Request");
+
+        var updated = await _foodService.UpdateFoodAsync(foodId, food, ct);
+        return updated is null ? NotFound() : Ok(updated);
+    }
+
+    #endregion
+
     /// <summary>
     /// Get current user's favorite foods.
     /// </summary>

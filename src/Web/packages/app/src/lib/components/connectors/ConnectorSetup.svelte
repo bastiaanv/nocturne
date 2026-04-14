@@ -11,14 +11,14 @@
     SyncResult,
   } from "$lib/api/generated/nocturne-api-client";
   import {
-    getConnectorConfiguration,
-    getConnectorSchema,
-    getConnectorEffectiveConfig,
     getAllConnectorStatus,
-    setConnectorActive,
-    deleteConnectorConfiguration,
-    type JsonSchema,
-  } from "$lib/api/connectorConfig.remote";
+    getConfiguration as getConnectorConfiguration,
+    getSchema as getConnectorSchema,
+    getEffectiveConfiguration as getConnectorEffectiveConfig,
+    setActive as setConnectorActive,
+    deleteConfiguration as deleteConnectorConfiguration,
+  } from "$lib/api/generated/configurations.generated.remote";
+  import { normalizeConnectorJsonSchema, type JsonSchema } from "$lib/utils/connector-json-schema";
   import {
     saveConfiguration,
     saveSecrets,
@@ -211,7 +211,7 @@
         getConnectorCapabilities(connectorInfo.id!).catch(() => null),
       ]);
 
-      schema = schemaResult;
+      schema = normalizeConnectorJsonSchema(schemaResult, connectorInfo.id!);
       existingConfig = configResult;
       effectiveConfig = effectiveResult;
       dataSummary = summaryResult;
@@ -313,7 +313,7 @@
       if (primaryAction === "save-and-sync") {
         await setConnectorActive({
           connectorName: connectorInfo.id,
-          isActive: true,
+          request: { isActive: true },
         });
       }
 
@@ -336,22 +336,20 @@
 
     isSaving = true;
     saveMessage = null;
-
-    const result = await setConnectorActive({
-      connectorName: connectorInfo.id,
-      isActive: active,
-    });
-
-    if (result.success) {
+    try {
+      await setConnectorActive({
+        connectorName: connectorInfo.id,
+        request: { isActive: active },
+      });
       saveMessage = {
         type: "success",
         text: active ? "Connector enabled" : "Connector disabled",
       };
       await loadConnectorData(connectorInfo.id);
-    } else {
+    } catch (e) {
       saveMessage = {
         type: "error",
-        text: result.error || "Failed to update connector state",
+        text: e instanceof Error ? e.message : "Failed to update connector state",
       };
     }
 
@@ -363,10 +361,17 @@
   async function handleDeleteConfiguration() {
     if (!connectorInfo?.id) return;
 
-    const result = await deleteConnectorConfiguration(connectorInfo.id);
-    deleteConfigResult = result;
+    try {
+      const result = await deleteConnectorConfiguration(connectorInfo.id);
+      deleteConfigResult = result;
+    } catch (e) {
+      deleteConfigResult = {
+        success: false,
+        error: e instanceof Error ? e.message : "Failed to delete configuration",
+      };
+    }
 
-    if (result.success && onCancel) {
+    if (deleteConfigResult?.success && onCancel) {
       setTimeout(() => {
         onCancel!();
       }, 1500);

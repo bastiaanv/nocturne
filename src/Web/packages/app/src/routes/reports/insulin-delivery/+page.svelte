@@ -24,12 +24,33 @@
   import BasalBolusRatioChart from "$lib/components/reports/BasalBolusRatioChart.svelte";
   import InsulinDeliveryChart from "$lib/components/reports/InsulinDeliveryChart.svelte";
   import ReliabilityBadge from "$lib/components/reports/ReliabilityBadge.svelte";
-  import type { InsulinDeliveryStatistics } from "$lib/api";
-  import { getReportsData } from "$api/reports.remote";
-  import { getMultiPeriodStatistics } from "$api";
+  import { getReportsData, getSummary } from "$api/reports.remote";
   import { requireDateParamsContext } from "$lib/hooks/date-params.svelte";
   import { contextResource } from "$lib/hooks/resource-context.svelte";
   import { resource } from "runed";
+
+  interface InsulinDeliveryStatistics {
+    totalBolus?: number;
+    totalBasal?: number;
+    totalInsulin?: number;
+    totalCarbs?: number;
+    bolusCount?: number;
+    basalCount?: number;
+    basalPercent?: number;
+    bolusPercent?: number;
+    tdd?: number;
+    avgBolus?: number;
+    mealBoluses?: number;
+    correctionBoluses?: number;
+    icRatio?: number;
+    bolusesPerDay?: number;
+    dayCount?: number;
+    startDate?: string;
+    endDate?: string;
+    carbCount?: number;
+    carbBolusCount?: number;
+    reliability?: unknown;
+  }
 
   // Get shared date params from context (set by reports layout)
   // Default: 30 days for insulin delivery analysis (TDD and ratios benefit from more data)
@@ -54,7 +75,7 @@
   const multiPeriodStatsResource = resource(
     () => ({}),
     async () => {
-      return await getMultiPeriodStatistics();
+      return await getSummary();
     },
     { debounce: 100 }
   );
@@ -84,8 +105,10 @@
 
   // Get insulin stats from the appropriate period based on date range
   // Default to 30-day stats which is most commonly used for reports
-  const insulinStats = $derived(
-    multiPeriodStatsResource.current?.lastMonth?.insulinDelivery ?? defaultStats
+  const insulinStats = $derived<InsulinDeliveryStatistics>(
+    (multiPeriodStatsResource.current as Record<string, unknown> | undefined | null)
+      ?.lastMonth as InsulinDeliveryStatistics | undefined
+    ?? defaultStats
   );
 
   // Helper dates derived from backend stats

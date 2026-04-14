@@ -3,7 +3,29 @@
  * Maps insight keys to localized messages and formats them with context data
  */
 
-import { InsightKey, type LocalizedInsight } from "$lib/api";
+// Local type definition for insight keys
+export enum InsightKey {
+  TimeInRangeExcellent = "TimeInRangeExcellent",
+  NoSevereHypoglycemia = "NoSevereHypoglycemia",
+  VariabilityControlled = "VariabilityControlled",
+  AllTargetsMet = "AllTargetsMet",
+  ReduceSevereHypoglycemia = "ReduceSevereHypoglycemia",
+  ReduceHypoglycemia = "ReduceHypoglycemia",
+  IncreaseTIR = "IncreaseTIR",
+  ReduceSevereHyperglycemia = "ReduceSevereHyperglycemia",
+  ReduceVariability = "ReduceVariability",
+  TimeVeryLow = "TimeVeryLow",
+  TimeBelowRange = "TimeBelowRange",
+  TimeInRange = "TimeInRange",
+  TimeVeryHigh = "TimeVeryHigh",
+  Variability = "Variability",
+  AllTargetsAchieved = "AllTargetsAchieved",
+}
+
+export interface LocalizedInsight {
+  key?: string;
+  context?: Record<string, number>;
+}
 
 export interface FormattedInsight {
   key: string;

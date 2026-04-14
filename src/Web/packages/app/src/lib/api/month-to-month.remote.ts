@@ -1,5 +1,6 @@
 import { getRequestEvent, query } from "$app/server";
 import { z } from "zod";
+import type { SensorGlucose, Bolus, CarbIntake } from "$lib/api";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -30,12 +31,14 @@ export const getPunchCardData = query(punchCardSchema, async ({
   endDate.setHours(23, 59, 59, 999);
 
   // Fetch glucose readings, boluses, carb intakes, and daily basal/bolus ratios for the full range
-  const [glucoseResponse, bolusResponse, carbResponse, dailyBasalBolus] = await Promise.all([
+  const [glucoseResponse, bolusResponse, carbResponse] = await Promise.all([
     apiClient.sensorGlucose.getAll(startDate, endDate, 100000),
-    apiClient.boluses.getAll(startDate, endDate, 10000),
+    apiClient.bolus.getAll(startDate, endDate, 10000),
     apiClient.nutrition.getCarbIntakes(startDate, endDate, 10000),
-    apiClient.statistics.getDailyBasalBolusRatios(startDate, endDate),
   ]);
+
+  // TODO: statistics client removed
+  const dailyBasalBolus = null;
 
   const allEntries = glucoseResponse.data ?? [];
   const allBoluses = bolusResponse.data ?? [];
@@ -113,30 +116,24 @@ export const getPunchCardData = query(punchCardSchema, async ({
     const dayEnd = new Date(currentDate);
     dayEnd.setHours(23, 59, 59, 999);
 
-    const dayEntries = allEntries.filter((e) => {
+    const dayEntries = allEntries.filter((e: SensorGlucose) => {
       const entryTime = e.mills ?? 0;
       return entryTime >= dayStart.getTime() && entryTime <= dayEnd.getTime();
     });
 
-    const dayBoluses = allBoluses.filter((b) => {
+    const dayBoluses = allBoluses.filter((b: Bolus) => {
       const bolusTime = b.mills ?? 0;
       return bolusTime >= dayStart.getTime() && bolusTime <= dayEnd.getTime();
     });
 
-    const dayCarbs = allCarbs.filter((c) => {
+    const dayCarbs = allCarbs.filter((c: CarbIntake) => {
       const carbTime = c.mills ?? 0;
       return carbTime >= dayStart.getTime() && carbTime <= dayEnd.getTime();
     });
 
+    // TODO: statistics client removed
     let tirMetrics = null;
     let treatmentSummary = null;
-
-    if (dayEntries.length > 0) {
-      tirMetrics = await apiClient.statistics.calculateTimeInRange({ entries: dayEntries });
-    }
-    if (dayBoluses.length > 0 || dayCarbs.length > 0) {
-      treatmentSummary = await apiClient.statistics.calculateTreatmentSummary({ boluses: dayBoluses, carbIntakes: dayCarbs });
-    }
 
     const percentages = tirMetrics?.percentages;
     const inRangePercent = percentages?.target ?? 0;

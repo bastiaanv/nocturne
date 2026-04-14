@@ -31,7 +31,7 @@ export const getBolusesAndCarbs = query(entriesSchema, async (props) => {
   if (!from || !to) throw new Error("Invalid date range");
 
   const [bolusResponse, carbResponse] = await Promise.all([
-    apiClient.boluses.getAll(from, to, 10000),
+    apiClient.bolus.getAll(from, to, 10000),
     apiClient.nutrition.getCarbIntakes(from, to, 10000),
   ]);
 
@@ -50,7 +50,7 @@ export const getStats = query(entriesSchema, async (props) => {
 
   const [entriesResponse, bolusResponse, carbResponse] = await Promise.all([
     apiClient.sensorGlucose.getAll(from, to, 10000),
-    apiClient.boluses.getAll(from, to, 10000),
+    apiClient.bolus.getAll(from, to, 10000),
     apiClient.nutrition.getCarbIntakes(from, to, 10000),
   ]);
 
@@ -58,11 +58,7 @@ export const getStats = query(entriesSchema, async (props) => {
   const boluses = bolusResponse.data ?? [];
   const carbIntakes = carbResponse.data ?? [];
 
-  const stats = apiClient.statistics.analyzeGlucoseData({
-    entries,
-    boluses,
-    carbIntakes,
-  });
+  const stats = null; // TODO: statistics client removed
 
   return stats;
 });
@@ -80,11 +76,11 @@ export const getEntryByTreatmentId = query(treatmentIdSchema, async ({ treatment
   const { apiClient } = locals;
 
   const fetchers = [
-    { kind: "bolus" as const, fetch: () => apiClient.boluses.getById(treatmentId) },
+    { kind: "bolus" as const, fetch: () => apiClient.bolus.getById(treatmentId) },
     { kind: "carbs" as const, fetch: () => apiClient.nutrition.getCarbIntakeById(treatmentId) },
-    { kind: "bgCheck" as const, fetch: () => apiClient.bGChecks.getById(treatmentId) },
-    { kind: "note" as const, fetch: () => apiClient.notes.getById(treatmentId) },
-    { kind: "deviceEvent" as const, fetch: () => apiClient.deviceEvents.getById(treatmentId) },
+    { kind: "bgCheck" as const, fetch: () => apiClient.bGCheck.getById(treatmentId) },
+    { kind: "note" as const, fetch: () => apiClient.note.getById(treatmentId) },
+    { kind: "deviceEvent" as const, fetch: () => apiClient.deviceEvent.getById(treatmentId) },
   ];
 
   for (const { kind, fetch } of fetchers) {

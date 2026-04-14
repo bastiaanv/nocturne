@@ -27,10 +27,10 @@
     type CarbIntakeFoodRequest,
   } from "$lib/api";
   import {
-    getAllFoods,
-    createNewFood,
-    updateExistingFood,
-  } from "$api/treatment-foods.remote";
+    getFoods as getAllFoods,
+    createFood as createNewFood,
+    updateFood as updateExistingFood,
+  } from "$api/generated/foods.generated.remote";
   import {
     getFavorites as getFavoriteFoods,
     addFavorite as addFavoriteFood,
@@ -106,13 +106,63 @@
   // Track which submit action to take
   let submitAction = $state<"create" | "update" | "saveAsNew">("create");
 
-  // Form objects
-  const createForm = createNewFood;
-  const updateForm = updateExistingFood;
+  let formSaving = $state(false);
 
-  // Active form based on submit action
-  const activeForm = $derived(submitAction === "update" ? updateForm : createForm);
-  const formSaving = $derived(!!createForm.pending || !!updateForm.pending);
+  async function handleFoodFormSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    if (formSaving) return;
+
+    formSaving = true;
+    try {
+      const foodPayload: Food = {
+        _id: submitAction === "update" ? selectedFood?._id : undefined,
+        type: "food",
+        name: foodName.trim(),
+        category: foodCategory,
+        subcategory: foodSubcategory,
+        portion: foodPortion,
+        unit: foodUnit,
+        carbs: foodCarbs,
+        fat: foodFat,
+        protein: foodProtein,
+        energy: foodEnergy,
+        gi: foodGi,
+      } as Food;
+
+      if (submitAction === "create" || submitAction === "saveAsNew") {
+        const newFood = (await createNewFood(foodPayload)) as Food;
+        allFoods = [...allFoods, newFood];
+        selectedFood = newFood;
+        originalFood = { ...newFood };
+        toast.success("Food created successfully");
+
+        const request = buildFoodRequest();
+        request.foodId = newFood._id!;
+        onSubmit(request, newFood.name ?? foodName.trim());
+      } else if (submitAction === "update" && selectedFood?._id) {
+        const updated = (await updateExistingFood({
+          foodId: selectedFood._id,
+          request: foodPayload,
+        })) as Food;
+
+        const idx = allFoods.findIndex((f) => f._id === selectedFood?._id);
+        if (idx !== -1) {
+          allFoods[idx] = { ...allFoods[idx], ...updated };
+        }
+        originalFood = { ...selectedFood!, ...updated };
+        toast.success("Food updated successfully");
+
+        const request = buildFoodRequest();
+        request.foodId = selectedFood._id;
+        onSubmit(request, selectedFood?.name ?? "Food");
+      }
+    } catch (err) {
+      console.error("Failed to save food:", err);
+      toast.error("Failed to save food");
+    } finally {
+      formSaving = false;
+    }
+  }
 
   // Handle portions change - recalculate carbs
   function handlePortionsChange(value: number) {
@@ -645,46 +695,9 @@
       {:else if showForm}
         <!-- Nutritional fields form -->
         <form
-          {...activeForm.enhance(async ({ submit }) => {
-            await submit();
-            const result = activeForm.result;
-            if (result) {
-              if (submitAction === "create" || submitAction === "saveAsNew") {
-                // createNewFood returns { success, record }
-                const createResult = result as { success?: boolean; record?: Food };
-                if (createResult.success && createResult.record) {
-                  const newFood = createResult.record;
-                  allFoods = [...allFoods, newFood];
-                  selectedFood = newFood;
-                  originalFood = { ...newFood };
-                  toast.success("Food created successfully");
-
-                  const request = buildFoodRequest();
-                  request.foodId = newFood._id!;
-                  onSubmit(request, newFood.name ?? foodName.trim());
-                }
-              } else if (submitAction === "update") {
-                // updateExistingFood returns { success, record }
-                const updateResult = result as { success?: boolean; record?: Food };
-                if (updateResult.success) {
-                  // Update local state
-                  const idx = allFoods.findIndex((f) => f._id === selectedFood?._id);
-                  if (idx !== -1) {
-                    allFoods[idx] = { ...allFoods[idx], ...updateResult.record };
-                  }
-                  originalFood = { ...selectedFood!, ...updateResult.record };
-                  toast.success("Food updated successfully");
-
-                  // Add the food to treatment
-                  const request = buildFoodRequest();
-                  request.foodId = selectedFood!._id!;
-                  onSubmit(request, selectedFood?.name ?? "Food");
-                }
-              }
-            }
-          })}
           id="food-form"
           class="border-t pt-4 space-y-4"
+          onsubmit={handleFoodFormSubmit}
         >
           <!-- Hidden fields for food record -->
           <input type="hidden" name="type" value="food" />

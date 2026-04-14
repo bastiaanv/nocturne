@@ -120,9 +120,11 @@
     try {
       await updateRole({
         id: editId,
-        name: editName.trim(),
-        description: editDescription.trim() || undefined,
-        permissions: editPermissions,
+        request: {
+          name: editName.trim(),
+          description: editDescription.trim() || undefined,
+          permissions: editPermissions,
+        },
       });
       successMessage = "Role updated successfully.";
       isEditOpen = false;

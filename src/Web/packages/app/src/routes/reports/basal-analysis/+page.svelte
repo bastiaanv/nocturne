@@ -23,7 +23,6 @@
   import BasalRatePercentileChart from "$lib/components/reports/BasalRatePercentileChart.svelte";
   import InsulinDeliveryChart from "$lib/components/reports/InsulinDeliveryChart.svelte";
   import { getReportsData } from "$api/reports.remote";
-  import { getBasalAnalysis } from "$api/generated/statistics.generated.remote";
   import { requireDateParamsContext } from "$lib/hooks/date-params.svelte";
   import { contextResource } from "$lib/hooks/resource-context.svelte";
 
@@ -42,41 +41,38 @@
   const boluses = $derived(reportsResource.current?.boluses ?? []);
   const basalSeries = $derived(reportsResource.current?.basalSeries ?? []);
 
-  // Secondary query for basal analysis - use contextResource to avoid infinite loops
-  const basalAnalysisResource = contextResource(
-    () =>
-      getBasalAnalysis({
-        startDate: reportsParams.dateRangeInput.from,
-        endDate: reportsParams.dateRangeInput.to,
-      }),
-    { errorTitle: "Error Loading Basal Analysis Data" }
-  );
-
-  // Get stats and tempBasalInfo from backend response with explicit defaults
+  // Basal stats — no dedicated endpoint available; defaults used until backend exposes one
   const basalStats = $derived({
-    count: basalAnalysisResource.current?.stats?.count ?? 0,
-    avgRate: basalAnalysisResource.current?.stats?.avgRate ?? 0,
-    minRate: basalAnalysisResource.current?.stats?.minRate ?? 0,
-    maxRate: basalAnalysisResource.current?.stats?.maxRate ?? 0,
-    totalDelivered: basalAnalysisResource.current?.stats?.totalDelivered ?? 0,
+    count: 0,
+    avgRate: 0,
+    minRate: 0,
+    maxRate: 0,
+    totalDelivered: 0,
   });
 
   const tempBasalInfo = $derived({
-    total: basalAnalysisResource.current?.tempBasalInfo?.total ?? 0,
-    perDay: basalAnalysisResource.current?.tempBasalInfo?.perDay ?? 0,
-    highTemps: basalAnalysisResource.current?.tempBasalInfo?.highTemps ?? 0,
-    lowTemps: basalAnalysisResource.current?.tempBasalInfo?.lowTemps ?? 0,
-    zeroTemps: basalAnalysisResource.current?.tempBasalInfo?.zeroTemps ?? 0,
+    total: 0,
+    perDay: 0,
+    highTemps: 0,
+    lowTemps: 0,
+    zeroTemps: 0,
   });
 
-  const hourlyPercentiles = $derived(
-    basalAnalysisResource.current?.hourlyPercentiles ?? []
-  );
+  // Define the HourlyBasalPercentileData type locally (matches BasalRatePercentileChart)
+  type HourlyBasalPercentileData = {
+    hour?: number;
+    p10?: number;
+    p25?: number;
+    median?: number;
+    p75?: number;
+    p90?: number;
+    count?: number;
+  };
+
+  const hourlyPercentiles = $derived([] as HourlyBasalPercentileData[]);
 
   // Loading state for child components
-  const isLoading = $derived(
-    reportsResource.loading || basalAnalysisResource.loading
-  );
+  const isLoading = $derived(reportsResource.loading);
 </script>
 
 <svelte:head>

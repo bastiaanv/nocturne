@@ -13,11 +13,14 @@
     ShieldAlert,
     Info,
     ListChecks,
+    Loader2,
   } from "lucide-svelte";
   import SupplyCategory from "$lib/components/tools/packing/supply-category.svelte";
   import { categories } from "$lib/components/tools/packing/packing-config";
+  import { getPackingHints } from "./packing.remote";
 
-  const { data } = $props();
+  const hintsQuery = $derived(getPackingHints());
+  const hints = $derived(hintsQuery.current);
   let tripDays = $state(7);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,12 +93,12 @@
   </div>
 
   <!-- TDD Hint -->
-  {#if data.avgTdd}
+  {#if hints?.avgTdd}
     <div class="flex items-start gap-2 rounded-lg border border-border bg-muted/50 p-3 text-sm">
       <Info class="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
       <p class="text-muted-foreground">
         Your 14-day average insulin use is
-        <span class="font-semibold text-foreground">~{data.avgTdd}u/day</span>.
+        <span class="font-semibold text-foreground">~{hints.avgTdd}u/day</span>.
       </p>
     </div>
   {/if}
@@ -106,8 +109,8 @@
       config={category}
       icon={iconMap[category.icon]}
       {tripDays}
-      avgTdd={data.avgTdd}
-      eventIntervals={data.eventIntervals}
+      avgTdd={hints?.avgTdd}
+      eventIntervals={hints?.eventIntervals}
       bind:itemStates={categoryStates[ci]}
     />
   {/each}

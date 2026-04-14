@@ -15,7 +15,7 @@
 		dismissSuggestion as dismissCompressionLow,
 		deleteSuggestion as deleteCompressionLow,
 		triggerDetection as triggerCompressionLowDetection
-	} from '$api/generated/compressionLows.generated.remote';
+	} from '$api/generated/compressionlows.generated.remote';
 	import { contextResource } from '$lib/hooks/resource-context.svelte';
 	import { GlucoseChartCard } from '$lib/components/dashboard/glucose-chart';
 	import Check from 'lucide-svelte/icons/check';

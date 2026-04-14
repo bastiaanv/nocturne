@@ -30,7 +30,7 @@
     create as createBolusForm,
     update as updateBolusForm,
     remove as deleteBolus,
-  } from "$api/generated/boluses.generated.remote";
+  } from "$api/generated/bolus.generated.remote";
   import {
     createCarbIntake as createCarbIntakeForm,
     updateCarbIntake as updateCarbIntakeForm,
@@ -41,7 +41,7 @@
     create as createBGCheckForm,
     update as updateBGCheckForm,
     remove as deleteBGCheck,
-  } from "$api/generated/bgChecks.generated.remote";
+  } from "$api/generated/bgchecks.generated.remote";
   import {
     create as createNoteForm,
     update as updateNoteForm,
@@ -51,7 +51,7 @@
     create as createDeviceEventForm,
     update as updateDeviceEventForm,
     remove as deleteDeviceEvent,
-  } from "$api/generated/deviceEvents.generated.remote";
+  } from "$api/generated/deviceevents.generated.remote";
 
   interface Sections {
     bolus: Partial<Bolus> | null;

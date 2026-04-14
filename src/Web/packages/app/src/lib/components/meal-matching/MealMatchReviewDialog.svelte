@@ -4,7 +4,7 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { toast } from "svelte-sonner";
-  import { getFoodEntry, acceptMatch, dismissMatch } from "$api/generated/mealMatchings.generated.remote";
+  import { getFoodEntry, acceptMatch, dismissMatch } from "$api/generated/mealmatchings.generated.remote";
   import type {
     InAppNotificationDto,
     ConnectorFoodEntry,

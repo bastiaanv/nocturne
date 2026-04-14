@@ -10,8 +10,8 @@
   import { CalculationType } from "$lib/api";
   import type { EntryRecord } from "$lib/constants/entry-categories";
   import { ENTRY_CATEGORIES } from "$lib/constants/entry-categories";
-  import { getAll as getBolusCalculations } from "$lib/api/generated/bolusCalculations.generated.remote";
-  import { getAll as getApsSnapshots } from "$lib/api/generated/apsSnapshots.generated.remote";
+  import { getAll as getBolusCalculations } from "$lib/api/generated/boluscalculations.generated.remote";
+  import { getAll as getApsSnapshots } from "$lib/api/generated/apssnapshots.generated.remote";
   import { apsSnapshotToPrediction } from "$lib/utils/aps-snapshot-to-prediction";
   import GlucoseResponseChart from "./GlucoseResponseChart.svelte";
 

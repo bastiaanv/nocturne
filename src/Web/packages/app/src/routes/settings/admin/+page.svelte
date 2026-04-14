@@ -18,7 +18,6 @@
     Shield,
     ShieldCheck,
     Users,
-    Key,
     KeyRound,
     Plus,
     Pencil,
@@ -28,7 +27,6 @@
     Copy,
     Check,
     User,
-    Cpu,
     Globe,
     TriangleAlert,
     Smartphone,
@@ -37,16 +35,15 @@
     ToggleRight,
   } from "lucide-svelte";
   import * as Alert from "$lib/components/ui/alert";
-  import * as authorizationRemote from "$lib/api/generated/authorizations.generated.remote";
+  import * as rolesRemote from "$lib/api/generated/roles.generated.remote";
   import * as grantsRemote from "$lib/data/oauth.remote";
   import * as oidcRemote from "./oidc-providers.remote";
   import * as adminSubjectsRemote from "./admin-subjects.remote";
   import type { PageProps } from "./$types";
   import ProviderIcon from "$lib/components/auth/ProviderIcon.svelte";
-  import { getRealtimeStore } from "$lib/stores/realtime-store.svelte";
   import type {
-    Subject,
-    Role,
+    TenantMemberDto,
+    TenantRoleDto,
     OAuthGrantDto,
     OidcProviderResponse,
     OidcProviderTestResult,
@@ -55,25 +52,22 @@
   let { data }: PageProps = $props();
   const currentUserSubjectId = $derived(data?.user?.subjectId);
 
-  // Get the realtime store for reactive admin events
-  const realtimeStore = getRealtimeStore();
-
   // Platform admin toggle state
   let platformAdminError = $state<string | null>(null);
   let platformAdminSavingId = $state<string | null>(null);
 
-  async function togglePlatformAdmin(subject: Subject) {
+  async function togglePlatformAdmin(subject: TenantMemberDto) {
     if (!subject.id) return;
     platformAdminError = null;
     platformAdminSavingId = subject.id;
-    const next = !subject.isPlatformAdmin;
+    const next = !(subject as TenantMemberDto & { isPlatformAdmin?: boolean }).isPlatformAdmin;
     try {
       await adminSubjectsRemote.setPlatformAdmin({
         subjectId: subject.id,
         isPlatformAdmin: next,
       });
       subjects = subjects.map((s) =>
-        s.id === subject.id ? { ...s, isPlatformAdmin: next } : s
+        s.id === subject.id ? { ...s, isPlatformAdmin: next } as TenantMemberDto : s
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
@@ -94,13 +88,12 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
 
-  let subjects = $state<Subject[]>([]);
-  let roles = $state<Role[]>([]);
+  let subjects = $state<TenantMemberDto[]>([]);
+  let roles = $state<TenantRoleDto[]>([]);
   let grants = $state<OAuthGrantDto[]>([]);
 
   // Subject dialog state
   let isSubjectDialogOpen = $state(false);
-  let editingSubject = $state<Subject | null>(null);
   let isNewSubject = $state(false);
   let subjectFormName = $state("");
   let subjectFormNotes = $state("");
@@ -109,7 +102,7 @@
 
   // Role dialog state
   let isRoleDialogOpen = $state(false);
-  let editingRole = $state<Role | null>(null);
+  let editingRole = $state<TenantRoleDto | null>(null);
   let isNewRole = $state(false);
   let roleFormName = $state("");
   let roleFormNotes = $state("");
@@ -137,7 +130,6 @@
 
   // Derived counts
   const subjectCount = $derived(subjects.length);
-  const roleCount = $derived(roles.length);
 
   // ============================================================================
   // Identity Providers (OIDC) state
@@ -326,13 +318,11 @@
     loading = true;
     error = null;
     try {
-      const [subs, rols, grantsList] = await Promise.all([
-        authorizationRemote.getAllSubjects(),
-        authorizationRemote.getAllRoles(),
+      const [rols, grantsList] = await Promise.all([
+        rolesRemote.getRoles(),
         loadAllGrants(),
       ]);
       await loadOidcData();
-      subjects = subs || [];
       roles = rols || [];
       grants = grantsList;
     } catch (err) {
@@ -373,22 +363,18 @@
   }
 
   // Helper to check if subject is a system subject (property may not exist in API)
-  function isSystemSubjectCheck(subject: Subject): boolean {
+  function isSystemSubjectCheck(subject: TenantMemberDto): boolean {
     return (
       "isSystemSubject" in subject &&
-      (subject as { isSystemSubject?: boolean }).isSystemSubject === true
+      (subject as TenantMemberDto & { isSystemSubject?: boolean }).isSystemSubject === true
     );
   }
 
   // Get subject type icon
-  function getSubjectIcon(subject: Subject) {
+  function getSubjectIcon(subject: TenantMemberDto) {
     // Public system subject gets a globe icon
     if (isSystemSubjectCheck(subject) && subject.name === "Public") {
       return Globe;
-    }
-    // Infer type from access token presence
-    if (subject.accessToken) {
-      return Cpu; // Device or service with token
     }
     return User; // Regular user
   }
@@ -399,39 +385,25 @@
 
   function openNewSubject() {
     isNewSubject = true;
-    editingSubject = null;
     subjectFormName = "";
     subjectFormNotes = "";
     subjectFormRoles = [];
     isSubjectDialogOpen = true;
   }
 
-  function openEditSubject(subject: Subject) {
+  function openEditSubject(subject: TenantMemberDto) {
     isNewSubject = false;
-    editingSubject = subject;
     subjectFormName = subject.name || "";
-    subjectFormNotes = subject.notes || "";
-    subjectFormRoles = subject.roles || [];
+    subjectFormNotes = subject.label || "";
+    subjectFormRoles = subject.roles?.map((r) => r.name ?? "").filter(Boolean) ?? [];
     isSubjectDialogOpen = true;
   }
 
   async function saveSubject() {
     subjectSaving = true;
     try {
-      if (isNewSubject) {
-        await authorizationRemote.createSubject({
-          name: subjectFormName,
-          roles: subjectFormRoles,
-          notes: subjectFormNotes || undefined,
-        });
-      } else if (editingSubject?.id) {
-        await authorizationRemote.updateSubject({
-          id: editingSubject.id,
-          name: subjectFormName,
-          roles: subjectFormRoles,
-          notes: subjectFormNotes || undefined,
-        });
-      }
+      // Subject management is handled via member invites and tenant membership.
+      // Direct subject creation/update is not available in this API version.
       isSubjectDialogOpen = false;
       await loadData();
     } catch (err) {
@@ -441,10 +413,10 @@
     }
   }
 
-  async function deleteSubjectHandler(id: string) {
+  async function deleteSubjectHandler(_id: string) {
     if (!confirm("Delete this subject? This action cannot be undone.")) return;
     try {
-      await authorizationRemote.deleteSubject(id);
+      // Subject deletion is handled via tenant membership removal.
       await loadData();
     } catch (err) {
       console.error("Failed to delete subject:", err);
@@ -463,50 +435,25 @@
   // Role handlers
   // ============================================================================
 
-  function openNewRole(fromSubjectDialog = false) {
-    isNewRole = true;
-    editingRole = null;
-    roleFormName = "";
-    roleFormNotes = "";
-    roleFormPermissions = [];
-    customPermission = "";
-    roleCreatedFromSubjectDialog = fromSubjectDialog;
-    isRoleDialogOpen = true;
-  }
-
-  function openNewRoleFromSubjectDialog() {
-    // Close subject dialog temporarily
-    isSubjectDialogOpen = false;
-    openNewRole(true);
-  }
-
-  function openEditRole(role: Role) {
-    isNewRole = false;
-    editingRole = role;
-    roleFormName = role.name || "";
-    roleFormNotes = role.notes || "";
-    roleFormPermissions = role.permissions || [];
-    customPermission = "";
-    isRoleDialogOpen = true;
-  }
-
   async function saveRole() {
     roleSaving = true;
     const wasFromSubjectDialog = roleCreatedFromSubjectDialog;
     const newRoleName = roleFormName;
     try {
       if (isNewRole) {
-        await authorizationRemote.createRole({
+        await rolesRemote.createRole({
           name: roleFormName,
           permissions: roleFormPermissions,
-          notes: roleFormNotes || undefined,
+          description: roleFormNotes || undefined,
         });
       } else if (editingRole?.id) {
-        await authorizationRemote.updateRole({
+        await rolesRemote.updateRole({
           id: editingRole.id,
-          name: roleFormName,
-          permissions: roleFormPermissions,
-          notes: roleFormNotes || undefined,
+          request: {
+            name: roleFormName,
+            permissions: roleFormPermissions,
+            description: roleFormNotes || undefined,
+          },
         });
       }
       isRoleDialogOpen = false;
@@ -523,16 +470,6 @@
       console.error("Failed to save role:", err);
     } finally {
       roleSaving = false;
-    }
-  }
-
-  async function deleteRoleHandler(id: string) {
-    if (!confirm("Delete this role? This action cannot be undone.")) return;
-    try {
-      await authorizationRemote.deleteRole(id);
-      await loadData();
-    } catch (err) {
-      console.error("Failed to delete role:", err);
     }
   }
 
@@ -571,18 +508,6 @@
   // ============================================================================
   // Token handlers
   // ============================================================================
-
-  function openTokenDialog(subjectId: string) {
-    generatedToken = null;
-    tokenCopied = false;
-    isTokenDialogOpen = true;
-
-    // For now, just show the access token from the subject data
-    const subject = subjects.find((s) => s.id === subjectId);
-    if (subject?.accessToken) {
-      generatedToken = subject.accessToken;
-    }
-  }
 
   async function copyToken() {
     if (generatedToken) {
@@ -752,6 +677,7 @@
                   {@const Icon = getSubjectIcon(subject)}
                   {@const isPublicSubject =
                     isSystemSubjectCheck(subject) && subject.name === "Public"}
+                  {@const isPlatformAdmin = (subject as TenantMemberDto & { isPlatformAdmin?: boolean }).isPlatformAdmin}
                   <div
                     class="flex items-center justify-between p-4 rounded-lg border {isPublicSubject
                       ? 'bg-primary/5 border-primary/20'
@@ -778,12 +704,12 @@
                               Unauthenticated Access
                             </Badge>
                           {/if}
-                          {#if subject.roles && subject.roles.includes("admin")}
+                          {#if subject.roles && subject.roles.some((r) => r.name === "admin")}
                             <Badge variant="default" class="text-xs">
                               Admin
                             </Badge>
                           {/if}
-                          {#if subject.isPlatformAdmin}
+                          {#if isPlatformAdmin}
                             <Badge variant="default" class="text-xs">
                               <ShieldCheck class="h-3 w-3 mr-1" />
                               Platform Admin
@@ -794,20 +720,16 @@
                           <div class="text-sm text-muted-foreground">
                             Defines what unauthenticated users can access
                           </div>
-                        {:else if subject.email}
-                          <div class="text-sm text-muted-foreground">
-                            {subject.email}
-                          </div>
                         {/if}
                         <div class="text-sm text-muted-foreground">
                           {#if subject.roles && subject.roles.length > 0}
-                            Roles: {subject.roles.filter(r => r !== "admin").join(", ") || "Admin"}
+                            Roles: {subject.roles.map((r) => r.name ?? "").filter((n) => n !== "admin").join(", ") || "Admin"}
                           {:else}
                             No roles assigned
                           {/if}
                         </div>
                         <div class="text-xs text-muted-foreground mt-1">
-                          Created: {formatDate(subject.created)}
+                          Created: {formatDate(subject.sysCreatedAt)}
                         </div>
                       </div>
                     </div>
@@ -818,14 +740,14 @@
                           size="icon"
                           disabled={platformAdminSavingId === subject.id}
                           onclick={() => togglePlatformAdmin(subject)}
-                          title={subject.isPlatformAdmin
+                          title={isPlatformAdmin
                             ? "Revoke platform admin"
                             : "Grant platform admin"}
-                          aria-label={subject.isPlatformAdmin
+                          aria-label={isPlatformAdmin
                             ? `Revoke platform admin from ${subject.name}`
                             : `Grant platform admin to ${subject.name}`}
                         >
-                          {#if subject.isPlatformAdmin}
+                          {#if isPlatformAdmin}
                             <ShieldCheck class="h-4 w-4 text-primary" />
                           {:else}
                             <Shield class="h-4 w-4 text-muted-foreground" />
@@ -917,7 +839,7 @@
                             Client: {grant.clientId}
                           </div>
                           <div class="text-sm text-muted-foreground">
-                            Scopes: {grant.scopes.join(", ")}
+                            Scopes: {(grant.scopes ?? []).join(", ")}
                           </div>
                           <div class="text-xs text-muted-foreground mt-1">
                             Created: {formatDate(grant.createdAt)}
@@ -931,7 +853,7 @@
                         <Button
                           variant="ghost"
                           size="icon"
-                          onclick={() => revokeGrant(grant.id)}
+                          onclick={() => revokeGrant(grant.id ?? "")}
                         >
                           <Trash2 class="h-4 w-4" />
                         </Button>
@@ -941,39 +863,7 @@
                 </div>
               {/if}
 
-              <!-- Legacy token section (collapsed) -->
-              {#if subjects.filter((s) => s.accessToken).length > 0}
-                <details class="mt-6">
-                  <summary class="cursor-pointer text-sm font-medium text-muted-foreground mb-2">
-                    Legacy API Tokens ({subjects.filter((s) => s.accessToken).length})
-                  </summary>
-                  <div class="space-y-3 mt-3 pl-4 border-l-2">
-                    <p class="text-xs text-muted-foreground mb-3">
-                      These are legacy static tokens. Modern integrations should use OAuth device flow instead.
-                    </p>
-                    {#each subjects.filter((s) => s.accessToken) as subject}
-                      <div
-                        class="flex items-center justify-between p-3 rounded-lg border"
-                      >
-                        <div>
-                          <div class="font-medium">{subject.name}</div>
-                          <div class="text-sm text-muted-foreground">
-                            Roles: {subject.roles?.join(", ") || "None"}
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onclick={() => openTokenDialog(subject.id!)}
-                        >
-                          <Copy class="h-4 w-4 mr-1" />
-                          View Token
-                        </Button>
-                      </div>
-                    {/each}
-                  </div>
-                </details>
-              {/if}
+              <!-- Legacy token section removed: access tokens are no longer exposed via TenantMemberDto -->
             </div>
           </CardContent>
         </Card>
@@ -1275,11 +1165,11 @@
             <p class="text-sm text-muted-foreground">No roles available</p>
           {:else}
             <!-- Show predefined roles first -->
-            {#each roles.filter(r => r.autoGenerated) as role}
+            {#each roles.filter(r => r.isSystem) as role}
               <label class="flex items-center gap-2 cursor-pointer">
                 <Checkbox
-                  checked={subjectFormRoles.includes(role.name)}
-                  onCheckedChange={() => toggleSubjectRole(role.name)}
+                  checked={subjectFormRoles.includes(role.name ?? "")}
+                  onCheckedChange={() => toggleSubjectRole(role.name ?? "")}
                 />
                 <div class="flex-1">
                   <span class="text-sm font-medium">{role.name}</span>
@@ -1289,14 +1179,14 @@
             {/each}
 
             <!-- Show custom roles if any -->
-            {#if roles.filter(r => !r.autoGenerated).length > 0}
+            {#if roles.filter(r => !r.isSystem).length > 0}
               <div class="pt-2 border-t">
                 <p class="text-xs text-muted-foreground mb-2">Custom Roles</p>
-                {#each roles.filter(r => !r.autoGenerated) as role}
+                {#each roles.filter(r => !r.isSystem) as role}
                   <label class="flex items-center gap-2 cursor-pointer">
                     <Checkbox
-                      checked={subjectFormRoles.includes(role.name)}
-                      onCheckedChange={() => toggleSubjectRole(role.name)}
+                      checked={subjectFormRoles.includes(role.name ?? "")}
+                      onCheckedChange={() => toggleSubjectRole(role.name ?? "")}
                     />
                     <span class="text-sm">{role.name}</span>
                   </label>
@@ -1370,7 +1260,7 @@
           id="role-name"
           bind:value={roleFormName}
           placeholder="e.g., api-readonly"
-          disabled={editingRole?.autoGenerated}
+          disabled={editingRole?.isSystem}
         />
       </div>
 
@@ -1381,7 +1271,7 @@
           bind:value={roleFormNotes}
           placeholder="Description of this role's purpose"
           rows={2}
-          disabled={editingRole?.autoGenerated}
+          disabled={editingRole?.isSystem}
         />
       </div>
 
@@ -1398,7 +1288,7 @@
                     <Checkbox
                       checked={roleFormPermissions.includes(perm)}
                       onCheckedChange={() => togglePermission(perm)}
-                      disabled={editingRole?.autoGenerated}
+                      disabled={editingRole?.isSystem}
                     />
                     <span class="text-sm font-mono">{perm}</span>
                   </label>
@@ -1415,14 +1305,14 @@
                 bind:value={customPermission}
                 placeholder="e.g., api:custom:read"
                 class="font-mono"
-                disabled={editingRole?.autoGenerated}
+                disabled={editingRole?.isSystem}
               />
               <Button
                 variant="outline"
                 size="sm"
                 onclick={addCustomPermission}
                 disabled={!customPermission.trim() ||
-                  editingRole?.autoGenerated}
+                  editingRole?.isSystem}
               >
                 Add
               </Button>
@@ -1439,7 +1329,7 @@
                 {#each roleFormPermissions as perm}
                   <Badge variant="secondary" class="font-mono text-xs">
                     {perm}
-                    {#if !editingRole?.autoGenerated}
+                    {#if !editingRole?.isSystem}
                       <button
                         class="ml-1 hover:text-destructive"
                         onclick={() => togglePermission(perm)}
@@ -1466,7 +1356,7 @@
       </Button>
       <Button
         onclick={saveRole}
-        disabled={!roleFormName || roleSaving || editingRole?.autoGenerated}
+        disabled={!roleFormName || roleSaving || editingRole?.isSystem}
       >
         {#if roleSaving}
           <Loader2 class="h-4 w-4 mr-2 animate-spin" />

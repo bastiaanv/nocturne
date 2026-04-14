@@ -3,7 +3,36 @@
   import { scaleOrdinal } from "d3-scale";
   import SiteChangeIcon from "$lib/components/icons/SiteChangeIcon.svelte";
   import { AlertCircle } from "lucide-svelte";
-  import type { SiteChangeImpactAnalysis } from "$lib/api";
+
+  // Local type definitions for site change impact analysis
+  interface SiteChangeImpactDataPoint {
+    minutesFromChange?: number;
+    averageGlucose?: number;
+    medianGlucose?: number;
+    stdDev?: number;
+    count?: number;
+    percentile10?: number;
+    percentile25?: number;
+    percentile75?: number;
+    percentile90?: number;
+  }
+
+  interface SiteChangeImpactSummary {
+    avgGlucoseBeforeChange?: number;
+    avgGlucoseAfterChange?: number;
+    timeInRangeBeforeChange?: number;
+    timeInRangeAfterChange?: number;
+    percentImprovement?: number;
+  }
+
+  interface SiteChangeImpactAnalysis {
+    dataPoints?: SiteChangeImpactDataPoint[];
+    summary?: SiteChangeImpactSummary;
+    hasSufficientData?: boolean;
+    siteChangeCount?: number;
+    hoursBeforeChange?: number;
+    hoursAfterChange?: number;
+  }
 
   // Local interface with required fields for chart rendering
   interface SiteChangeImpactDataPointValid {
@@ -39,7 +68,7 @@
     return analysis.dataPoints
       .filter(
         (
-          d
+          d: SiteChangeImpactDataPoint
         ): d is typeof d & {
           minutesFromChange: number;
           medianGlucose: number;
@@ -55,16 +84,16 @@
           d.percentile75 !== undefined &&
           d.percentile90 !== undefined
       )
-      .map((d) => ({
-        minutesFromChange: d.minutesFromChange,
-        averageGlucose: d.averageGlucose ?? d.medianGlucose,
-        medianGlucose: d.medianGlucose,
+      .map((d: SiteChangeImpactDataPoint) => ({
+        minutesFromChange: d.minutesFromChange!,
+        averageGlucose: d.averageGlucose ?? d.medianGlucose!,
+        medianGlucose: d.medianGlucose!,
         stdDev: d.stdDev ?? 0,
         count: d.count ?? 0,
-        percentile10: d.percentile10,
-        percentile25: d.percentile25,
-        percentile75: d.percentile75,
-        percentile90: d.percentile90,
+        percentile10: d.percentile10!,
+        percentile25: d.percentile25!,
+        percentile75: d.percentile75!,
+        percentile90: d.percentile90!,
       }));
   });
 

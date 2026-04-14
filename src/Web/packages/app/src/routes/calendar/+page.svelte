@@ -19,7 +19,6 @@
     getActiveInstances,
     getDefinitions,
     getInstanceHistory,
-    getInsulinDeliveryStatistics,
   } from "$api";
   import type { TrackerInstanceDto, TrackerDefinitionDto } from "$api";
   import {
@@ -87,16 +86,6 @@
 
   // Query for punch card data (calculations done on backend)
   const punchCardQuery = $derived(getPunchCardData(dateRangeInput));
-
-  // Query for insulin delivery statistics (TDD, carbs) from the statistics endpoint
-  const insulinStatsInput = $derived.by(() => {
-    const firstDay = new Date(currentYear, currentMonth, 1, 0, 0, 0, 0);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
-    return { startDate: firstDay, endDate: lastDay };
-  });
-  const insulinStatsQuery = $derived(
-    getInsulinDeliveryStatistics(insulinStatsInput)
-  );
 
   // Queries for trackers
   const trackersQuery = $derived(getActiveInstances());
@@ -282,17 +271,18 @@
       (m) => m.year === currentYear && m.month === currentMonth
     );
     const summary = monthData?.summary;
-    const insulinStats = insulinStatsQuery.current;
+    const days = monthData?.days ?? [];
+    const daysWithData = days.filter((d) => d.totalReadings > 0);
+    const totalCarbs = days.reduce((sum, d) => sum + (d.totalCarbs ?? 0), 0);
+    const totalInsulin = days.reduce((sum, d) => sum + (d.totalInsulin ?? 0), 0);
+    const dayCount = daysWithData.length;
 
     return {
       totalReadings: summary?.totalReadings ?? 0,
       inRangePercent: summary?.inRangePercent ?? 0,
       avgGlucose: summary?.avgGlucose ?? 0,
-      avgDailyCarbs:
-        insulinStats?.dayCount && insulinStats.dayCount > 0
-          ? (insulinStats.totalCarbs ?? 0) / insulinStats.dayCount
-          : 0,
-      tdd: insulinStats?.tdd ?? 0,
+      avgDailyCarbs: dayCount > 0 ? totalCarbs / dayCount : 0,
+      tdd: dayCount > 0 ? totalInsulin / dayCount : 0,
     };
   });
 

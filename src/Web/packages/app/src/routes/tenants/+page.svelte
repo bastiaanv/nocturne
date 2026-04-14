@@ -26,22 +26,62 @@
     createTenant,
     validateSlug,
   } from "$api/generated/mytenants.generated.remote";
-  import { getMultitenancyInfo } from "$api/generated/metadatas.generated.remote";
-  import type { TenantDto, MultitenancyInfo } from "$api";
+  import type { TenantDto } from "$api";
   import { browser } from "$app/environment";
+
+  interface MultitenancyInfo {
+    baseDomain: string | null;
+    currentTenantSlug: string | null;
+    subdomainResolution: boolean;
+    allowSelfServiceCreation: boolean;
+  }
 
   // Reactive queries
   const tenantsQuery = $derived(getMyTenants());
-  const multitenancyQuery = $derived(getMultitenancyInfo());
 
   const tenants = $derived(
     (tenantsQuery.current as TenantDto[] | undefined) ?? [],
   );
-  const mtInfo = $derived(
-    multitenancyQuery.current as MultitenancyInfo | undefined,
-  );
-  const loading = $derived(tenantsQuery.loading || multitenancyQuery.loading);
-  const queryError = $derived(tenantsQuery.error || multitenancyQuery.error);
+
+  // Derive multitenancy info from window location
+  const mtInfo = $derived.by(() => {
+    if (!browser) {
+      return {
+        baseDomain: null,
+        currentTenantSlug: null,
+        subdomainResolution: false,
+        allowSelfServiceCreation: false,
+      } as MultitenancyInfo;
+    }
+
+    const hostname = window.location.hostname;
+    const parts = hostname.split(".");
+
+    // Check if we're on a subdomain (e.g., "my-instance.nocturne.app")
+    // Assume last 2 parts are the base domain (nocturne.app)
+    let baseDomain: string | null = null;
+    let currentTenantSlug: string | null = null;
+    let subdomainResolution = false;
+
+    if (parts.length > 2 && hostname !== "localhost") {
+      currentTenantSlug = parts[0];
+      baseDomain = parts.slice(1).join(".");
+      subdomainResolution = true;
+    } else if (hostname === "localhost" || hostname.includes("127.0.0.1")) {
+      // Local development - no subdomain resolution
+      subdomainResolution = false;
+    }
+
+    return {
+      baseDomain,
+      currentTenantSlug,
+      subdomainResolution,
+      allowSelfServiceCreation: true, // Assume self-service is allowed by default
+    } as MultitenancyInfo;
+  });
+
+  const loading = $derived(tenantsQuery.loading);
+  const queryError = $derived(tenantsQuery.error);
 
   // Creation form state
   let showCreateForm = $state(false);

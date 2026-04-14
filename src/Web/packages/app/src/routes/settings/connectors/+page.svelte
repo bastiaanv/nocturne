@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { getConnectorStatuses } from "$api/services.remote";
+  import { getAllConnectorStatus } from "$api/generated/configurations.generated.remote";
   import {
-    getApiSecretStatus,
-    regenerateApiSecret as regenerateApiSecretRemote,
-  } from "$api/api-secret.remote";
+    getStatus as getApiSecretStatus,
+    regenerate as regenerateApiSecretRemote,
+  } from "$api/generated/apisecrets.generated.remote";
   import {
     getServicesOverview,
     getUploaderSetup,
@@ -23,7 +23,7 @@
     UploaderApp,
     UploaderSetupResponse,
     DataSourceInfo,
-    ConnectorStatusDto,
+    ConnectorStatusInfo,
     SyncRequest,
     SyncResult,
     AvailableConnector,
@@ -31,9 +31,39 @@
     DeduplicationJobStatus,
   } from "$lib/api/generated/nocturne-api-client";
 
-  // Extended type that includes description for UI display
-  interface ConnectorStatusWithDescription extends ConnectorStatusDto {
+  // Extended type that includes description and runtime fields for UI display.
+  // ConnectorStatusInfo has the configuration status (connectorName, isEnabled, etc.).
+  // The runtime fields (state, isHealthy, entries, etc.) are optional since they
+  // are no longer returned by the API directly.
+  interface ConnectorStatusWithDescription extends ConnectorStatusInfo {
+    /** Connector id used for sync operations (matches AvailableConnector.id) */
+    id?: string;
+    /** Display name */
+    name?: string;
+    /** Human-readable description */
     description?: string;
+    /** Runtime state: Idle, Syncing, BackingOff, Error, Configured, Disabled, Offline */
+    state?: string;
+    /** Optional message describing the current state */
+    stateMessage?: string;
+    /** Whether the connector is currently healthy */
+    isHealthy?: boolean;
+    /** Human-readable status string */
+    status?: string;
+    /** Total number of entries synced by this connector */
+    totalEntries?: number;
+    /** Number of entries synced in the last 24 hours */
+    entriesLast24Hours?: number;
+    /** Timestamp of the last entry received */
+    lastEntryTime?: Date;
+    /** Timestamp of the last sync attempt */
+    lastSyncAttempt?: Date;
+    /** Timestamp of the last successful sync */
+    lastSuccessfulSync?: Date;
+    /** Breakdown of total items by data type */
+    totalItemsBreakdown?: { [key: string]: number };
+    /** Breakdown of items in the last 24h by data type */
+    itemsLast24HoursBreakdown?: { [key: string]: number };
   }
   import {
     Card,
@@ -97,7 +127,6 @@
 
   // Demo data dialog state
   let apiSecretStatus = $state<{ hasSecret: boolean } | null>(null);
-  let canManageApiSecret = $state(false);
   let generatedSecret = $state<string | null>(null);
   let isRegeneratingSecret = $state(false);
   let showRegenerateDialog = $state(false);
@@ -154,7 +183,7 @@
   let foodOnlySyncResult = $state<SyncResult | null>(null);
 
   // Connector heartbeat metrics state
-  let connectorStatuses = $state<ConnectorStatusDto[]>([]);
+  let connectorStatuses = $state<ConnectorStatusInfo[]>([]);
   let isLoadingConnectorStatuses = $state(false);
   let selectedConnector = $state<ConnectorStatusWithDescription | null>(null);
   let selectedConnectorCapabilities = $state<ConnectorCapabilities | null>(
@@ -209,7 +238,6 @@
       const result = await getApiSecretStatus();
       if (result) {
         apiSecretStatus = { hasSecret: result.hasSecret ?? false };
-        canManageApiSecret = true;
       }
     } catch {
       // Non-admin or network error — hide the section
@@ -221,7 +249,7 @@
     generatedSecret = null;
     try {
       const result = await regenerateApiSecretRemote();
-      generatedSecret = result.apiSecret;
+      generatedSecret = result.apiSecret ?? null;
       apiSecretStatus = { hasSecret: true };
       toast.success("API secret regenerated successfully");
     } catch (e) {
@@ -252,7 +280,7 @@
   async function loadConnectorStatuses() {
     isLoadingConnectorStatuses = true;
     try {
-      connectorStatuses = await getConnectorStatuses();
+      connectorStatuses = await getAllConnectorStatus();
     } catch (e) {
       console.error("Failed to load connector statuses", e);
       connectorStatuses = [];
@@ -510,9 +538,8 @@
     showManualSyncDialog = true;
 
     const startTime = new Date();
-    const connectorsToSync = connectorStatuses.filter(
-      (c) => c.isHealthy && c.state !== "Unreachable"
-    );
+    // Sync all enabled connectors
+    const connectorsToSync = connectorStatuses.filter((c) => c.isEnabled !== false);
     const results: BatchSyncResult["connectorResults"] = [];
     let successes = 0;
 
@@ -529,7 +556,8 @@
 
       // Execute sequentially to avoid overwhelming sidecars/backend
       for (const connector of connectorsToSync) {
-        if (!connector.id) continue;
+        const connectorId = connector.connectorName;
+        if (!connectorId) continue;
 
         const start = performance.now();
         let success = false;
@@ -537,7 +565,7 @@
 
         try {
           const result = await apiClient.services.triggerConnectorSync(
-            connector.id,
+            connectorId,
             request
           );
           success = result.success ?? false;
@@ -549,7 +577,7 @@
 
         const durationMs = performance.now() - start;
         results.push({
-          connectorName: connector.name || connector.id,
+          connectorName: connectorId,
           success,
           errorMessage: errorMsg,
           duration: `${Math.round(durationMs)}ms`,
@@ -590,19 +618,14 @@
   }
 
   async function triggerGranularSync() {
-    if (!selectedConnector?.id) return;
+    const connectorId = selectedConnector?.id ?? selectedConnector?.connectorName;
+    if (!connectorId) return;
 
-    const connectorId = selectedConnector.id;
     const supportsHistoricalSync =
       selectedConnectorCapabilities?.supportsHistoricalSync ?? true;
 
     // Immediately close the dialog
     showConnectorDialog = false;
-
-    // Optimistically update the connector state to "Syncing"
-    connectorStatuses = connectorStatuses.map((c) =>
-      c.id === connectorId ? { ...c, state: "Syncing" } : c
-    );
 
     // Reset the form state
     const fromDate = granularSyncFrom;
@@ -629,7 +652,8 @@
       await loadConnectorStatuses();
 
       // If user reopens the dialog, show the result
-      if (selectedConnector?.id === connectorId) {
+      const currentId = selectedConnector?.id ?? selectedConnector?.connectorName;
+      if (currentId === connectorId) {
         granularSyncResult = result;
       }
     } catch (e) {
@@ -637,7 +661,8 @@
       await loadConnectorStatuses();
 
       // Store error in case user reopens the dialog
-      if (selectedConnector?.id === connectorId) {
+      const currentId = selectedConnector?.id ?? selectedConnector?.connectorName;
+      if (currentId === connectorId) {
         granularSyncResult = {
           success: false,
           message: e instanceof Error ? e.message : "Failed to trigger sync",
@@ -649,9 +674,8 @@
   }
 
   async function triggerFoodOnlySync() {
-    if (!selectedConnector?.id) return;
-
-    const connectorId = selectedConnector.id;
+    const connectorId = selectedConnector?.id ?? selectedConnector?.connectorName;
+    if (!connectorId) return;
     isFoodOnlySyncing = true;
     foodOnlySyncResult = null;
 
@@ -1220,31 +1244,35 @@
       <CardContent>
         <div class="grid gap-3 sm:grid-cols-2">
           {#each servicesOverview.availableConnectors ?? [] as connector}
-            {@const connectorStatus = connectorStatuses.find(
-              (cs) => cs.id === connector.id
+            {@const connectorStatusInfo = connectorStatuses.find(
+              (cs) => cs.connectorName === connector.id
             )}
-            {@const isConnected = connectorStatus?.isHealthy === true || connectorStatus?.state === "Configured"}
-            {@const isDisabledWithData =
-              connectorStatus?.state === "Disabled" &&
-              (connectorStatus?.totalEntries ?? 0) > 0}
+            {@const isConnected = connectorStatusInfo?.isEnabled === true && connectorStatusInfo?.hasDatabaseConfig === true}
+            {@const isDisabled = connectorStatusInfo?.isEnabled === false && connectorStatusInfo?.hasDatabaseConfig === true}
             {@const connectorDataSource = getConnectorDataSource(connector)}
             {@const hasData =
-              connectorDataSource !== null || isDisabledWithData}
+              connectorDataSource !== null || isDisabled}
             {@const connectorCapabilities = connector.id
               ? connectorCapabilitiesById[connector.id]
               : null}
             {@const canQuickSync =
-              (connectorStatus?.isHealthy === true || connectorStatus?.state === "Configured") &&
+              isConnected &&
               (connectorCapabilities?.supportsManualSync ?? true)}
 
-            {#if isConnected && connectorStatus}
+            {#if isConnected && connectorStatusInfo}
               <!-- Connected connector -->
+              {@const connectorStatus: ConnectorStatusWithDescription = {
+                ...connectorStatusInfo,
+                id: connector.id,
+                name: connector.name ?? connector.id,
+                description: connector.description,
+                state: "Configured",
+              }}
               <DataSourceRow
                 name={connector.name ?? connector.id ?? "Unknown"}
                 icon={getCategoryIcon(connector.category)}
                 status={syncProgressByConnector[connector.id ?? ""]?.phase === "Syncing" ? "syncing" : mapConnectorStatus(connectorStatus)}
                 syncProgress={syncProgressByConnector[connector.id ?? ""] ?? null}
-                statusMessage={!connectorStatus.isHealthy ? connectorStatus.stateMessage ?? undefined : undefined}
                 totalEntries={connectorStatus.totalEntries}
                 entriesLast24h={connectorStatus.entriesLast24Hours}
                 lastSeen={connectorStatus.lastEntryTime}
@@ -1295,42 +1323,40 @@
               </DataSourceRow>
             {:else if hasData}
               <!-- Has data but not connected/disabled -->
-              {@const entryCount = isDisabledWithData
-                ? (connectorStatus?.totalEntries ?? 0)
+              {@const entryCount = isDisabled
+                ? 0
                 : (connectorDataSource?.totalEntries ?? 0)}
-              {@const entries24h = isDisabledWithData
-                ? (connectorStatus?.entriesLast24Hours ?? 0)
+              {@const entries24h = isDisabled
+                ? 0
                 : (connectorDataSource?.entriesLast24h ?? 0)}
-              {@const lastSeenDate = isDisabledWithData
-                ? connectorStatus?.lastEntryTime
+              {@const lastSeenDate = isDisabled
+                ? undefined
                 : connectorDataSource?.lastSeen}
               <DataSourceRow
                 name={connector.name ?? connector.id ?? "Unknown"}
                 icon={getCategoryIcon(connector.category)}
-                status={isDisabledWithData ? "disabled" : "offline"}
+                status={isDisabled ? "disabled" : "offline"}
                 syncProgress={syncProgressByConnector[connector.id ?? ""] ?? null}
                 totalEntries={entryCount}
                 entriesLast24h={entries24h}
                 lastSeen={lastSeenDate}
-                totalBreakdown={isDisabledWithData ? connectorStatus?.totalItemsBreakdown ?? undefined : undefined}
-                last24hBreakdown={isDisabledWithData ? connectorStatus?.itemsLast24HoursBreakdown ?? undefined : undefined}
                 onclick={async () => {
-                  if (isDisabledWithData && connectorStatus) {
-                    selectedConnector = connectorStatus;
-                  } else {
-                    const dataSource = getConnectorDataSource(connector);
-                    selectedConnector = {
-                      id: connector.id!,
-                      name: connector.name ?? connector.id!,
-                      status: "Offline",
-                      description: connector.description,
-                      totalEntries: dataSource?.totalEntries ?? 0,
-                      lastEntryTime: dataSource?.lastSeen,
-                      entriesLast24Hours: dataSource?.entriesLast24h ?? 0,
-                      state: "Offline",
-                      isHealthy: false,
-                    };
-                  }
+                  const dataSource = getConnectorDataSource(connector);
+                  selectedConnector = {
+                    id: connector.id,
+                    connectorName: connector.id,
+                    name: connector.name ?? connector.id,
+                    status: isDisabled ? "Disabled" : "Offline",
+                    description: connector.description,
+                    totalEntries: dataSource?.totalEntries ?? 0,
+                    lastEntryTime: dataSource?.lastSeen,
+                    entriesLast24Hours: dataSource?.entriesLast24h ?? 0,
+                    state: isDisabled ? "Disabled" : "Offline",
+                    isHealthy: false,
+                    isEnabled: connectorStatusInfo?.isEnabled,
+                    hasDatabaseConfig: connectorStatusInfo?.hasDatabaseConfig,
+                    hasSecrets: connectorStatusInfo?.hasSecrets,
+                  };
                   granularSyncResult = null;
                   await loadConnectorCapabilitiesFor(connector.id);
                   showConnectorDialog = true;

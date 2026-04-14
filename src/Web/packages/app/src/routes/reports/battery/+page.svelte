@@ -22,7 +22,7 @@
     AlertTriangle,
     RefreshCw,
   } from "lucide-svelte";
-  import type { BatteryStatistics, ChargeCycle, DeviceStatus } from "$lib/api";
+  import type { BatteryStatistics, ChargeCycle, BatteryReading } from "$lib/api";
   import { getBatteryReportData } from "$api/battery.remote";
   import { requireDateParamsContext } from "$lib/hooks/date-params.svelte";
   import { contextResource } from "$lib/hooks/resource-context.svelte";
@@ -54,7 +54,7 @@
   // Derived state from resource with explicit types
   const statistics = $derived<BatteryStatistics[]>(batteryResource.current?.statistics ?? []);
   const cycles = $derived<ChargeCycle[]>(batteryResource.current?.cycles ?? []);
-  const readings = $derived<DeviceStatus[]>(batteryResource.current?.readings ?? []);
+  const readings = $derived<BatteryReading[]>(batteryResource.current?.readings ?? []);
 
   // Helper for date range display
   const dateRange = $derived({

@@ -5,8 +5,7 @@
 import { z } from 'zod';
 import { getRequestEvent, query } from '$app/server';
 import { error } from '@sveltejs/kit';
-import { getAll as getApsSnapshots } from '$api/generated/apsSnapshots.generated.remote';
-import { getInsulinDeliveryStatistics } from '$api/generated/statistics.generated.remote';
+import { getAll as getApsSnapshots } from '$api/generated/apssnapshots.generated.remote';
 import { getProfileSummary } from '$api/generated/profiles.generated.remote';
 import { getLocalDayBoundariesUtc } from '$lib/utils/timezone';
 
@@ -36,7 +35,7 @@ export const getDayInReviewData = query(
 		// Fetch v4 data + APS snapshots for historical predictions
 		const [entriesResponse, bolusResponse, carbResponse, apsResponse] = await Promise.all([
 			apiClient.sensorGlucose.getAll(dayStart, dayEnd, 10000),
-			apiClient.boluses.getAll(dayStart, dayEnd, 1000),
+			apiClient.bolus.getAll(dayStart, dayEnd, 1000),
 			apiClient.nutrition.getCarbIntakes(dayStart, dayEnd, 1000),
 			getApsSnapshots({ from: dayStart.getTime(), to: dayEnd.getTime(), limit: 1000, sort: 'timestamp_asc' }),
 		]);
@@ -46,29 +45,11 @@ export const getDayInReviewData = query(
 		const carbIntakes = carbResponse.data ?? [];
 		const apsSnapshots = apsResponse.data ?? [];
 
-		// Calculate analysis from the backend - this includes treatmentSummary
-		const analysis = entries.length > 0
-			? await apiClient.statistics.analyzeGlucoseDataExtended({
-					entries,
-					boluses,
-					carbIntakes,
-					population: 0 as const, // Type1Adult
-				})
-			: null;
-
-		// Use the treatmentSummary from analysis (if available) to avoid redundant API call
-		// The backend AnalyzeGlucoseDataExtended already calculates TreatmentSummary
-		// If no entries but we have boluses/carbIntakes, calculate treatmentSummary directly
-		const treatmentSummary = analysis?.treatmentSummary
-			?? ((boluses.length > 0 || carbIntakes.length > 0)
-				? await apiClient.statistics.calculateTreatmentSummary({ boluses, carbIntakes })
-				: null);
-
-		// Fetch insulin delivery stats (includes scheduled vs additional basal breakdown)
-		const insulinDelivery = await getInsulinDeliveryStatistics({
-			startDate: dayStart,
-			endDate: dayEnd,
-		});
+		// TODO: apiClient.statistics has been removed. These methods need to be migrated
+		// to use apiClient.summary or apiClient.retrospective clients when available.
+		const analysis = null;
+		const treatmentSummary = null;
+		const insulinDelivery = null;
 
 		return {
 			date: dateParam,

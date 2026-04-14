@@ -36,7 +36,6 @@
   const config = $derived(
     compatibilityQuery.current?.config ?? {
       nightscoutUrl: "",
-      defaultStrategy: "",
     }
   );
   const filters = $derived(
@@ -253,10 +252,6 @@
       <div>
         <p class="text-sm text-gray-500 dark:text-gray-400">Nocturne URL</p>
         <p class="font-mono text-sm">{nocturneUrl || "Auto-detecting..."}</p>
-      </div>
-      <div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Strategy</p>
-        <p class="font-mono text-sm">{config.defaultStrategy || "Unknown"}</p>
       </div>
     </div>
   </div>

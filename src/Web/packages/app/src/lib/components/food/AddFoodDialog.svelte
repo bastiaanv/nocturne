@@ -9,10 +9,7 @@
   import UnitCombobox from "./UnitCombobox.svelte";
   import GiCombobox from "./GiCombobox.svelte";
   import { DEFAULT_PORTION, DEFAULT_UNIT, DEFAULT_GI } from "./food-constants";
-  import {
-    createNewFood,
-    updateExistingFood,
-  } from "$api/treatment-foods.remote";
+  import { createFood, updateFood } from "$api/generated/foods.generated.remote";
 
   interface Props {
     /** Whether the dialog is open */
@@ -56,9 +53,7 @@
   // Track if editing existing or creating new
   let editingFoodId = $state<string | undefined>(undefined);
 
-  // Form instances (form() returns the form object directly)
-  const createForm = createNewFood;
-  const updateForm = updateExistingFood;
+  let isSaving = $state(false);
 
   // Initialize form from initialFood when dialog opens
   $effect(() => {
@@ -103,12 +98,47 @@
     onOpenChange(false);
   }
 
-  const isSaving = $derived(createForm.pending > 0 || updateForm.pending > 0);
   const canSave = $derived(foodName.trim() !== "" && !isSaving);
   const dialogTitle = $derived(editingFoodId ? "Edit Food" : "Add Food");
   const saveButtonLabel = $derived(
     isSaving ? "Saving..." : editingFoodId ? "Update" : "Create"
   );
+
+  async function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+    if (!canSave) return;
+
+    isSaving = true;
+    try {
+      const payload: Food = {
+        _id: editingFoodId,
+        type: "food",
+        name: foodName,
+        category: foodCategory,
+        subcategory: foodSubcategory,
+        portion: foodPortion,
+        unit: foodUnit,
+        carbs: foodCarbs,
+        fat: foodFat,
+        protein: foodProtein,
+        energy: foodEnergy,
+        gi: foodGi,
+      } as Food;
+
+      const result = editingFoodId
+        ? await updateFood({ foodId: editingFoodId, request: payload })
+        : await createFood(payload);
+
+      toast.success(editingFoodId ? "Food updated successfully" : "Food created successfully");
+      onSave?.(result as Food);
+      onOpenChange(false);
+    } catch (err) {
+      console.error("Failed to save food:", err);
+      toast.error("Failed to save food");
+    } finally {
+      isSaving = false;
+    }
+  }
 </script>
 
 <Dialog.Root bind:open {onOpenChange}>
@@ -123,18 +153,7 @@
     </Dialog.Header>
 
     {#if editingFoodId}
-    <form
-      {...updateForm.enhance(async ({ submit }) => {
-        await submit();
-        if (updateForm.result) {
-          toast.success("Food updated successfully");
-          onSave?.({ _id: editingFoodId, type: "food", name: foodName, category: foodCategory, subcategory: foodSubcategory, portion: foodPortion, unit: foodUnit, carbs: foodCarbs, fat: foodFat, protein: foodProtein, energy: foodEnergy, gi: foodGi } as Food);
-          onOpenChange(false);
-        } else {
-          toast.error("Failed to save food");
-        }
-      })}
-    >
+    <form onsubmit={handleSubmit}>
       <div class="space-y-4">
         <input type="hidden" name="_id" value={editingFoodId} />
         <input type="hidden" name="type" value="food" />
@@ -232,19 +251,7 @@
       </Dialog.Footer>
     </form>
     {:else}
-    <form
-      {...createForm.enhance(async ({ submit }) => {
-        await submit();
-        const res = createForm.result as { success?: boolean; record?: Food } | undefined;
-        if (res?.success && res?.record) {
-          toast.success("Food created successfully");
-          onSave?.(res.record);
-          onOpenChange(false);
-        } else {
-          toast.error("Failed to save food");
-        }
-      })}
-    >
+    <form onsubmit={handleSubmit}>
       <div class="space-y-4">
         <input type="hidden" name="type" value="food" />
         <!-- Name and Category row -->

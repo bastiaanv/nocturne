@@ -3,7 +3,17 @@
 // Re-export meal time constants
 export * from './meal-times';
 
-import type { GlycemicThresholds } from "../api";
+// Local type definition for glycemic thresholds
+export interface GlycemicThresholds {
+  low: number;
+  targetBottom: number;
+  targetTop: number;
+  tightTargetBottom: number;
+  tightTargetTop: number;
+  high: number;
+  veryLow: number;
+  veryHigh: number;
+}
 
 export const DEFAULT_THRESHOLDS: GlycemicThresholds = {
   low: 55,

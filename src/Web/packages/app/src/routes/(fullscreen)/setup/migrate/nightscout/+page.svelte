@@ -6,10 +6,8 @@
   import type { SyncResult } from "$lib/api/generated/nocturne-api-client";
 
   let migrationComplete = $state(false);
-  let syncResult = $state<SyncResult | null>(null);
 
-  function handleMigrationComplete(result: SyncResult) {
-    syncResult = result;
+  function handleMigrationComplete(_result: SyncResult) {
     migrationComplete = true;
   }
 </script>

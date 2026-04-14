@@ -1,9 +1,16 @@
 <script lang="ts">
-  import type { Profile } from "$lib/api";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import { Button } from "$lib/components/ui/button";
   import { Trash2 } from "lucide-svelte";
   import { formatDateDetailed } from "$lib/utils/formatting";
+
+  // Local type definition for profile
+  interface Profile {
+    defaultProfile?: string;
+    created_at?: string;
+    store?: Record<string, any>;
+    [key: string]: any;
+  }
 
   interface Props {
     open: boolean;

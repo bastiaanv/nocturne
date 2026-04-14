@@ -16,26 +16,8 @@
     ExternalLink,
   } from "lucide-svelte";
   import { formatDate } from "$lib/utils/formatting";
-  import { list, revoke } from "$lib/api/generated/connectedApps.generated.remote";
-
-  /** Human-readable descriptions for each OAuth scope. */
-  const scopeDescriptions: Record<string, string> = {
-    "entries.read": "View glucose readings",
-    "entries.readwrite": "View and record glucose readings",
-    "treatments.read": "View treatments",
-    "treatments.readwrite": "View and record treatments",
-    "devicestatus.read": "View device status",
-    "devicestatus.readwrite": "View and update device status",
-    "profile.read": "View profile settings",
-    "profile.readwrite": "View and update profile settings",
-    "notifications.read": "View notifications",
-    "notifications.readwrite": "Manage notifications",
-    "reports.read": "View reports and analytics",
-    "identity.read": "View basic account info",
-    "sharing.readwrite": "Manage sharing settings",
-    "health.read": "View all health data (read-only)",
-    "*": "Full access including delete",
-  };
+  import { list, revoke } from "$lib/api/generated/connectedapps.generated.remote";
+  import { getOAuthScopeDescription } from "$lib/constants/oauth-scopes";
 
   // Remote queries
   const appsQuery = $derived(list());
@@ -211,7 +193,7 @@
                 <li class="flex items-start gap-2 text-sm">
                   <Check class="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                   <span class="text-muted-foreground">
-                    {scopeDescriptions[scope] ?? scope}
+                    {getOAuthScopeDescription(scope)}
                   </span>
                 </li>
               {/each}

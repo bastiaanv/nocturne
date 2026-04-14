@@ -4,12 +4,19 @@ import type {
   Treatment,
   TrackerInstanceDto,
   InAppNotificationDto,
-  WebSocketEvents,
-  WebSocketEventsMetadata
 } from '$lib/api/generated/nocturne-api-client';
 
 // Re-export API client types for convenience
-export type { Entry, Treatment, WebSocketEvents, WebSocketEventsMetadata };
+export type { Entry, Treatment };
+
+// Local type definitions for WebSocket events
+export type WebSocketEvents = {
+  [key: string]: any;
+};
+
+export type WebSocketEventsMetadata = {
+  [key: string]: any;
+};
 
 // WebSocket connection states
 export type WebSocketConnectionStatus =

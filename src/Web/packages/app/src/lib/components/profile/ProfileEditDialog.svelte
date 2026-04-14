@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { Profile, ProfileData, TimeValue } from "$lib/api";
   import * as Dialog from "$lib/components/ui/dialog";
   import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import * as Tabs from "$lib/components/ui/tabs";
@@ -9,6 +8,25 @@
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
   import { Badge } from "$lib/components/ui/badge";
+
+  // Local type definitions for profile
+  interface Profile {
+    id?: string;
+    defaultProfile?: string;
+    created_at?: string;
+    store?: Record<string, any>;
+    [key: string]: any;
+  }
+
+  interface ProfileData {
+    [key: string]: any;
+  }
+
+  interface TimeValue {
+    time?: number;
+    value?: number;
+    [key: string]: any;
+  }
   import { BG_UNITS } from "$lib/constants/profile-icons";
   import ProfileIconPicker from "./ProfileIconPicker.svelte";
   import {

@@ -10,15 +10,11 @@
   import { Button } from "$lib/components/ui/button";
   import {
     WidgetId,
-    WidgetPlacement,
-    WidgetUICategory,
-    type WidgetDefinition,
   } from "$lib/api/generated/nocturne-api-client";
   import {
     WIDGET_ICONS,
     DEFAULT_TOP_WIDGETS,
   } from "$lib/types/dashboard-widgets";
-  import { getWidgetDefinitions } from "$api";
   import { GripVertical, LayoutGrid, Plus, X } from "lucide-svelte";
   interface Props {
     /** Currently selected widget IDs (ordered) */
@@ -44,20 +40,23 @@
     return WIDGET_ICONS[widgetId] || LayoutGrid;
   }
 
-  // UI category colors
-  function getCategoryColor(category: WidgetUICategory | undefined): string {
-    switch (category) {
-      case WidgetUICategory.Glucose:
-        return "bg-green-500/20 text-green-400";
-      case WidgetUICategory.Meals:
-        return "bg-yellow-500/20 text-yellow-400";
-      case WidgetUICategory.Device:
-        return "bg-blue-500/20 text-blue-400";
-      case WidgetUICategory.Status:
-        return "bg-purple-500/20 text-purple-400";
-      default:
-        return "bg-gray-500/20 text-gray-400";
-    }
+  // Get all available top-placement widgets
+  function getAvailableWidgets(): WidgetId[] {
+    return Object.values(WidgetId).filter(
+      (id): id is WidgetId =>
+        typeof id === 'string' && id in WIDGET_ICONS
+    );
+  }
+
+  // Get widget display name
+  function getWidgetName(id: WidgetId): string {
+    // Convert camelCase to Title Case
+    return id
+      .replace(/([A-Z])/g, ' $1')
+      .trim()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   // Drag handlers for reordering
@@ -125,28 +124,23 @@
     </CardDescription>
   </CardHeader>
   <CardContent class="space-y-4">
-    {#await getWidgetDefinitions()}
-      <div class="text-center py-8 text-muted-foreground">
-        <p class="text-sm">Loading widget definitions...</p>
-      </div>
-    {:then allDefinitions}
-      {@const topWidgetDefinitions = (allDefinitions.definitions ?? []).filter(
-        (w) => w.placement === WidgetPlacement.Top
+    {#if true}
+      {@const allAvailableWidgets = getAvailableWidgets()}
+      {@const availableWidgets = allAvailableWidgets.filter(
+        (id) => !value.includes(id)
       )}
-      {@const availableWidgets = topWidgetDefinitions.filter(
-        (w) => w.id && !value.includes(w.id)
+      {@const selectedWidgets = value.filter(
+        (id): id is WidgetId =>
+          typeof id === 'string' && id in WIDGET_ICONS
       )}
-      {@const selectedWidgets = value
-        .map((id) => topWidgetDefinitions.find((w) => w.id === id))
-        .filter((w): w is WidgetDefinition => w !== undefined)}
       {@const canAddMore = value.length < maxWidgets}
 
       <!-- Selected widgets (draggable) -->
       <div class="space-y-2">
         <span class="text-sm font-medium">Active Widgets</span>
         <div class="space-y-2">
-          {#each selectedWidgets as widget, index (widget.id)}
-            {@const Icon = getIcon(widget.id!)}
+          {#each selectedWidgets as widgetId, index (widgetId)}
+            {@const Icon = getIcon(widgetId)}
             <div
               class="flex items-center gap-2 p-3 rounded-lg border bg-card transition-all
                 {dragOverIndex === index
@@ -167,17 +161,8 @@
               </Badge>
               <Icon class="h-4 w-4 text-muted-foreground" />
               <div class="flex-1 min-w-0">
-                <div class="font-medium text-sm">{widget.name}</div>
-                <div class="text-xs text-muted-foreground truncate">
-                  {widget.description}
-                </div>
+                <div class="font-medium text-sm">{getWidgetName(widgetId)}</div>
               </div>
-              <Badge
-                variant="secondary"
-                class="text-xs {getCategoryColor(widget.uiCategory)}"
-              >
-                {widget.uiCategory}
-              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
@@ -207,39 +192,28 @@
             Available Widgets {#if !canAddMore}(max {maxWidgets} reached){/if}
           </span>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {#each availableWidgets as widget (widget.id)}
-              {@const Icon = getIcon(widget.id!)}
+            {#each availableWidgets as widgetId (widgetId)}
+              {@const Icon = getIcon(widgetId)}
               <button
                 type="button"
                 class="flex items-center gap-2 p-2 rounded-lg border border-dashed text-left transition-colors
                   {canAddMore
                   ? 'hover:border-primary hover:bg-accent cursor-pointer'
                   : 'opacity-50 cursor-not-allowed'}"
-                onclick={() => canAddMore && widget.id && addWidget(widget.id)}
+                onclick={() => canAddMore && addWidget(widgetId)}
                 disabled={!canAddMore}
               >
                 <Plus class="h-4 w-4 text-muted-foreground" />
                 <Icon class="h-4 w-4 text-muted-foreground" />
                 <div class="flex-1 min-w-0">
-                  <div class="font-medium text-sm">{widget.name}</div>
+                  <div class="font-medium text-sm">{getWidgetName(widgetId)}</div>
                 </div>
-                <Badge
-                  variant="outline"
-                  class="text-xs {getCategoryColor(widget.uiCategory)}"
-                >
-                  {widget.uiCategory}
-                </Badge>
               </button>
             {/each}
           </div>
         </div>
       {/if}
-    {:catch err}
-      <div class="text-center py-8 text-destructive">
-        <p class="text-sm">Failed to load widget definitions</p>
-        <p class="text-xs">{err.message}</p>
-      </div>
-    {/await}
+    {/if}
 
     <p class="text-xs text-muted-foreground">
       Changes are saved automatically when you leave this page.
