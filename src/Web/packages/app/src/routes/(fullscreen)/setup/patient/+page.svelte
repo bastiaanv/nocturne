@@ -26,8 +26,8 @@
   description="Tell us a bit about yourself and your diabetes. Only diabetes type is required."
   currentStep={3}
   totalSteps={8}
-  prevHref="/settings/setup/permissions"
-  nextHref="/settings/setup/devices"
+  prevHref="/setup/permissions"
+  nextHref="/setup/devices"
   {saveDisabled}
   {saving}
   onSave={handleSave}

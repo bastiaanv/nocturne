@@ -16,8 +16,8 @@
   description="Add the insulins you use. You can always update these later."
   currentStep={5}
   totalSteps={8}
-  prevHref="/settings/setup/devices"
-  nextHref="/settings/setup/uploaders"
+  prevHref="/setup/devices"
+  nextHref="/setup/uploaders"
   showSkip={true}
   saveDisabled={false}
   onSave={handleSave}

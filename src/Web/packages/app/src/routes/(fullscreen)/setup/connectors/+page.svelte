@@ -13,8 +13,8 @@
   description="Set up a server-side connector to start pulling data into Nocturne. You can always add more connectors later."
   currentStep={7}
   totalSteps={8}
-  prevHref="/settings/setup/uploaders"
-  nextHref="/settings/setup/profile"
+  prevHref="/setup/uploaders"
+  nextHref="/setup/profile"
   showSkip={true}
   saveDisabled={false}
   onSave={async () => true}

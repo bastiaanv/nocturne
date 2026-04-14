@@ -108,8 +108,8 @@
   description="Choose who can see your data. This controls the built-in Public access subject."
   currentStep={2}
   totalSteps={8}
-  prevHref="/settings/setup/passkey"
-  nextHref="/settings/setup/patient"
+  prevHref="/setup/passkey"
+  nextHref="/setup/patient"
   showSkip={true}
   {saving}
   onSave={handleSave}

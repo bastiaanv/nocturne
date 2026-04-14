@@ -102,7 +102,7 @@
   description="Create a passkey for secure, passwordless authentication. You will also receive recovery codes in case you lose access to your passkey."
   currentStep={1}
   totalSteps={8}
-  nextHref="/settings/setup/patient"
+  nextHref="/setup/patient"
   showSkip={false}
   saveDisabled={!canProceed}
   onSave={handleSave}

@@ -16,7 +16,7 @@
   </div>
 
   <div class="grid gap-4 sm:grid-cols-2">
-    <a href="/settings/setup" class="block">
+    <a href="/setup" class="block">
       <Card.Root
         class="h-full transition-colors hover:bg-muted/50 hover:border-primary/30"
       >
@@ -44,7 +44,7 @@
       </Card.Root>
     </a>
 
-    <a href="/settings/setup/migrate/nightscout" class="block">
+    <a href="/setup/migrate/nightscout" class="block">
       <Card.Root
         class="h-full transition-colors hover:bg-muted/50 hover:border-primary/30"
       >

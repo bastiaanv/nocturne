@@ -23,7 +23,7 @@
     <Button
       variant="ghost"
       size="sm"
-      href="/settings/setup/migrate"
+      href="/setup/migrate"
       class="gap-1 -ml-2 mb-4"
     >
       <ChevronLeft class="h-4 w-4" />
@@ -50,7 +50,7 @@
         </div>
       </Card.Header>
       <Card.Content class="pt-0 px-6 pb-6">
-        <Button href="/settings/setup" class="gap-2">
+        <Button href="/setup" class="gap-2">
           Continue to setup
           <ArrowRight class="h-4 w-4" />
         </Button>

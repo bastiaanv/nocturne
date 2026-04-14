@@ -53,56 +53,56 @@
       title: "Passkey",
       description: "Set up passwordless authentication with a passkey",
       icon: Fingerprint,
-      href: "/settings/setup/passkey",
+      href: "/setup/passkey",
       required: true,
     },
     {
       title: "Sharing & Privacy",
       description: "Choose who can see your data",
       icon: Shield,
-      href: "/settings/setup/permissions",
+      href: "/setup/permissions",
       required: true,
     },
     {
       title: "Patient Record",
       description: "Set your diabetes type and clinical information",
       icon: HeartPulse,
-      href: "/settings/setup/patient",
+      href: "/setup/patient",
       required: true,
     },
     {
       title: "Devices",
       description: "Add the devices you currently use",
       icon: Smartphone,
-      href: "/settings/setup/devices",
+      href: "/setup/devices",
       required: true,
     },
     {
       title: "Insulins",
       description: "Add the insulins you currently use",
       icon: Syringe,
-      href: "/settings/setup/insulins",
+      href: "/setup/insulins",
       required: true,
     },
     {
       title: "Uploaders",
       description: "Configure a phone app to push data to Nocturne",
       icon: Upload,
-      href: "/settings/setup/uploaders",
+      href: "/setup/uploaders",
       required: false,
     },
     {
       title: "Connectors",
       description: "Connect external data sources",
       icon: Plug,
-      href: "/settings/setup/connectors",
+      href: "/setup/connectors",
       required: false,
     },
     {
       title: "Therapy Profile",
       description: "Configure your basal rates and therapy settings",
       icon: Activity,
-      href: "/settings/setup/profile",
+      href: "/setup/profile",
       required: true,
     },
   ];
@@ -175,7 +175,7 @@
     </p>
   </div>
 
-  <a href="/settings/setup/migrate" class="block">
+  <a href="/setup/migrate" class="block">
     <Card.Root class="border-dashed border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
       <Card.Header class="flex flex-row items-center gap-4 space-y-0 p-4">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600">

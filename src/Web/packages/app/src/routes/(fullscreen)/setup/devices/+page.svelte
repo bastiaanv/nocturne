@@ -16,8 +16,8 @@
   description="Add the diabetes devices you use. You can always update these later."
   currentStep={4}
   totalSteps={8}
-  prevHref="/settings/setup/patient"
-  nextHref="/settings/setup/insulins"
+  prevHref="/setup/patient"
+  nextHref="/setup/insulins"
   showSkip={true}
   saveDisabled={false}
   onSave={handleSave}

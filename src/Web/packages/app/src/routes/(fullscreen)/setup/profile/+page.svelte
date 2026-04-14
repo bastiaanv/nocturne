@@ -536,7 +536,7 @@
   description="Configure your therapy profile with basal rates, carb ratios, sensitivity factors, and target ranges."
   currentStep={8}
   totalSteps={8}
-  prevHref="/settings/setup/connectors"
+  prevHref="/setup/connectors"
   nextHref="/settings"
   showSkip={true}
   saveDisabled={!profileName}
