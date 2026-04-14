@@ -60,122 +60,112 @@ interface StatusData {
 
 class MessageTranslator {
   private socketIOServer: SocketIOServer;
+  private tenantSlug?: string;
 
-  constructor(socketIOServer: SocketIOServer) {
+  constructor(socketIOServer: SocketIOServer, tenantSlug?: string) {
     this.socketIOServer = socketIOServer;
+    this.tenantSlug = tenantSlug;
   }
 
-  // Handle data updates (SGV/BG readings)
   handleDataUpdate(data: any): void {
     try {
-      // Transform SignalR data format to Socket.IO format expected by legacy clients
       const translatedData = this.translateDataUpdate(data);
-      this.socketIOServer.broadcastDataUpdate(translatedData);
+      this.socketIOServer.broadcastDataUpdate(translatedData, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating data update:', error);
     }
   }
 
-  // Handle system announcements
   handleAnnouncement(message: AnnouncementMessage): void {
     try {
       const translatedMessage = this.translateAnnouncement(message);
-      this.socketIOServer.broadcastAnnouncement(translatedMessage);
+      this.socketIOServer.broadcastAnnouncement(translatedMessage, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating announcement:', error);
     }
   }
-  // Handle alarm notifications
+
   handleAlarm(alarm: AlarmData): void {
     try {
       const translatedAlarm = this.translateAlarm(alarm);
-      this.socketIOServer.broadcastAlarm(translatedAlarm as any);
+      this.socketIOServer.broadcastAlarm(translatedAlarm as any, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating alarm:', error);
     }
   }
 
-  // Handle alarm clearing
   handleClearAlarm(): void {
     try {
-      this.socketIOServer.broadcastClearAlarm();
+      this.socketIOServer.broadcastClearAlarm(this.tenantSlug);
     } catch (error) {
       logger.error('Error handling clear alarm:', error);
     }
   }
 
-  // Handle general notifications
   handleNotification(notification: NotificationData): void {
     try {
       const translatedNotification = this.translateNotification(notification);
-      this.socketIOServer.broadcastNotification(translatedNotification);
+      this.socketIOServer.broadcastNotification(translatedNotification, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating notification:', error);
     }
   }
 
-  // Handle status updates
   handleStatusUpdate(status: StatusData): void {
     try {
       const translatedStatus = this.translateStatusUpdate(status);
-      this.socketIOServer.broadcastStatusUpdate(translatedStatus);
+      this.socketIOServer.broadcastStatusUpdate(translatedStatus, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating status update:', error);
     }
   }
 
-  // Handle storage create events
   handleStorageCreate(data: any): void {
     try {
       const translatedData = this.translateStorageEvent(data);
-      this.socketIOServer.broadcastStorageEvent('create', translatedData);
+      this.socketIOServer.broadcastStorageEvent('create', translatedData, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating storage create:', error);
     }
   }
 
-  // Handle storage update events
   handleStorageUpdate(data: any): void {
     try {
       const translatedData = this.translateStorageEvent(data);
-      this.socketIOServer.broadcastStorageEvent('update', translatedData);
+      this.socketIOServer.broadcastStorageEvent('update', translatedData, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating storage update:', error);
     }
   }
 
-  // Handle storage delete events
   handleStorageDelete(data: any): void {
     try {
       const translatedData = this.translateStorageEvent(data);
-      this.socketIOServer.broadcastStorageEvent('delete', translatedData);
+      this.socketIOServer.broadcastStorageEvent('delete', translatedData, this.tenantSlug);
     } catch (error) {
       logger.error('Error translating storage delete:', error);
     }
   }
 
-  // Handle in-app notification created events
   handleNotificationCreated(data: any): void {
     try {
-      this.socketIOServer.broadcastInAppNotification('notificationCreated', data);
+      this.socketIOServer.broadcastInAppNotification('notificationCreated', data, this.tenantSlug);
     } catch (error) {
       logger.error('Error handling notification created:', error);
     }
   }
 
-  // Handle in-app notification archived events
   handleNotificationArchived(data: any): void {
     try {
-      this.socketIOServer.broadcastInAppNotification('notificationArchived', data);
+      this.socketIOServer.broadcastInAppNotification('notificationArchived', data, this.tenantSlug);
     } catch (error) {
       logger.error('Error handling notification archived:', error);
     }
   }
 
-  // Handle in-app notification updated events
   handleNotificationUpdated(data: any): void {
     try {
-      this.socketIOServer.broadcastInAppNotification('notificationUpdated', data);
+      this.socketIOServer.broadcastInAppNotification('notificationUpdated', data, this.tenantSlug);
     } catch (error) {
       logger.error('Error handling notification updated:', error);
     }
@@ -183,7 +173,7 @@ class MessageTranslator {
 
   handleSyncProgress(data: any): void {
     try {
-      this.socketIOServer.broadcastSyncProgress(data);
+      this.socketIOServer.broadcastSyncProgress(data, this.tenantSlug);
     } catch (error) {
       logger.error('Error handling sync progress:', error);
     }
@@ -191,7 +181,7 @@ class MessageTranslator {
 
   handleConfigChanged(data: any): void {
     try {
-      this.socketIOServer.broadcastConfigChanged(data);
+      this.socketIOServer.broadcastConfigChanged(data, this.tenantSlug);
     } catch (error) {
       logger.error('Error handling config changed:', error);
     }

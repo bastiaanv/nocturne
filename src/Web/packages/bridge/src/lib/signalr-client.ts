@@ -15,6 +15,9 @@ interface SignalRConfig {
   reconnectDelay: number;
   maxReconnectDelay: number;
   instanceKey: string;
+  /** Extra headers sent on every SignalR HTTP request (negotiate + WebSocket
+   *  upgrade). Used to pass X-Forwarded-Host for tenant resolution. */
+  connectionHeaders?: Record<string, string>;
 }
 
 class SignalRClient {
@@ -30,6 +33,7 @@ class SignalRClient {
   private alarmHubUrl?: string;
   private configHubUrl?: string;
   private instanceKey: string;
+  private connectionHeaders: Record<string, string>;
   private isConnecting: boolean = false;
 
   constructor(messageHandler: MessageTranslator, config: SignalRConfig) {
@@ -41,6 +45,7 @@ class SignalRClient {
     this.reconnectDelay = config.reconnectDelay;
     this.maxReconnectDelay = config.maxReconnectDelay;
     this.instanceKey = config.instanceKey;
+    this.connectionHeaders = config.connectionHeaders ?? {};
   }
 
   async connect(): Promise<void> {
@@ -99,8 +104,9 @@ class SignalRClient {
     hubUrl: string,
     options?: { headers?: Record<string, string> },
   ): HubConnection {
+    const headers = { ...this.connectionHeaders, ...options?.headers };
     return new HubConnectionBuilder()
-      .withUrl(hubUrl, options?.headers ? { headers: options.headers } : {})
+      .withUrl(hubUrl, Object.keys(headers).length > 0 ? { headers } : {})
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
           const delay = Math.min(
