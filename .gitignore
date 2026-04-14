@@ -19,7 +19,7 @@ appsettings.Development.json
 
 coveragereport/
 TestResults/
-.claude/*
+.claude/settings.local.json
 .cursor
 .data
 cloudflared-config.yml
