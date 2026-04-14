@@ -131,8 +131,8 @@
     try {
       // Fetch the food and categories in parallel
       const [food, allFoods] = await Promise.all([
-        getFoodById(entry.foodId),
-        getAllFoods(),
+        getFoodById(entry.foodId!),
+        getAllFoods(undefined),
       ]);
 
       foodToEdit = food;

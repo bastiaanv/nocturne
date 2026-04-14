@@ -75,7 +75,7 @@ public class FoodsController : ControllerBase
     /// Create a new food record.
     /// </summary>
     [HttpPost]
-    [RemoteForm(Invalidates = ["GetFoods", "GetFavorites", "GetRecentFoods"])]
+    [RemoteCommand(Invalidates = ["GetFoods", "GetFavorites", "GetRecentFoods"])]
     [Authorize]
     [ProducesResponseType(typeof(Food), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -96,7 +96,7 @@ public class FoodsController : ControllerBase
     /// Update an existing food record by ID.
     /// </summary>
     [HttpPut("{foodId}")]
-    [RemoteForm(Invalidates = ["GetFoods", "GetFood", "GetFavorites", "GetRecentFoods"])]
+    [RemoteCommand(Invalidates = ["GetFoods", "GetFood", "GetFavorites", "GetRecentFoods"])]
     [Authorize]
     [ProducesResponseType(typeof(Food), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

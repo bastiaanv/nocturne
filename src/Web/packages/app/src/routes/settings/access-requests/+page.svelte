@@ -19,7 +19,7 @@
     getPendingRequests,
     approve,
     deny,
-  } from "$lib/api/generated/accessrequests.generated.remote";
+  } from "$lib/api/generated/accessRequests.generated.remote";
   import { getRoles } from "$lib/api/generated/roles.generated.remote";
 
   // Queries

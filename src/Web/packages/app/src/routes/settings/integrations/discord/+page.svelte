@@ -12,7 +12,7 @@
 		setDefault,
 		updateLink,
 		revokeLink,
-	} from "$lib/api/generated/chatidentities.generated.remote";
+	} from "$lib/api/generated/chatIdentities.generated.remote";
 	import { getDiscordConfig, initiateDiscordLink } from "./discord.remote";
 
 	// Auth guard

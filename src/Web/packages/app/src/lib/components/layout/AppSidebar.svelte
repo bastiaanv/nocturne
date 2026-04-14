@@ -16,7 +16,7 @@
     followerTargets,
     type ActingAsTarget,
   } from "$lib/stores/acting-as";
-  import { getMyTenants } from "$lib/api/generated/mytenants.generated.remote";
+  import { getMyTenants } from "$lib/api/generated/myTenants.generated.remote";
   import {
     Home,
     BarChart3,

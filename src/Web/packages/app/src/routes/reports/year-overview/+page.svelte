@@ -21,7 +21,7 @@
     getAvailableYears,
     getDailySummary,
     getGriTimeline,
-  } from "$api/generated/dataoverviews.generated.remote";
+  } from "$api/generated/dataOverviews.generated.remote";
   import GlycemicRiskIndexChart from "$lib/components/reports/GlycemicRiskIndexChart.svelte";
   import type {
     DailySummaryDay,

@@ -27,7 +27,7 @@
   } from "lucide-svelte";
   import { formatDate } from "$lib/utils/formatting";
   import { getCurrentTenantId } from "../current-tenant.remote";
-  import { getMembers } from "$lib/api/generated/memberinvites.generated.remote";
+  import { getMembers } from "$lib/api/generated/memberInvites.generated.remote";
   import {
     listInvites,
     createInvite,
@@ -38,7 +38,7 @@
   import {
     setMemberRoles,
     setMemberPermissions,
-  } from "$lib/api/generated/memberinvites.generated.remote";
+  } from "$lib/api/generated/memberInvites.generated.remote";
 
   const effectivePermissions: string[] = $derived(
     (page.data as any).effectivePermissions ?? [],

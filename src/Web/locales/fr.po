@@ -1698,7 +1698,7 @@ msgid "Food updated successfully"
 msgstr ""
 
 #: src/lib/components/food/AddFoodDialog.svelte
-#: src/lib/components/food/AddFoodDialog.svelte
+#: src/lib/components/treatments/TreatmentFoodSelectorDialog.svelte
 #: src/routes/food/food-state.svelte.ts
 msgid "Failed to save food"
 msgstr ""
@@ -6818,8 +6818,9 @@ msgstr ""
 msgid "Food entry updated"
 msgstr ""
 
-#~ msgid "Failed to update food entry"
-#~ msgstr ""
+#: src/lib/components/treatments/TreatmentFoodEntryEditDialog.svelte
+msgid "Failed to update food entry"
+msgstr ""
 
 #: src/lib/components/treatments/TreatmentFoodEntryEditDialog.svelte
 msgid "Edit Food Entry"
@@ -13644,6 +13645,7 @@ msgstr ""
 msgid "Failed to update connector state"
 msgstr ""
 
+#: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
 msgid "Failed to delete configuration"
 msgstr ""
@@ -24302,4 +24304,8 @@ msgstr ""
 msgid ""
 "<0>Typical ratios:</0> Most people with Type 1 diabetes have around 50% basal and 50% bolus. Ratios\n"
 "can vary based on diet, activity level, and individual needs. <1/>"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/patient/+page.svelte
+msgid "Weight (kg)"
 msgstr ""

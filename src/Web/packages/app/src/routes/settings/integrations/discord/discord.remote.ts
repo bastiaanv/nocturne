@@ -3,7 +3,7 @@
  *
  * Only contains server-side logic that needs process.env or crypto.
  * For CRUD operations on chat identity links, use
- * $lib/api/generated/chatidentities.generated.remote.ts.
+ * $lib/api/generated/chatIdentities.generated.remote.ts.
  */
 import { getRequestEvent, query, command } from "$app/server";
 import { redirect } from "@sveltejs/kit";

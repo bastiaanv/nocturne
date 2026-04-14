@@ -240,7 +240,7 @@
       ) {
         configuration = { ...configData };
       } else {
-        configuration = getDefaultsFromSchema(schemaResult);
+        configuration = getDefaultsFromSchema(schema);
       }
 
       secrets = {};

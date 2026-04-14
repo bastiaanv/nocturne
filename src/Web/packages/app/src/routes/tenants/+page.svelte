@@ -25,7 +25,7 @@
     getMyTenants,
     createTenant,
     validateSlug,
-  } from "$api/generated/mytenants.generated.remote";
+  } from "$api/generated/myTenants.generated.remote";
   import type { TenantDto } from "$api";
   import { browser } from "$app/environment";
 

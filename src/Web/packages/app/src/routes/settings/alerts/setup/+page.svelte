@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { createRule } from "$api/generated/alertrules.generated.remote";
+  import { createRule } from "$api/generated/alertRules.generated.remote";
   import type { CreateAlertRuleRequest } from "$api-clients";
   import {
     Card,

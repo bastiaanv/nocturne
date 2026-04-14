@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { goto } from "$app/navigation";
 	import { Loader2 } from "lucide-svelte";
-	import { claimLink } from "$lib/api/generated/chatidentities.generated.remote";
+	import { claimLink } from "$lib/api/generated/chatIdentities.generated.remote";
 
 	// Read token from URL
 	const token = $derived(page.url.searchParams.get("token") ?? "");

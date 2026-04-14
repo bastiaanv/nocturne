@@ -3,7 +3,7 @@
 	import { goto } from "$app/navigation";
 	import { Loader2 } from "lucide-svelte";
 	import { getBotAuthorizeContext, buildTenantRedirectUrl } from "../bot.remote";
-	import { getPending, claimLink } from "$lib/api/generated/chatidentities.generated.remote";
+	import { getPending, claimLink } from "$lib/api/generated/chatIdentities.generated.remote";
 
 	// Read state token from URL
 	const stateToken = $derived(page.url.searchParams.get("state") ?? "");

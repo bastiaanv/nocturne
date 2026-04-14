@@ -286,7 +286,7 @@
         await Promise.allSettled([
           getFavoriteFoods(),
           getRecentFoods({ limit: 5 }),
-          getAllFoods(),
+          getAllFoods(undefined),
         ]);
 
       // Extract successful results, defaulting to empty arrays on failure

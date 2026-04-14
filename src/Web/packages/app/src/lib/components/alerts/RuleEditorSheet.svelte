@@ -3,7 +3,7 @@
   import {
     createRule,
     updateRule,
-  } from "$api/generated/alertrules.generated.remote";
+  } from "$api/generated/alertRules.generated.remote";
   import {
     getSounds,
     deleteSound,

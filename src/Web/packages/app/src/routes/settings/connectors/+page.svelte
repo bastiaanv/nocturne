@@ -4,7 +4,7 @@
   import {
     getStatus as getApiSecretStatus,
     regenerate as regenerateApiSecretRemote,
-  } from "$api/generated/apisecrets.generated.remote";
+  } from "$api/generated/apiSecrets.generated.remote";
   import {
     getServicesOverview,
     getUploaderSetup,

@@ -3,7 +3,7 @@
  *
  * Only contains server-side logic that can't be covered by the generated
  * chatidentities remote functions (process.env access, apex detection).
- * For API calls, use $lib/api/generated/chatidentities.generated.remote.ts.
+ * For API calls, use $lib/api/generated/chatIdentities.generated.remote.ts.
  */
 import { getRequestEvent, query } from "$app/server";
 import { z } from "zod";

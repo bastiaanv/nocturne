@@ -5,7 +5,7 @@ import {
   setMemberRoles,
   setMemberPermissions,
   setMemberLimitTo24Hours,
-} from "$lib/api/generated/memberinvites.generated.remote";
+} from "$lib/api/generated/memberInvites.generated.remote";
 
 /**
  * Get the current public access configuration.
