@@ -48,5 +48,6 @@ export function buildConfig(
           : "simple"),
     },
     instanceKey: userConfig.instanceKey || process.env.INSTANCE_KEY || "",
+    baseDomain: userConfig.baseDomain || process.env.PUBLIC_BASE_DOMAIN || undefined,
   };
 }

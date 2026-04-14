@@ -14,6 +14,7 @@ const WEBSOCKET_PING_INTERVAL_MS = 20_000;
 
 const PORT = process.env.PORT || 5173;
 const API_URL = process.env.NOCTURNE_API_URL || process.env.PUBLIC_API_URL || 'http://localhost:1612';
+const BASE_DOMAIN = process.env.PUBLIC_BASE_DOMAIN || '';
 const SIGNALR_HUB_URL = `${API_URL}/hubs/data`;
 const SIGNALR_ALARM_HUB_URL = `${API_URL}/hubs/alarms`;
 const SIGNALR_CONFIG_HUB_URL = `${API_URL}/hubs/config`;
@@ -44,6 +45,7 @@ async function start() {
         pingInterval: WEBSOCKET_PING_INTERVAL_MS,
       },
       instanceKey: INSTANCE_KEY,
+      baseDomain: BASE_DOMAIN || undefined,
     });
 
     console.log('✓ WebSocket bridge initialized successfully');

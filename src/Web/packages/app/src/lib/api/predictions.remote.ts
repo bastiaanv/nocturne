@@ -92,6 +92,10 @@ export const getPredictions = query(getPredictionsSchema, async (props) => {
 			},
 		} satisfies PredictionData;
 	} catch (err) {
+		// 404 means predictions are not configured — this is expected for optional features
+		if ((err as any)?.status === 404) {
+			return null;
+		}
 		console.error('Error loading predictions:', err);
 		throw error(500, 'Failed to load predictions');
 	}

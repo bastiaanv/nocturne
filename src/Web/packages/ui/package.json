@@ -18,6 +18,7 @@
     "@lucide/svelte": "^0.563.1",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tailwindcss/typography": "^0.5.19",
+    "@internationalized/date": "^3.11.0",
     "bits-ui": "^2.15.5",
     "clsx": "^2.1.1",
     "svelte": "^5.50.0",

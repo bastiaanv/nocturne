@@ -182,6 +182,7 @@ export const refreshSession = query(async () => {
     // Update cookies if new tokens are returned
     if (result.accessToken) {
       const isSecure = event.url.protocol === "https:";
+      const refreshMaxAge = result.refreshExpiresIn || 60 * 60 * 24 * 7;
 
       event.cookies.set(AUTH_COOKIE_NAMES.accessToken, result.accessToken, {
         path: "/",
@@ -191,13 +192,26 @@ export const refreshSession = query(async () => {
         maxAge: result.expiresIn || 3600,
       });
 
+      // Save the rotated refresh token — the API revokes the old one on
+      // each use when RotateRefreshTokens is enabled (the default), so we
+      // must persist the new token or the next refresh will fail.
+      if (result.refreshToken) {
+        event.cookies.set(AUTH_COOKIE_NAMES.refreshToken, result.refreshToken, {
+          path: "/",
+          httpOnly: true,
+          secure: isSecure,
+          sameSite: "lax",
+          maxAge: refreshMaxAge,
+        });
+      }
+
       // Match refresh token lifetime so frontend stays authenticated across refreshes
       event.cookies.set("IsAuthenticated", "true", {
         path: "/",
         httpOnly: false,
         secure: isSecure,
         sameSite: "lax",
-        maxAge: result.refreshExpiresIn || 60 * 60 * 24 * 7,
+        maxAge: refreshMaxAge,
       });
     }
 

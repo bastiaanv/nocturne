@@ -4,19 +4,23 @@
 //
 import {
   AccessRequestClient,
-  AlertCustomSoundsClient,
+  ActivityClient,
+  BackfillClient,
   AlertInvitesClient,
   AlertRulesClient,
   AlertsClient,
+  AlertCustomSoundsClient,
+  AlexaClient,
   AnalyticsClient,
   ApiSecretClient,
   ApsSnapshotClient,
-  BackfillClient,
+  AuthenticationClient,
+  AuthorizationClient,
   BatteryClient,
   BGCheckClient,
   BodyWeightClient,
-  BolusClient,
   BolusCalculationClient,
+  BolusClient,
   CalibrationClient,
   ChartDataClient,
   ChatIdentityClient,
@@ -27,23 +31,32 @@ import {
   ConfigurationClient,
   ConnectedAppsClient,
   ConnectorFoodEntriesClient,
+  MyFitnessPalSettingsClient,
+  ConnectorStatusClient,
   CorrelationClient,
+  CountClient,
   DataOverviewClient,
   DebugClient,
   DeduplicationClient,
   DeviceAgeClient,
   DeviceEventClient,
+  DeviceStatusClient,
   DirectGrantClient,
   DiscrepancyClient,
+  EntriesClient,
+  FoodClient,
   FoodsClient,
   HeartRateClient,
   HomeAssistantWebhookClient,
   InsulinCatalogClient,
+  IobClient,
+  LastModifiedClient,
+  LoopClient,
   MealMatchingClient,
   MemberInviteClient,
+  MetadataClient,
   MeterGlucoseClient,
   MigrationClient,
-  MyFitnessPalSettingsClient,
   MyPermissionsClient,
   MyTenantsClient,
   NightscoutTransitionClient,
@@ -56,6 +69,7 @@ import {
   OidcProviderAdminClient,
   PasskeyClient,
   PatientRecordClient,
+  PebbleClient,
   PredictionClient,
   ProcessingClient,
   ProfileClient,
@@ -64,7 +78,9 @@ import {
   RoleClient,
   SensorGlucoseClient,
   ServicesClient,
+  SettingsClient,
   StateSpansClient,
+  StatisticsClient,
   StatusClient,
   StepCountClient,
   SubjectAdminClient,
@@ -72,6 +88,7 @@ import {
   SystemClient,
   SystemEventsClient,
   TenantClient,
+  TimeQueryClient,
   TotpClient,
   TrackerAlertsClient,
   TrackersClient,
@@ -79,6 +96,10 @@ import {
   UISettingsClient,
   UploaderSnapshotClient,
   UserPreferencesClient,
+  DDataClient,
+  PropertiesClient,
+  VersionClient,
+  VersionsClient,
   WebhookSettingsClient
 } from "./generated/nocturne-api-client";
 
@@ -89,50 +110,63 @@ import {
 export class ApiClient {
   public readonly baseUrl: string;
   public readonly accessRequest: AccessRequestClient;
-  public readonly alertCustomSounds: AlertCustomSoundsClient;
+  public readonly activity: ActivityClient;
+  public readonly admin: BackfillClient;
   public readonly alertInvites: AlertInvitesClient;
   public readonly alertRules: AlertRulesClient;
   public readonly alerts: AlertsClient;
+  public readonly alertSounds: AlertCustomSoundsClient;
+  public readonly alexa: AlexaClient;
   public readonly analytics: AnalyticsClient;
   public readonly apiSecret: ApiSecretClient;
-  public readonly apsSnapshot: ApsSnapshotClient;
-  public readonly backfill: BackfillClient;
+  public readonly aPSSnapshots: ApsSnapshotClient;
+  public readonly authentication: AuthenticationClient;
+  public readonly authorization: AuthorizationClient;
   public readonly battery: BatteryClient;
-  public readonly bGCheck: BGCheckClient;
+  public readonly bGChecks: BGCheckClient;
   public readonly bodyWeight: BodyWeightClient;
-  public readonly bolus: BolusClient;
-  public readonly bolusCalculation: BolusCalculationClient;
-  public readonly calibration: CalibrationClient;
+  public readonly bolusCalculations: BolusCalculationClient;
+  public readonly boluses: BolusClient;
+  public readonly calibrations: CalibrationClient;
   public readonly chartData: ChartDataClient;
   public readonly chatIdentity: ChatIdentityClient;
   public readonly chatIdentityDirectory: ChatIdentityDirectoryClient;
   public readonly clockFaces: ClockFacesClient;
   public readonly compatibility: CompatibilityClient;
-  public readonly compressionLow: CompressionLowClient;
+  public readonly compressionLows: CompressionLowClient;
   public readonly configuration: ConfigurationClient;
   public readonly connectedApps: ConnectedAppsClient;
   public readonly connectorFoodEntries: ConnectorFoodEntriesClient;
+  public readonly connectorSettings: MyFitnessPalSettingsClient;
+  public readonly connectorStatus: ConnectorStatusClient;
   public readonly correlation: CorrelationClient;
+  public readonly count: CountClient;
   public readonly dataOverview: DataOverviewClient;
   public readonly debug: DebugClient;
   public readonly deduplication: DeduplicationClient;
   public readonly deviceAge: DeviceAgeClient;
-  public readonly deviceEvent: DeviceEventClient;
-  public readonly directGrant: DirectGrantClient;
+  public readonly deviceEvents: DeviceEventClient;
+  public readonly deviceStatus: DeviceStatusClient;
+  public readonly directGrants: DirectGrantClient;
   public readonly discrepancy: DiscrepancyClient;
+  public readonly entries: EntriesClient;
+  public readonly food: FoodClient;
   public readonly foodsV4: FoodsClient;
   public readonly heartRate: HeartRateClient;
   public readonly homeAssistantWebhook: HomeAssistantWebhookClient;
-  public readonly insulinCatalog: InsulinCatalogClient;
+  public readonly insulins: InsulinCatalogClient;
+  public readonly iob: IobClient;
+  public readonly lastModified: LastModifiedClient;
+  public readonly loopNotifications: LoopClient;
   public readonly mealMatching: MealMatchingClient;
-  public readonly memberInvite: MemberInviteClient;
+  public readonly memberInvites: MemberInviteClient;
+  public readonly metadata: MetadataClient;
   public readonly meterGlucose: MeterGlucoseClient;
   public readonly migration: MigrationClient;
-  public readonly myFitnessPalSettings: MyFitnessPalSettingsClient;
   public readonly myPermissions: MyPermissionsClient;
   public readonly myTenants: MyTenantsClient;
   public readonly nightscoutTransition: NightscoutTransitionClient;
-  public readonly note: NoteClient;
+  public readonly notes: NoteClient;
   public readonly notifications: NotificationsClient;
   public readonly nutrition: NutritionClient;
   public readonly oAuth: OAuthClient;
@@ -141,15 +175,18 @@ export class ApiClient {
   public readonly oidcProviderAdmin: OidcProviderAdminClient;
   public readonly passkey: PasskeyClient;
   public readonly patientRecord: PatientRecordClient;
+  public readonly pebble: PebbleClient;
   public readonly predictions: PredictionClient;
   public readonly processing: ProcessingClient;
   public readonly profile: ProfileClient;
-  public readonly pumpSnapshot: PumpSnapshotClient;
+  public readonly pumpSnapshots: PumpSnapshotClient;
   public readonly retrospective: RetrospectiveClient;
-  public readonly role: RoleClient;
+  public readonly roles: RoleClient;
   public readonly sensorGlucose: SensorGlucoseClient;
   public readonly services: ServicesClient;
+  public readonly settings: SettingsClient;
   public readonly stateSpans: StateSpansClient;
+  public readonly statistics: StatisticsClient;
   public readonly status: StatusClient;
   public readonly stepCount: StepCountClient;
   public readonly subjectAdmin: SubjectAdminClient;
@@ -157,13 +194,18 @@ export class ApiClient {
   public readonly system: SystemClient;
   public readonly systemEvents: SystemEventsClient;
   public readonly tenant: TenantClient;
+  public readonly timeQuery: TimeQueryClient;
   public readonly totp: TotpClient;
   public readonly trackerAlerts: TrackerAlertsClient;
   public readonly trackers: TrackersClient;
   public readonly treatments: TreatmentsClient;
   public readonly uiSettings: UISettingsClient;
-  public readonly uploaderSnapshot: UploaderSnapshotClient;
+  public readonly uploaderSnapshots: UploaderSnapshotClient;
   public readonly userPreferences: UserPreferencesClient;
+  public readonly v2DData: DDataClient;
+  public readonly v2Properties: PropertiesClient;
+  public readonly version: VersionClient;
+  public readonly versions: VersionsClient;
   public readonly webhookSettings: WebhookSettingsClient;
 
   constructor(
@@ -174,50 +216,63 @@ export class ApiClient {
     this.baseUrl = apiBaseUrl;
 
     this.accessRequest = new AccessRequestClient(apiBaseUrl, http);
-    this.alertCustomSounds = new AlertCustomSoundsClient(apiBaseUrl, http);
+    this.activity = new ActivityClient(apiBaseUrl, http);
+    this.admin = new BackfillClient(apiBaseUrl, http);
     this.alertInvites = new AlertInvitesClient(apiBaseUrl, http);
     this.alertRules = new AlertRulesClient(apiBaseUrl, http);
     this.alerts = new AlertsClient(apiBaseUrl, http);
+    this.alertSounds = new AlertCustomSoundsClient(apiBaseUrl, http);
+    this.alexa = new AlexaClient(apiBaseUrl, http);
     this.analytics = new AnalyticsClient(apiBaseUrl, http);
     this.apiSecret = new ApiSecretClient(apiBaseUrl, http);
-    this.apsSnapshot = new ApsSnapshotClient(apiBaseUrl, http);
-    this.backfill = new BackfillClient(apiBaseUrl, http);
+    this.aPSSnapshots = new ApsSnapshotClient(apiBaseUrl, http);
+    this.authentication = new AuthenticationClient(apiBaseUrl, http);
+    this.authorization = new AuthorizationClient(apiBaseUrl, http);
     this.battery = new BatteryClient(apiBaseUrl, http);
-    this.bGCheck = new BGCheckClient(apiBaseUrl, http);
+    this.bGChecks = new BGCheckClient(apiBaseUrl, http);
     this.bodyWeight = new BodyWeightClient(apiBaseUrl, http);
-    this.bolus = new BolusClient(apiBaseUrl, http);
-    this.bolusCalculation = new BolusCalculationClient(apiBaseUrl, http);
-    this.calibration = new CalibrationClient(apiBaseUrl, http);
+    this.bolusCalculations = new BolusCalculationClient(apiBaseUrl, http);
+    this.boluses = new BolusClient(apiBaseUrl, http);
+    this.calibrations = new CalibrationClient(apiBaseUrl, http);
     this.chartData = new ChartDataClient(apiBaseUrl, http);
     this.chatIdentity = new ChatIdentityClient(apiBaseUrl, http);
     this.chatIdentityDirectory = new ChatIdentityDirectoryClient(apiBaseUrl, http);
     this.clockFaces = new ClockFacesClient(apiBaseUrl, http);
     this.compatibility = new CompatibilityClient(apiBaseUrl, http);
-    this.compressionLow = new CompressionLowClient(apiBaseUrl, http);
+    this.compressionLows = new CompressionLowClient(apiBaseUrl, http);
     this.configuration = new ConfigurationClient(apiBaseUrl, http);
     this.connectedApps = new ConnectedAppsClient(apiBaseUrl, http);
     this.connectorFoodEntries = new ConnectorFoodEntriesClient(apiBaseUrl, http);
+    this.connectorSettings = new MyFitnessPalSettingsClient(apiBaseUrl, http);
+    this.connectorStatus = new ConnectorStatusClient(apiBaseUrl, http);
     this.correlation = new CorrelationClient(apiBaseUrl, http);
+    this.count = new CountClient(apiBaseUrl, http);
     this.dataOverview = new DataOverviewClient(apiBaseUrl, http);
     this.debug = new DebugClient(apiBaseUrl, http);
     this.deduplication = new DeduplicationClient(apiBaseUrl, http);
     this.deviceAge = new DeviceAgeClient(apiBaseUrl, http);
-    this.deviceEvent = new DeviceEventClient(apiBaseUrl, http);
-    this.directGrant = new DirectGrantClient(apiBaseUrl, http);
+    this.deviceEvents = new DeviceEventClient(apiBaseUrl, http);
+    this.deviceStatus = new DeviceStatusClient(apiBaseUrl, http);
+    this.directGrants = new DirectGrantClient(apiBaseUrl, http);
     this.discrepancy = new DiscrepancyClient(apiBaseUrl, http);
+    this.entries = new EntriesClient(apiBaseUrl, http);
+    this.food = new FoodClient(apiBaseUrl, http);
     this.foodsV4 = new FoodsClient(apiBaseUrl, http);
     this.heartRate = new HeartRateClient(apiBaseUrl, http);
     this.homeAssistantWebhook = new HomeAssistantWebhookClient(apiBaseUrl, http);
-    this.insulinCatalog = new InsulinCatalogClient(apiBaseUrl, http);
+    this.insulins = new InsulinCatalogClient(apiBaseUrl, http);
+    this.iob = new IobClient(apiBaseUrl, http);
+    this.lastModified = new LastModifiedClient(apiBaseUrl, http);
+    this.loopNotifications = new LoopClient(apiBaseUrl, http);
     this.mealMatching = new MealMatchingClient(apiBaseUrl, http);
-    this.memberInvite = new MemberInviteClient(apiBaseUrl, http);
+    this.memberInvites = new MemberInviteClient(apiBaseUrl, http);
+    this.metadata = new MetadataClient(apiBaseUrl, http);
     this.meterGlucose = new MeterGlucoseClient(apiBaseUrl, http);
     this.migration = new MigrationClient(apiBaseUrl, http);
-    this.myFitnessPalSettings = new MyFitnessPalSettingsClient(apiBaseUrl, http);
     this.myPermissions = new MyPermissionsClient(apiBaseUrl, http);
     this.myTenants = new MyTenantsClient(apiBaseUrl, http);
     this.nightscoutTransition = new NightscoutTransitionClient(apiBaseUrl, http);
-    this.note = new NoteClient(apiBaseUrl, http);
+    this.notes = new NoteClient(apiBaseUrl, http);
     this.notifications = new NotificationsClient(apiBaseUrl, http);
     this.nutrition = new NutritionClient(apiBaseUrl, http);
     this.oAuth = new OAuthClient(apiBaseUrl, http);
@@ -226,15 +281,18 @@ export class ApiClient {
     this.oidcProviderAdmin = new OidcProviderAdminClient(apiBaseUrl, http);
     this.passkey = new PasskeyClient(apiBaseUrl, http);
     this.patientRecord = new PatientRecordClient(apiBaseUrl, http);
+    this.pebble = new PebbleClient(apiBaseUrl, http);
     this.predictions = new PredictionClient(apiBaseUrl, http);
     this.processing = new ProcessingClient(apiBaseUrl, http);
     this.profile = new ProfileClient(apiBaseUrl, http);
-    this.pumpSnapshot = new PumpSnapshotClient(apiBaseUrl, http);
+    this.pumpSnapshots = new PumpSnapshotClient(apiBaseUrl, http);
     this.retrospective = new RetrospectiveClient(apiBaseUrl, http);
-    this.role = new RoleClient(apiBaseUrl, http);
+    this.roles = new RoleClient(apiBaseUrl, http);
     this.sensorGlucose = new SensorGlucoseClient(apiBaseUrl, http);
     this.services = new ServicesClient(apiBaseUrl, http);
+    this.settings = new SettingsClient(apiBaseUrl, http);
     this.stateSpans = new StateSpansClient(apiBaseUrl, http);
+    this.statistics = new StatisticsClient(apiBaseUrl, http);
     this.status = new StatusClient(apiBaseUrl, http);
     this.stepCount = new StepCountClient(apiBaseUrl, http);
     this.subjectAdmin = new SubjectAdminClient(apiBaseUrl, http);
@@ -242,13 +300,18 @@ export class ApiClient {
     this.system = new SystemClient(apiBaseUrl, http);
     this.systemEvents = new SystemEventsClient(apiBaseUrl, http);
     this.tenant = new TenantClient(apiBaseUrl, http);
+    this.timeQuery = new TimeQueryClient(apiBaseUrl, http);
     this.totp = new TotpClient(apiBaseUrl, http);
     this.trackerAlerts = new TrackerAlertsClient(apiBaseUrl, http);
     this.trackers = new TrackersClient(apiBaseUrl, http);
     this.treatments = new TreatmentsClient(apiBaseUrl, http);
     this.uiSettings = new UISettingsClient(apiBaseUrl, http);
-    this.uploaderSnapshot = new UploaderSnapshotClient(apiBaseUrl, http);
+    this.uploaderSnapshots = new UploaderSnapshotClient(apiBaseUrl, http);
     this.userPreferences = new UserPreferencesClient(apiBaseUrl, http);
+    this.v2DData = new DDataClient(apiBaseUrl, http);
+    this.v2Properties = new PropertiesClient(apiBaseUrl, http);
+    this.version = new VersionClient(apiBaseUrl, http);
+    this.versions = new VersionsClient(apiBaseUrl, http);
     this.webhookSettings = new WebhookSettingsClient(apiBaseUrl, http);
   }
 }

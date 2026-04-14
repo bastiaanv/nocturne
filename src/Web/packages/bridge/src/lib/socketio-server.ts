@@ -19,9 +19,11 @@ class SocketIOServer {
   private httpServer: HttpServer;
   private clients: Map<string, ClientInfo> = new Map();
   private config: SocketIOConfig;
+  private baseDomain?: string;
 
-  constructor(httpServer: HttpServer, config: SocketIOConfig = {}) {
+  constructor(httpServer: HttpServer, config: SocketIOConfig = {}, baseDomain?: string) {
     this.httpServer = httpServer;
+    this.baseDomain = baseDomain;
     this.config = {
       cors: config.cors || {
         origin: '*',
@@ -73,6 +75,18 @@ class SocketIOServer {
       logger.info(`Client connected: ${clientId} from ${clientInfo.address}`);
       logger.debug(`Total connected clients: ${this.clients.size}`);
 
+      // In multi-tenant mode, join the client to a tenant-specific room
+      // based on the X-Forwarded-Host header set by the reverse proxy.
+      if (this.baseDomain) {
+        const tenantSlug = this.extractTenantSlug(socket);
+        if (tenantSlug) {
+          socket.join(`tenant:${tenantSlug}`);
+          logger.info(`Client ${clientId} joined tenant room: ${tenantSlug}`);
+        } else {
+          logger.warn(`Client ${clientId} connected without resolvable tenant`);
+        }
+      }
+
       // Handle client disconnection
       socket.on('disconnect', (reason: string) => {
         this.clients.delete(clientId);
@@ -107,80 +121,115 @@ class SocketIOServer {
     });
   }
 
+  /** Extract tenant slug from the Socket.IO handshake headers.
+   *  Checks X-Forwarded-Host first (set by YARP's X-Forwarded transform),
+   *  then falls back to Host (preserved by RequestHeaderOriginalHost). */
+  private extractTenantSlug(socket: Socket): string | null {
+    if (!this.baseDomain) return null;
+
+    const forwardedHost = socket.handshake.headers['x-forwarded-host'];
+    const rawHost = socket.handshake.headers['host'];
+    const candidate = Array.isArray(forwardedHost) ? forwardedHost[0] : (forwardedHost || rawHost);
+    if (!candidate) return null;
+
+    const hostname = candidate.split(':')[0];
+    const suffix = `.${this.baseDomain.split(':')[0]}`;
+    if (!hostname.endsWith(suffix)) return null;
+
+    const slug = hostname.slice(0, -suffix.length);
+    return slug || null;
+  }
+
+  /** Return the Socket.IO emit target: tenant room if scoped, or all clients. */
+  private emitTarget(tenantSlug?: string) {
+    if (!this.io) return null;
+    return tenantSlug ? this.io.to(`tenant:${tenantSlug}`) : this.io;
+  }
+
   // Methods to broadcast messages to clients
-  broadcastDataUpdate(data: any): void {
-    if (!this.io) return;
+  broadcastDataUpdate(data: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
-    logger.debug('Broadcasting dataUpdate to all clients');
-    this.io.emit('dataUpdate', data);
+    logger.debug(`Broadcasting dataUpdate${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('dataUpdate', data);
   }
 
-  broadcastAnnouncement(message: any): void {
-    if (!this.io) return;
+  broadcastAnnouncement(message: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
-    logger.debug('Broadcasting announcement to all clients');
-    this.io.emit('announcement', message);
+    logger.debug(`Broadcasting announcement${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('announcement', message);
   }
 
-  broadcastAlarm(alarm: AlarmData): void {
-    if (!this.io) return;
+  broadcastAlarm(alarm: AlarmData, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
     const eventName = alarm.level === 'urgent' ? 'urgent_alarm' : 'alarm';
-    logger.debug(`Broadcasting ${eventName} to all clients`);
-    this.io.emit(eventName, alarm);
+    logger.debug(`Broadcasting ${eventName}${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit(eventName, alarm);
   }
 
-  broadcastClearAlarm(): void {
-    if (!this.io) return;
+  broadcastClearAlarm(tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
-    logger.debug('Broadcasting clear_alarm to all clients');
-    this.io.emit('clear_alarm');
+    logger.debug(`Broadcasting clear_alarm${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('clear_alarm');
   }
 
-  broadcastNotification(notification: any): void {
-    if (!this.io) return;
+  broadcastNotification(notification: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
-    logger.debug('Broadcasting notification to all clients');
-    this.io.emit('notification', notification);
+    logger.debug(`Broadcasting notification${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('notification', notification);
   }
 
-  broadcastStatusUpdate(status: any): void {
-    if (!this.io) return;
+  broadcastStatusUpdate(status: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
-    logger.debug('Broadcasting status update to all clients');
-    this.io.emit('status', status);
+    logger.debug(`Broadcasting status update${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('status', status);
   }
 
-  broadcastStorageEvent(eventType: 'create' | 'update' | 'delete', data: any): void {
-    if (!this.io) return;
+  broadcastStorageEvent(eventType: 'create' | 'update' | 'delete', data: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
     const clientCount = this.clients.size;
-    logger.info(`Broadcasting storage ${eventType} event to ${clientCount} connected clients`);
+    logger.info(`Broadcasting storage ${eventType} event to ${clientCount} connected clients${tenantSlug ? ` (tenant: ${tenantSlug})` : ''}`);
 
     if (clientCount === 0) {
       logger.warn('No Socket.IO clients connected - events will not be delivered to frontend');
     }
 
-    this.io.emit(eventType, data);
+    target.emit(eventType, data);
   }
 
-  broadcastInAppNotification(eventType: 'notificationCreated' | 'notificationArchived' | 'notificationUpdated', data: any): void {
-    if (!this.io) return;
+  broadcastInAppNotification(eventType: 'notificationCreated' | 'notificationArchived' | 'notificationUpdated', data: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
 
-    logger.debug(`Broadcasting ${eventType} to all clients`);
-    this.io.emit(eventType, data);
+    logger.debug(`Broadcasting ${eventType}${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit(eventType, data);
   }
 
-  broadcastSyncProgress(data: any): void {
-    if (!this.io) return;
-    logger.debug('Broadcasting syncProgress to all clients');
-    this.io.emit('syncProgress', data);
+  broadcastSyncProgress(data: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
+    logger.debug(`Broadcasting syncProgress${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('syncProgress', data);
   }
 
-  broadcastConfigChanged(data: any): void {
-    if (!this.io) return;
-    logger.debug('Broadcasting configChanged to all clients');
-    this.io.emit('configChanged', data);
+  broadcastConfigChanged(data: any, tenantSlug?: string): void {
+    const target = this.emitTarget(tenantSlug);
+    if (!target) return;
+    logger.debug(`Broadcasting configChanged${tenantSlug ? ` to tenant ${tenantSlug}` : ''}`);
+    target.emit('configChanged', data);
   }
 
   // Send message to specific room

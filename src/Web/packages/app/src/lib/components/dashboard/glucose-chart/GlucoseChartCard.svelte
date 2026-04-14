@@ -131,7 +131,7 @@
   // ===== STATE =====
   let predictionData = $state<PredictionData | null>(null);
   let predictionError = $state<string | null>(null);
-  let predictionServiceAvailable = $state(true);
+  let predictionServiceAvailable = $state(false);
   // svelte-ignore state_referenced_locally
   let serverChartData = $state<TransformedChartData | null>(
     initialChartData ?? null

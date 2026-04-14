@@ -413,6 +413,14 @@ class Program
         }
 #pragma warning restore ASPIRECERTIFICATES001
 
+        // WebSocket activity timeout: YARP's default is too short for long-lived
+        // Socket.IO connections. Set a generous timeout (5 min) so idle WebSocket
+        // frames between Socket.IO pings (every 20s) don't cause premature
+        // "transport close" disconnects.
+        gateway.WithEnvironment(
+            "REVERSEPROXY__CLUSTERS__cluster_nocturne-web__HTTPREQUEST__ACTIVITYTIMEOUT",
+            "00:05:00");
+
         gateway
             .WaitFor(api)
             .WaitFor(web)
