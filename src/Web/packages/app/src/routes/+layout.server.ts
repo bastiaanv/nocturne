@@ -9,13 +9,13 @@ import { PUBLIC_ROUTE_PREFIXES } from "$lib/config/public-routes";
  * Setup mode and site security are handled in hooks.server.ts.
  */
 export const load: LayoutServerLoad = async ({ locals, cookies, url }) => {
-  if (locals.isAuthenticated && locals.apiClient) {
+  if (locals.isAuthenticated) {
     const isBypassed = PUBLIC_ROUTE_PREFIXES.some((prefix) =>
       url.pathname.startsWith(prefix)
     );
 
     if (!isBypassed) {
-      const onboarding = await checkOnboarding(locals.apiClient, cookies);
+      const onboarding = checkOnboarding(cookies);
       if (!onboarding.isComplete) {
         throw redirect(303, "/setup");
       }

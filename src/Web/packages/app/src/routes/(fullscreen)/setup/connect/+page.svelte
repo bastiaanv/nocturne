@@ -1,23 +1,22 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { goto } from "$app/navigation";
   import {
     getUploaderApps,
     getUploaderSetup,
     getActiveDataSources,
+    getServicesOverview,
   } from "$api/generated/services.generated.remote";
   import type {
     UploaderApp,
     UploaderSetupResponse,
     DataSourceInfo,
+    AvailableConnector,
+    SyncResult,
   } from "$lib/api/generated/nocturne-api-client";
-  import WizardShell from "$lib/components/setup/WizardShell.svelte";
-  import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-  } from "$lib/components/ui/card";
+  import { markSetupComplete } from "../setup.remote";
+  import ConnectorSetup from "$lib/components/connectors/ConnectorSetup.svelte";
+  import * as Card from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
   import {
@@ -33,23 +32,31 @@
     Activity,
     Smartphone,
     Clock,
+    Cloud,
+    Plug,
   } from "lucide-svelte";
   import Apple from "lucide-svelte/icons/apple";
 
   // ── View state ──────────────────────────────────────────────────────
 
-  type ViewState = "selection" | "instructions";
+  type ViewState = "selection" | "connector" | "uploader";
   let viewState = $state<ViewState>("selection");
+
+  // ── Connector state ───────────────────────────────────────────────
+  let selectedConnectorId = $state<string | null>(null);
+
+  // ── Uploader state ────────────────────────────────────────────────
   let selectedApp = $state<UploaderApp | null>(null);
   let setupResponse = $state<UploaderSetupResponse | null>(null);
+  let setupLoading = $state(false);
 
   // ── Data state ────────────────────────────────────────────────────
 
   let uploaderApps = $state<UploaderApp[]>([]);
+  let connectors = $state<AvailableConnector[]>([]);
   let dataSources = $state<DataSourceInfo[]>([]);
   let isLoading = $state(true);
   let loadError = $state<string | null>(null);
-  let setupLoading = $state(false);
 
   // ── Copy state ────────────────────────────────────────────────────
 
@@ -123,31 +130,54 @@
     loadError = null;
 
     try {
-      const [apps, sources] = await Promise.all([
+      const [apps, sources, overview] = await Promise.all([
         getUploaderApps(),
         getActiveDataSources().catch(() => [] as DataSourceInfo[]),
+        getServicesOverview(),
       ]);
 
       uploaderApps = apps ?? [];
       dataSources = sources ?? [];
+
+      // Filter out "nightscout" connector (handled on the triage page)
+      connectors = (overview?.availableConnectors ?? []).filter(
+        (c) => c.id?.toLowerCase() !== "nightscout",
+      );
     } catch (e) {
-      loadError = e instanceof Error ? e.message : "Failed to load uploader apps";
+      loadError = e instanceof Error ? e.message : "Failed to load data sources";
     } finally {
       isLoading = false;
     }
   }
 
-  // ── Select an app ─────────────────────────────────────────────────
+  // ── Select a connector ────────────────────────────────────────────
+
+  function selectConnector(connector: AvailableConnector) {
+    selectedConnectorId = connector.id ?? null;
+    viewState = "connector";
+  }
+
+  async function handleConnectorComplete(_result: SyncResult) {
+    await markSetupComplete();
+    await goto("/", { invalidateAll: true });
+  }
+
+  function handleConnectorCancel() {
+    selectedConnectorId = null;
+    viewState = "selection";
+  }
+
+  // ── Select an uploader app ────────────────────────────────────────
 
   async function selectApp(app: UploaderApp) {
     selectedApp = app;
     setupLoading = true;
-    viewState = "instructions";
+    viewState = "uploader";
 
     try {
       const result = await getUploaderSetup(app.id!);
       setupResponse = result;
-    } catch (e) {
+    } catch {
       setupResponse = null;
     } finally {
       setupLoading = false;
@@ -163,6 +193,7 @@
     stopPolling();
     selectedApp = null;
     setupResponse = null;
+    selectedConnectorId = null;
     copiedField = null;
     viewState = "selection";
   }
@@ -183,7 +214,7 @@
       } catch {
         // Silently continue polling
       }
-    }, 15_000); // Poll every 15 seconds
+    }, 15_000);
   }
 
   function stopPolling() {
@@ -205,6 +236,13 @@
     } catch {
       // Clipboard API not available
     }
+  }
+
+  // ── Skip ──────────────────────────────────────────────────────────
+
+  async function handleSkip() {
+    await markSetupComplete();
+    await goto("/", { invalidateAll: true });
   }
 
   // ── Platform icon helper ──────────────────────────────────────────
@@ -239,116 +277,75 @@
 </script>
 
 <svelte:head>
-  <title>Uploaders - Setup - Nocturne</title>
+  <title>Connect a Data Source - Setup - Nocturne</title>
 </svelte:head>
 
-<WizardShell
-  title="Configure Uploader App"
-  description="Set up a phone app to push glucose and treatment data to Nocturne. You can always add more uploaders later."
-  currentStep={6}
-  totalSteps={8}
-  prevHref="/setup/insulins"
-  nextHref="/setup/connectors"
-  showSkip={true}
-  saveDisabled={false}
-  onSave={async () => true}
->
+<div class="container mx-auto max-w-2xl p-6 space-y-6">
   {#if viewState === "selection"}
-    <!-- ── App Selection ──────────────────────────────────────── -->
+    <!-- ── Selection View ──────────────────────────────────────── -->
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Connect a Data Source</h1>
+      <p class="text-muted-foreground">
+        Choose a cloud service or phone app to start sending glucose and treatment data to Nocturne.
+      </p>
+    </div>
+
     {#if isLoading}
       <div class="flex items-center justify-center py-12">
         <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     {:else if loadError}
-      <Card class="border-destructive">
-        <CardContent class="flex items-center gap-3 pt-6">
+      <Card.Root class="border-destructive">
+        <Card.Content class="flex items-center gap-3 pt-6">
           <AlertCircle class="h-5 w-5 text-destructive" />
           <div>
-            <p class="font-medium">Failed to load uploader apps</p>
+            <p class="font-medium">Failed to load data sources</p>
             <p class="text-sm text-muted-foreground">{loadError}</p>
           </div>
-        </CardContent>
-      </Card>
-    {:else if uploaderApps.length === 0}
-      <Card>
-        <CardContent class="py-8 text-center">
-          <Upload class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p class="font-medium">No uploader apps available</p>
-          <p class="text-sm text-muted-foreground mt-1">
-            There are no uploader apps available at this time.
-          </p>
-        </CardContent>
-      </Card>
+        </Card.Content>
+      </Card.Root>
     {:else}
-      <div class="flex items-center justify-end gap-1 mb-2">
-        <Button
-          variant={platformFilter === "all" ? "default" : "outline"}
-          size="sm"
-          onclick={() => (platformFilter = "all")}
-        >
-          All
-        </Button>
-        <Button
-          variant={platformFilter === "ios" ? "default" : "outline"}
-          size="sm"
-          class="gap-1.5"
-          onclick={() => (platformFilter = "ios")}
-        >
-          <Apple class="h-3.5 w-3.5" />
-          iOS
-        </Button>
-        <Button
-          variant={platformFilter === "android" ? "default" : "outline"}
-          size="sm"
-          class="gap-1.5"
-          onclick={() => (platformFilter = "android")}
-        >
-          <Smartphone class="h-3.5 w-3.5" />
-          Android
-        </Button>
-      </div>
-
-      <div class="space-y-6">
-        {#each groupedApps as group (group.category)}
+      <div class="space-y-8">
+        <!-- Cloud Services (Connectors) -->
+        {#if connectors.length > 0}
           <div class="space-y-3">
-            <h3 class="text-sm font-medium text-muted-foreground">{group.label}</h3>
+            <h2 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Cloud class="h-4 w-4" />
+              Cloud Services
+            </h2>
             <div class="grid gap-3 sm:grid-cols-2">
-              {#each group.apps as app (app.id)}
-                {@const detected = isDetected(app.id)}
-                {@const Icon = getCategoryIcon(app.category)}
+              {#each connectors as connector (connector.id)}
+                {@const configured = connector.isConfigured ?? false}
                 <button
                   type="button"
-                  class="flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group {detected
+                  class="flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group {configured
                     ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10'
                     : 'bg-muted/30 hover:border-primary/50 hover:bg-accent/50'}"
-                  onclick={() => selectApp(app)}
+                  onclick={() => selectConnector(connector)}
                 >
                   <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {detected
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {configured
                       ? 'bg-green-500/10 text-green-600'
                       : 'bg-primary/10 text-primary'}"
                   >
-                    {#if detected}
+                    {#if configured}
                       <CheckCircle class="h-5 w-5" />
                     {:else}
-                      <Icon class="h-5 w-5" />
+                      <Plug class="h-5 w-5" />
                     {/if}
                   </div>
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap">
-                      <span class="font-medium">{app.name}</span>
-                      <Badge variant="outline" class="text-xs gap-1">
-                        {getPlatformLabel(app.platform)}
-                      </Badge>
-                      {#if detected}
+                      <span class="font-medium">{connector.name}</span>
+                      {#if configured}
                         <Badge variant="secondary" class="text-xs text-green-600">
                           Connected
                         </Badge>
                       {/if}
                     </div>
-                    {#if app.description}
+                    {#if connector.description}
                       <p class="text-sm text-muted-foreground line-clamp-1">
-                        {app.description}
+                        {connector.description}
                       </p>
                     {/if}
                   </div>
@@ -359,12 +356,153 @@
               {/each}
             </div>
           </div>
-        {/each}
+        {/if}
+
+        <!-- Phone Apps (Uploaders) -->
+        {#if uploaderApps.length > 0}
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Smartphone class="h-4 w-4" />
+                Phone Apps
+              </h2>
+              <div class="flex items-center gap-1">
+                <Button
+                  variant={platformFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onclick={() => (platformFilter = "all")}
+                >
+                  All
+                </Button>
+                <Button
+                  variant={platformFilter === "ios" ? "default" : "outline"}
+                  size="sm"
+                  class="gap-1.5"
+                  onclick={() => (platformFilter = "ios")}
+                >
+                  <Apple class="h-3.5 w-3.5" />
+                  iOS
+                </Button>
+                <Button
+                  variant={platformFilter === "android" ? "default" : "outline"}
+                  size="sm"
+                  class="gap-1.5"
+                  onclick={() => (platformFilter = "android")}
+                >
+                  <Smartphone class="h-3.5 w-3.5" />
+                  Android
+                </Button>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              {#each groupedApps as group (group.category)}
+                <div class="space-y-3">
+                  <h3 class="text-sm font-medium text-muted-foreground">{group.label}</h3>
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    {#each group.apps as app (app.id)}
+                      {@const detected = isDetected(app.id)}
+                      {@const Icon = getCategoryIcon(app.category)}
+                      <button
+                        type="button"
+                        class="flex items-center gap-4 p-4 rounded-lg border transition-colors text-left group {detected
+                          ? 'border-green-500/30 bg-green-500/5 hover:bg-green-500/10'
+                          : 'bg-muted/30 hover:border-primary/50 hover:bg-accent/50'}"
+                        onclick={() => selectApp(app)}
+                      >
+                        <div
+                          class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {detected
+                            ? 'bg-green-500/10 text-green-600'
+                            : 'bg-primary/10 text-primary'}"
+                        >
+                          {#if detected}
+                            <CheckCircle class="h-5 w-5" />
+                          {:else}
+                            <Icon class="h-5 w-5" />
+                          {/if}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-medium">{app.name}</span>
+                            <Badge variant="outline" class="text-xs gap-1">
+                              {getPlatformLabel(app.platform)}
+                            </Badge>
+                            {#if detected}
+                              <Badge variant="secondary" class="text-xs text-green-600">
+                                Connected
+                              </Badge>
+                            {/if}
+                          </div>
+                          {#if app.description}
+                            <p class="text-sm text-muted-foreground line-clamp-1">
+                              {app.description}
+                            </p>
+                          {/if}
+                        </div>
+                        <ChevronRight
+                          class="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0"
+                        />
+                      </button>
+                    {/each}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Empty state when both are empty -->
+        {#if connectors.length === 0 && uploaderApps.length === 0}
+          <Card.Root>
+            <Card.Content class="py-8 text-center">
+              <Plug class="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p class="font-medium">No data sources available</p>
+              <p class="text-sm text-muted-foreground mt-1">
+                There are no data sources available at this time.
+              </p>
+            </Card.Content>
+          </Card.Root>
+        {/if}
+      </div>
+
+      <!-- Skip link -->
+      <div class="pt-4 text-center">
+        <button
+          type="button"
+          class="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
+          onclick={handleSkip}
+        >
+          Skip for now
+        </button>
       </div>
     {/if}
 
-  {:else if viewState === "instructions"}
-    <!-- ── Setup Instructions ─────────────────────────────────── -->
+  {:else if viewState === "connector"}
+    <!-- ── Connector View ──────────────────────────────────────── -->
+    <div class="space-y-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        class="gap-1 -ml-2"
+        onclick={handleConnectorCancel}
+      >
+        <ChevronLeft class="h-4 w-4" />
+        Back to data sources
+      </Button>
+
+      <ConnectorSetup
+        connectorId={selectedConnectorId ?? undefined}
+        onComplete={handleConnectorComplete}
+        onCancel={handleConnectorCancel}
+        showToggle={false}
+        showDangerZone={false}
+        showCapabilities={false}
+        primaryAction="save-and-sync"
+      />
+    </div>
+
+  {:else if viewState === "uploader"}
+    <!-- ── Uploader View ───────────────────────────────────────── -->
     <div class="space-y-4">
       <Button
         variant="ghost"
@@ -373,7 +511,7 @@
         onclick={handleBackToSelection}
       >
         <ChevronLeft class="h-4 w-4" />
-        Back to uploaders
+        Back to data sources
       </Button>
 
       {#if setupLoading}
@@ -391,14 +529,14 @@
         </div>
 
         <!-- API URLs to copy -->
-        <Card>
-          <CardHeader class="pb-3">
-            <CardTitle class="text-sm">Connection Details</CardTitle>
-            <CardDescription>
+        <Card.Root>
+          <Card.Header class="pb-3">
+            <Card.Title class="text-sm">Connection Details</Card.Title>
+            <Card.Description>
               Copy these values into your {selectedApp?.name} app settings.
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-3">
+            </Card.Description>
+          </Card.Header>
+          <Card.Content class="space-y-3">
             <!-- Full API URL -->
             <div class="space-y-1">
               <span class="text-xs font-medium text-muted-foreground">API URL</span>
@@ -477,8 +615,8 @@
                 </div>
               </div>
             {/if}
-          </CardContent>
-        </Card>
+          </Card.Content>
+        </Card.Root>
 
         <!-- App download link -->
         {#if selectedApp?.url}
@@ -497,8 +635,8 @@
         {@const detected = isDetected(selectedApp?.id)}
         {@const ds = getDataSource(selectedApp?.id)}
         {#if detected && ds}
-          <Card class="border-green-500/30">
-            <CardContent class="flex items-center gap-3 pt-6">
+          <Card.Root class="border-green-500/30">
+            <Card.Content class="flex items-center gap-3 pt-6">
               <CheckCircle class="h-5 w-5 text-green-500" />
               <div>
                 <p class="font-medium text-green-600">Connected</p>
@@ -506,11 +644,17 @@
                   {selectedApp?.name} is sending data. {ds.entriesLast24h ?? 0} entries in the last 24 hours.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </Card.Content>
+          </Card.Root>
+
+          <div class="flex justify-end">
+            <Button onclick={handleSkip}>
+              Continue to Dashboard
+            </Button>
+          </div>
         {:else}
-          <Card class="border-muted">
-            <CardContent class="flex items-center gap-3 pt-6">
+          <Card.Root class="border-muted">
+            <Card.Content class="flex items-center gap-3 pt-6">
               <Clock class="h-5 w-5 text-muted-foreground" />
               <div>
                 <p class="font-medium">Waiting for data</p>
@@ -518,12 +662,12 @@
                   Once you've configured {selectedApp?.name}, it can take up to five minutes for the first glucose data to arrive. This page will update automatically.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </Card.Content>
+          </Card.Root>
         {/if}
       {:else}
-        <Card class="border-destructive">
-          <CardContent class="flex items-center gap-3 pt-6">
+        <Card.Root class="border-destructive">
+          <Card.Content class="flex items-center gap-3 pt-6">
             <AlertCircle class="h-5 w-5 text-destructive" />
             <div>
               <p class="font-medium">Failed to load setup instructions</p>
@@ -531,9 +675,9 @@
                 Could not load setup details for {selectedApp?.name}. Please try again.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </Card.Content>
+        </Card.Root>
       {/if}
     </div>
   {/if}
-</WizardShell>
+</div>

@@ -173,7 +173,7 @@ const siteSecurityHandle: Handle = async ({ event, resolve }) => {
           if (body.setupRequired) {
             return new Response(null, {
               status: 303,
-              headers: { Location: "/setup/passkey" },
+              headers: { Location: "/setup" },
             });
           }
           if (body.recoveryMode) {
