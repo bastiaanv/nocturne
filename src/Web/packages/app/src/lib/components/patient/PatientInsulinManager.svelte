@@ -352,7 +352,7 @@
                 id="insulin-name"
                 bind:value={inlineName}
                 placeholder="e.g. Humalog, Lantus"
-                disabled={!!inlineFormulationId}
+                readonly={!!inlineFormulationId}
               />
             </div>
 
@@ -628,7 +628,7 @@
               id="insulin-name"
               bind:value={insulinName}
               placeholder="e.g. Humalog, Tresiba, Fiasp"
-              disabled={!!insulinFormulationId}
+              readonly={!!insulinFormulationId}
             />
           </div>
 
