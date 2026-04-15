@@ -10,14 +10,29 @@
     Copy,
     AlertTriangle,
     ShieldCheck,
+    ExternalLink,
   } from "lucide-svelte";
   import { startRegistration } from "@simplewebauthn/browser";
   import {
     setupOptions,
     setupComplete,
   } from "$lib/api/generated/passkeys.generated.remote";
-  import { setAuthCookies } from "$routes/(fullscreen)/auth/auth.remote";
+  import { setAuthCookies, getOidcProviders } from "$routes/(fullscreen)/auth/auth.remote";
   import { invalidateAll } from "$app/navigation";
+
+  // OIDC providers
+  const oidcQuery = getOidcProviders();
+  let isRedirecting = $state(false);
+  let selectedProvider = $state<string | null>(null);
+
+  function loginWithProvider(providerId: string) {
+    isRedirecting = true;
+    selectedProvider = providerId;
+    const params = new URLSearchParams();
+    params.set("provider", providerId);
+    params.set("returnUrl", "/setup/permissions");
+    window.location.href = `/api/v4/oidc/login?${params.toString()}`;
+  }
 
   // Form state
   let displayName = $state("");
@@ -98,8 +113,8 @@
 </svelte:head>
 
 <WizardShell
-  title="Set Up Your Passkey"
-  description="Create a passkey for secure, passwordless authentication. You will also receive recovery codes in case you lose access to your passkey."
+  title="Set Up Your Account"
+  description="Choose how you want to authenticate. You can use an external provider for quick setup, or register a passkey for passwordless authentication."
   currentStep={1}
   totalSteps={8}
   nextHref="/setup/patient"
@@ -108,8 +123,53 @@
   onSave={handleSave}
 >
   {#if !registrationComplete}
-    <!-- Registration form -->
+    {@const oidc = oidcQuery.current}
+    {@const hasOidc = oidc?.enabled && oidc.providers.length > 0}
+
     <div class="space-y-4">
+      {#if errorMessage}
+        <div
+          class="flex items-start gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-3"
+        >
+          <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+          <p class="text-sm text-destructive">{errorMessage}</p>
+        </div>
+      {/if}
+
+      {#if hasOidc && oidc}
+        <!-- OIDC provider buttons -->
+        <div class="space-y-3">
+          {#each oidc.providers as provider}
+            <Button
+              variant="outline"
+              class="w-full h-11 relative"
+              disabled={isRedirecting || isRegistering}
+              onclick={() => provider.id && loginWithProvider(provider.id)}
+            >
+              {#if isRedirecting && selectedProvider === provider.id}
+                <Loader2 class="mr-2 h-4 w-4 animate-spin" />
+                Redirecting...
+              {:else}
+                <ExternalLink class="mr-2 h-4 w-4" />
+                Continue with {provider.name}
+              {/if}
+            </Button>
+          {/each}
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <span class="w-full border-t"></span>
+          </div>
+          <div class="relative flex justify-center text-xs uppercase">
+            <span class="bg-background px-2 text-muted-foreground">
+              Or set up with a passkey
+            </span>
+          </div>
+        </div>
+      {/if}
+
+      <!-- Passkey registration form -->
       <div class="space-y-2">
         <Label for="display-name">Display name</Label>
         <Input
@@ -117,7 +177,7 @@
           type="text"
           placeholder="Your name"
           bind:value={displayName}
-          disabled={isRegistering}
+          disabled={isRegistering || isRedirecting}
         />
         <p class="text-xs text-muted-foreground">
           This is how you will appear to others.
@@ -131,26 +191,17 @@
           type="text"
           placeholder="your-username"
           bind:value={username}
-          disabled={isRegistering}
+          disabled={isRegistering || isRedirecting}
         />
         <p class="text-xs text-muted-foreground">
           A unique identifier for your account. Used for non-discoverable login.
         </p>
       </div>
 
-      {#if errorMessage}
-        <div
-          class="flex items-start gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-3"
-        >
-          <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-          <p class="text-sm text-destructive">{errorMessage}</p>
-        </div>
-      {/if}
-
       <Button
         class="w-full"
         size="lg"
-        disabled={!canRegister || isRegistering}
+        disabled={!canRegister || isRegistering || isRedirecting}
         onclick={handleRegister}
       >
         {#if isRegistering}
