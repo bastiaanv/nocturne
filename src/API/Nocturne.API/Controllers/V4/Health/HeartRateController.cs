@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
+using Nocturne.API.Models.Requests.V4;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.Authorization;
@@ -88,7 +89,7 @@ public class HeartRateController : ControllerBase
     }
 
     /// <summary>
-    /// Create one or more heart rate records (single object or array)
+    /// Create one or more heart rate records
     /// </summary>
     [HttpPost]
     [RequireScope(OAuthScopes.HeartRateReadWrite)]
@@ -96,41 +97,25 @@ public class HeartRateController : ControllerBase
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<IEnumerable<HeartRate>>> CreateHeartRates(
-        [FromBody] object heartRates,
+        [FromBody] UpsertHeartRateRequest[] requests,
         CancellationToken cancellationToken = default
     )
     {
         try
         {
-            if (heartRates == null)
-                return Problem(detail: "Heart rate data is required", statusCode: 400, title: "Bad Request");
-
-            List<HeartRate> heartRateList;
-
-            if (heartRates is System.Text.Json.JsonElement jsonElement)
-            {
-                if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Array)
-                {
-                    heartRateList =
-                        System.Text.Json.JsonSerializer.Deserialize<List<HeartRate>>(
-                            jsonElement.GetRawText()
-                        ) ?? [];
-                }
-                else
-                {
-                    var single = System.Text.Json.JsonSerializer.Deserialize<HeartRate>(
-                        jsonElement.GetRawText()
-                    );
-                    heartRateList = single != null ? [single] : [];
-                }
-            }
-            else
-            {
-                return Problem(detail: "Invalid data format", statusCode: 400, title: "Bad Request");
-            }
-
-            if (heartRateList.Count == 0)
+            if (requests.Length == 0)
                 return Problem(detail: "At least one heart rate record is required", statusCode: 400, title: "Bad Request");
+
+            var heartRateList = requests.Select(request => new HeartRate
+            {
+                Mills = new DateTimeOffset(request.Timestamp.UtcDateTime, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                UtcOffset = request.UtcOffset,
+                Bpm = request.Bpm,
+                Accuracy = request.Accuracy,
+                Device = request.Device,
+                EnteredBy = request.App,
+                DataSource = request.DataSource,
+            }).ToList();
 
             var result = await _heartRateService.CreateHeartRatesAsync(heartRateList, cancellationToken);
             return Ok(result);
@@ -152,12 +137,23 @@ public class HeartRateController : ControllerBase
     [ProducesResponseType(500)]
     public async Task<ActionResult<HeartRate>> UpdateHeartRate(
         string id,
-        [FromBody] HeartRate heartRate,
+        [FromBody] UpsertHeartRateRequest request,
         CancellationToken cancellationToken = default
     )
     {
         try
         {
+            var heartRate = new HeartRate
+            {
+                Mills = new DateTimeOffset(request.Timestamp.UtcDateTime, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                UtcOffset = request.UtcOffset,
+                Bpm = request.Bpm,
+                Accuracy = request.Accuracy,
+                Device = request.Device,
+                EnteredBy = request.App,
+                DataSource = request.DataSource,
+            };
+
             var updated = await _heartRateService.UpdateHeartRateAsync(id, heartRate, cancellationToken);
             if (updated == null)
                 return Problem(detail: $"Heart rate record with ID {id} not found", statusCode: 404, title: "Not Found");

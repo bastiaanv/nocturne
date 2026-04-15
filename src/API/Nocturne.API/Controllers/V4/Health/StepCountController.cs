@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nocturne.API.Attributes;
+using Nocturne.API.Models.Requests.V4;
 using Nocturne.Core.Contracts;
 using Nocturne.Core.Models;
 using Nocturne.Core.Models.Authorization;
@@ -88,7 +89,7 @@ public class StepCountController : ControllerBase
     }
 
     /// <summary>
-    /// Create one or more step count records (single object or array)
+    /// Create one or more step count records
     /// </summary>
     [HttpPost]
     [RequireScope(OAuthScopes.StepCountReadWrite)]
@@ -96,41 +97,25 @@ public class StepCountController : ControllerBase
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public async Task<ActionResult<IEnumerable<StepCount>>> CreateStepCounts(
-        [FromBody] object stepCounts,
+        [FromBody] UpsertStepCountRequest[] requests,
         CancellationToken cancellationToken = default
     )
     {
         try
         {
-            if (stepCounts == null)
-                return Problem(detail: "Step count data is required", statusCode: 400, title: "Bad Request");
-
-            List<StepCount> stepCountList;
-
-            if (stepCounts is System.Text.Json.JsonElement jsonElement)
-            {
-                if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Array)
-                {
-                    stepCountList =
-                        System.Text.Json.JsonSerializer.Deserialize<List<StepCount>>(
-                            jsonElement.GetRawText()
-                        ) ?? [];
-                }
-                else
-                {
-                    var single = System.Text.Json.JsonSerializer.Deserialize<StepCount>(
-                        jsonElement.GetRawText()
-                    );
-                    stepCountList = single != null ? [single] : [];
-                }
-            }
-            else
-            {
-                return Problem(detail: "Invalid data format", statusCode: 400, title: "Bad Request");
-            }
-
-            if (stepCountList.Count == 0)
+            if (requests.Length == 0)
                 return Problem(detail: "At least one step count record is required", statusCode: 400, title: "Bad Request");
+
+            var stepCountList = requests.Select(request => new StepCount
+            {
+                Mills = new DateTimeOffset(request.Timestamp.UtcDateTime, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                UtcOffset = request.UtcOffset,
+                Metric = request.Metric,
+                Source = request.Source,
+                Device = request.Device,
+                EnteredBy = request.App,
+                DataSource = request.DataSource,
+            }).ToList();
 
             var result = await _stepCountService.CreateStepCountsAsync(stepCountList, cancellationToken);
             return Ok(result);
@@ -152,12 +137,23 @@ public class StepCountController : ControllerBase
     [ProducesResponseType(500)]
     public async Task<ActionResult<StepCount>> UpdateStepCount(
         string id,
-        [FromBody] StepCount stepCount,
+        [FromBody] UpsertStepCountRequest request,
         CancellationToken cancellationToken = default
     )
     {
         try
         {
+            var stepCount = new StepCount
+            {
+                Mills = new DateTimeOffset(request.Timestamp.UtcDateTime, TimeSpan.Zero).ToUnixTimeMilliseconds(),
+                UtcOffset = request.UtcOffset,
+                Metric = request.Metric,
+                Source = request.Source,
+                Device = request.Device,
+                EnteredBy = request.App,
+                DataSource = request.DataSource,
+            };
+
             var updated = await _stepCountService.UpdateStepCountAsync(id, stepCount, cancellationToken);
             if (updated == null)
                 return Problem(detail: $"Step count record with ID {id} not found", statusCode: 404, title: "Not Found");

@@ -68,4 +68,10 @@ public class HeartRate : ProcessableDocumentBase
     [JsonPropertyName("data_source")]
     [NocturneOnly]
     public string? DataSource { get; set; }
+
+    /// <summary>
+    /// Gets the UTC timestamp derived from Mills, for ISO 8601 serialization in v4 responses
+    /// </summary>
+    [JsonPropertyName("timestamp")]
+    public DateTime Timestamp => DateTimeOffset.FromUnixTimeMilliseconds(Mills).UtcDateTime;
 }
