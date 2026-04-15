@@ -5,6 +5,11 @@ apply plugin: 'signing'
 
 group = 'org.nightscoutfoundation'
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 // Configure the existing maven publication with POM metadata
 publishing.publications.configureEach {
     pom {

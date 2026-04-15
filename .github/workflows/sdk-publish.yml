@@ -233,6 +233,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           cd ~/.m2/repository
+          # Generate MD5 and SHA1 checksums required by Maven Central
+          find org/nightscoutfoundation/nocturne -type f ! -name '*.md5' ! -name '*.sha1' ! -name 'maven-metadata-local.xml' ! -name '_remote.repositories' | while read f; do
+            md5sum "$f" | awk '{print $1}' > "$f.md5"
+            sha1sum "$f" | awk '{print $1}' > "$f.sha1"
+          done
           zip -r $GITHUB_WORKSPACE/kotlin-bundle.zip org/nightscoutfoundation/nocturne/ -x '*/maven-metadata-local.xml' '*/_remote.repositories'
           cd $GITHUB_WORKSPACE
           UPLOAD_RESPONSE=$(curl -s -w "\n%{http_code}" \
@@ -382,6 +387,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           cd ~/.m2/repository
+          # Generate MD5 and SHA1 checksums required by Maven Central
+          find org/nightscoutfoundation/nocturne-java -type f ! -name '*.md5' ! -name '*.sha1' ! -name 'maven-metadata-local.xml' ! -name '_remote.repositories' | while read f; do
+            md5sum "$f" | awk '{print $1}' > "$f.md5"
+            sha1sum "$f" | awk '{print $1}' > "$f.sha1"
+          done
           zip -r $GITHUB_WORKSPACE/java-bundle.zip org/nightscoutfoundation/nocturne-java/ -x '*/maven-metadata-local.xml' '*/_remote.repositories'
           cd $GITHUB_WORKSPACE
           UPLOAD_RESPONSE=$(curl -s -w "\n%{http_code}" \
