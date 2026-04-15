@@ -220,6 +220,8 @@ jobs:
           content = re.sub(r'java\s*\{[^}]*withSourcesJar[^}]*\}', '', content)
           with open('sdk/kotlin/out/build.gradle', 'w') as f: f.write(content)
           "
+          # Inject plugin via settings.gradle so it resolves before build.gradle
+          sed -i '1i pluginManagement { repositories { gradlePluginPortal() } }\nplugins { id "net.thebugmc.gradle.sonatype-central-portal-publisher" version "1.2.4" apply false }' sdk/kotlin/out/settings.gradle
           cat sdk/kotlin/publish.gradle >> sdk/kotlin/out/build.gradle
 
       - name: Setup Java
@@ -363,6 +365,8 @@ jobs:
           content = re.sub(r'java\s*\{[^}]*withSourcesJar[^}]*\}', '', content)
           with open('sdk/java/out/build.gradle', 'w') as f: f.write(content)
           "
+          # Inject plugin via settings.gradle so it resolves before build.gradle
+          sed -i '1i pluginManagement { repositories { gradlePluginPortal() } }\nplugins { id "net.thebugmc.gradle.sonatype-central-portal-publisher" version "1.2.4" apply false }' sdk/java/out/settings.gradle
           cat sdk/java/publish.gradle >> sdk/java/out/build.gradle
           # Remove API files with multipart upload bugs (OpenAPI Generator native library issue)
           rm -f sdk/java/out/src/main/java/org/nightscoutfoundation/nocturne/api/AlertCustomSoundsApi.java
