@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+    id 'net.thebugmc.gradle.sonatype-central-portal-publisher' version '1.2.4'
+}
+
+group = 'org.nightscoutfoundation'
+// version is set by OpenAPI Generator via additionalProperties.artifactVersion
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.21.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.21.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.21.1'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.21.1'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.10'
+    implementation 'jakarta.annotation:jakarta.annotation-api:1.3.5'
+    implementation 'org.apache.httpcomponents:httpmime:4.5.13'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+centralPortal {
+    username = System.getenv('MAVEN_USERNAME')
+    password = System.getenv('MAVEN_PASSWORD')
+
+    pom {
+        name = 'Nocturne Java SDK'
+        description = 'Java client for the Nocturne (Nightscout) diabetes management API'
+        url = 'https://github.com/nightscout/nocturne'
+
+        licenses {
+            license {
+                name = 'AGPL-3.0-only'
+                url = 'https://www.gnu.org/licenses/agpl-3.0.html'
+            }
+        }
+
+        developers {
+            developer {
+                id = 'nightscout'
+                name = 'Nightscout Foundation'
+                organization = 'Nightscout Foundation'
+                organizationUrl = 'https://www.nightscoutfoundation.org'
+            }
+        }
+
+        scm {
+            connection = 'scm:git:git://github.com/nightscout/nocturne.git'
+            developerConnection = 'scm:git:ssh://github.com/nightscout/nocturne.git'
+            url = 'https://github.com/nightscout/nocturne'
+        }
+    }
+}
+
+signing {
+    def signingKey = System.getenv('SIGNING_KEY')
+    def signingPassword = System.getenv('SIGNING_PASSWORD')
+    if (signingKey && signingPassword) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign publishing.publications
+    }
+}
