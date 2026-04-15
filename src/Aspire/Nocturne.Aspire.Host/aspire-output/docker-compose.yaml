@@ -76,6 +76,7 @@ services:
       WHATSAPP_VERIFY_TOKEN: "${WHATSAPP_VERIFY_TOKEN}"
       WHATSAPP_APP_SECRET: "${WHATSAPP_APP_SECRET}"
       WHATSAPP_PHONE_NUMBER_ID: "${WHATSAPP_PHONE_NUMBER_ID}"
+      ORIGIN: "https://${PUBLIC_BASE_DOMAIN}"
       NOCTURNE_POSTGRES_URI: "postgresql://nocturne_web:${POSTGRES_WEB_PASSWORD}@nocturne-postgres-server:5432/nocturne"
     expose:
       - "8000"
@@ -92,7 +93,7 @@ services:
       - "dotnet"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      NOCTURNE_API_HTTP: "http://nocturne-api:${NOCTURNE_API_PORT}"
+      REVERSEPROXY__CLUSTERS__cluster_nocturne-web__HTTPREQUEST__ACTIVITYTIMEOUT: "00:05:00"
       REVERSEPROXY__ROUTES__route0__MATCH__PATH: "/api/v4/oidc/{**catch-all}"
       REVERSEPROXY__ROUTES__route0__CLUSTERID: "cluster_nocturne-api"
       REVERSEPROXY__ROUTES__route0__TRANSFORMS__0__X-Forwarded: "Set"
@@ -123,6 +124,7 @@ services:
       REVERSEPROXY__ROUTES__route6__TRANSFORMS__0__HeaderPrefix: "X-Forwarded"
       REVERSEPROXY__CLUSTERS__cluster_nocturne-api__DESTINATIONS__destination1__ADDRESS: "http://_http.nocturne-api"
       REVERSEPROXY__CLUSTERS__cluster_nocturne-web__DESTINATIONS__destination1__ADDRESS: "http://_http.nocturne-web"
+      NOCTURNE_API_HTTP: "http://nocturne-api:${NOCTURNE_API_PORT}"
       services__nocturne-api__http__0: "http://nocturne-api:${NOCTURNE_API_PORT}"
       NOCTURNE_WEB_HTTP: "http://nocturne-web:8000"
       services__nocturne-web__http__0: "http://nocturne-web:8000"
@@ -141,7 +143,7 @@ services:
   scalar:
     image: "scalarapi/aspire-api-reference:0.8.0"
     environment:
-      API_REFERENCE_CONFIG: "W3sicHJveHlVcmwiOiIvc2NhbGFyLXByb3h5Iiwic2VydmVycyI6W3sidXJsIjoiaHR0cDovL25vY3R1cm5lLWFwaSIsImRlc2NyaXB0aW9uIjoibm9jdHVybmUtYXBpIn1dLCJ0aGVtZSI6Ik1hcnMiLCJmYXZpY29uIjoiZmF2aWNvbi5zdmciLCJfaW50ZWdyYXRpb24iOiJkb3RuZXQiLCJzb3VyY2VzIjpbeyJ0aXRsZSI6Im5vY3R1cm5lLWFwaSB8IE5vY3R1cm5lIEFQSSIsInVybCI6Imh0dHA6Ly9ub2N0dXJuZS1hcGkvb3BlbmFwaS92MS5qc29uIn1dfV0="
+      API_REFERENCE_CONFIG: "W3sicHJveHlVcmwiOiIvc2NhbGFyLXByb3h5Iiwic2VydmVycyI6W3sidXJsIjoiaHR0cDovL25vY3R1cm5lLWFwaSIsImRlc2NyaXB0aW9uIjoibm9jdHVybmUtYXBpIn1dLCJhdXRoZW50aWNhdGlvbiI6eyJwcmVmZXJyZWRTZWN1cml0eVNjaGVtZSI6WyJvYXV0aDIiXSwic2VjdXJpdHlTY2hlbWVzIjp7Im9hdXRoMiI6eyJmbG93cyI6eyJhdXRob3JpemF0aW9uQ29kZSI6eyJhdXRob3JpemF0aW9uVXJsIjoiL2FwaS9vYXV0aC9hdXRob3JpemUiLCJ0b2tlblVybCI6Ii9hcGkvb2F1dGgvdG9rZW4iLCJ4LXVzZVBrY2UiOiJTaGEyNTYiLCJzZWxlY3RlZFNjb3BlcyI6WyIqIl19fX19fSwidGhlbWUiOiJNYXJzIiwiZmF2aWNvbiI6ImZhdmljb24uc3ZnIiwiX2ludGVncmF0aW9uIjoiZG90bmV0Iiwic291cmNlcyI6W3sidGl0bGUiOiJub2N0dXJuZS1hcGkgfCBOb2N0dXJuZSBBUEkiLCJ1cmwiOiJodHRwOi8vbm9jdHVybmUtYXBpL29wZW5hcGkvbm9jdHVybmUuanNvbiJ9LHsidGl0bGUiOiJub2N0dXJuZS1hcGkgfCBOaWdodHNjb3V0IEFQSSIsInVybCI6Imh0dHA6Ly9ub2N0dXJuZS1hcGkvb3BlbmFwaS9uaWdodHNjb3V0Lmpzb24ifV0sInBlcnNpc3RBdXRoIjp0cnVlfV0="
       CDN_URL: "scalar.js"
       ALLOW_SELF_SIGNED_CERTIFICATES: "False"
       DEFAULT_PROXY: "True"
