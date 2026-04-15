@@ -178,7 +178,7 @@
             />
           </div>
 
-          {#if needsLink}
+          {#if enabled && needsLink}
             <p class="text-sm text-amber-600 mt-1 pl-13">
               Account not linked. Use /connect in {getPlatformName(ct)} to
               enable delivery.
