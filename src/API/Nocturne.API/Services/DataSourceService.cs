@@ -137,7 +137,8 @@ public class DataSourceService : IDataSourceService
     }
 
     /// <inheritdoc />
-    public List<AvailableConnector> GetAvailableConnectors()
+    public async Task<List<AvailableConnector>> GetAvailableConnectorsAsync(
+        CancellationToken cancellationToken = default)
     {
         var connectors = ConnectorMetadataService.GetAll()
             .Select(connector => new AvailableConnector
@@ -156,10 +157,16 @@ public class DataSourceService : IDataSourceService
             .OrderBy(connector => connector.Name)
             .ToList();
 
+        // Check which connectors have actual user-saved configuration in the database
+        var configuredConnectorNames = (await _context.ConnectorConfigurations
+            .AsNoTracking()
+            .Select(c => c.ConnectorName.ToLower())
+            .ToListAsync(cancellationToken))
+            .ToHashSet();
 
         foreach (var connector in connectors)
         {
-            connector.IsConfigured = ConnectorMetadataService.GetByConnectorId(connector.Id) != null;
+            connector.IsConfigured = configuredConnectorNames.Contains(connector.Id?.ToLowerInvariant() ?? "");
         }
 
         return connectors;
@@ -637,7 +644,7 @@ public class DataSourceService : IDataSourceService
         return new ServicesOverview
         {
             ActiveDataSources = dataSources,
-            AvailableConnectors = GetAvailableConnectors(),
+            AvailableConnectors = await GetAvailableConnectorsAsync(cancellationToken),
             UploaderApps = GetUploaderApps(),
             ApiEndpoint = new ApiEndpointInfo
             {

@@ -149,10 +149,11 @@ public class ServicesController : ControllerBase
     [HttpGet("connectors")]
     [RemoteQuery]
     [ProducesResponseType(typeof(List<AvailableConnector>), 200)]
-    public ActionResult<List<AvailableConnector>> GetAvailableConnectors()
+    public async Task<ActionResult<List<AvailableConnector>>> GetAvailableConnectors(
+        CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting available connectors");
-        var connectors = _dataSourceService.GetAvailableConnectors();
+        var connectors = await _dataSourceService.GetAvailableConnectorsAsync(cancellationToken);
         return Ok(connectors);
     }
 

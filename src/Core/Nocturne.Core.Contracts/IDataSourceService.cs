@@ -30,8 +30,11 @@ public interface IDataSourceService
     /// <summary>
     /// Get available connectors that can be configured
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of available connectors</returns>
-    List<AvailableConnector> GetAvailableConnectors();
+    Task<List<AvailableConnector>> GetAvailableConnectorsAsync(
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get capabilities for a specific connector.
