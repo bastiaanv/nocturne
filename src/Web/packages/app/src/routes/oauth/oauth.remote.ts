@@ -167,11 +167,18 @@ async function callDeviceApprove(
   body.set("user_code", userCode);
   body.set("approved", approved.toString());
 
+  // Forward the original Host header so the API can resolve the correct tenant
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+  const originalHost = event!.request.headers.get("host");
+  if (originalHost) {
+    headers["X-Forwarded-Host"] = originalHost;
+  }
+
   const response = await event!.fetch(`${apiClient.baseUrl}/api/oauth/device-approve`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers,
     body: body.toString(),
   });
 
@@ -257,12 +264,19 @@ export const consentForm = form(consentSchema, async (data, issue) => {
     body.set("limit_to_24_hours", data.limit_to_24_hours);
   }
 
+  // Forward the original Host header so the API can resolve the correct tenant
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+  const consentHost = event.request.headers.get("host");
+  if (consentHost) {
+    headers["X-Forwarded-Host"] = consentHost;
+  }
+
   // Use fetch with redirect: "manual" to capture the redirect URL
   const response = await event.fetch(`${apiClient.baseUrl}/api/oauth/authorize`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers,
     body: body.toString(),
     redirect: "manual",
   });

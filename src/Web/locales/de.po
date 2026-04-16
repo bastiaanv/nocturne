@@ -319,6 +319,9 @@ msgstr ""
 #: src/lib/components/WebSocketStatus.svelte
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
 #: src/routes/(fullscreen)/auth/bot/authorize/done/+page.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/auth/bot/authorize/done/+page.svelte
@@ -1258,6 +1261,7 @@ msgstr ""
 #: src/lib/components/patient/PatientDeviceManager.svelte
 #: src/lib/components/profile/ProfileEditDialog.svelte
 #: src/lib/components/status-pills/TrackerPill.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/compatibility/[id]/+page.svelte
 #: src/routes/compatibility/[id]/+page.svelte
@@ -1534,6 +1538,7 @@ msgid "Method"
 msgstr ""
 
 #: src/lib/components/treatments/TreatmentCategoryTabs.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/compatibility/+page.svelte
 #: src/routes/compatibility/+page.svelte
@@ -3190,8 +3195,8 @@ msgstr ""
 msgid "Customize themes, colors, units, and display preferences"
 msgstr ""
 
+#: src/lib/components/dashboard/SetupCard.svelte
 #: src/lib/components/rbac/PermissionPicker.svelte
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/+page.svelte
 #: src/routes/settings/devices/+page.svelte
 #: src/routes/settings/patient/+page.svelte
@@ -3258,7 +3263,6 @@ msgid "Connect data sources like Dexcom, Libre, and more"
 msgstr ""
 
 #: src/lib/components/StepIndicator.svelte
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/download/+page.svelte
 #: src/routes/settings/+page.svelte
 #: src/routes/settings/setup/+page.svelte
@@ -7814,6 +7818,7 @@ msgstr ""
 msgid "Performance"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/compatibility/[id]/+page.svelte
 msgid "← Back"
 msgstr ""
@@ -9437,6 +9442,7 @@ msgstr ""
 msgid "Failed to load admin data"
 msgstr ""
 
+#: src/lib/components/dashboard/SetupCard.svelte
 #: src/routes/settings/admin/+page.svelte
 #: src/routes/settings/admin/+page.svelte
 msgid "Public"
@@ -10728,6 +10734,7 @@ msgstr ""
 msgid "<0/> MongoDB (Advanced)"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/download/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
@@ -11013,6 +11020,7 @@ msgstr ""
 msgid "Connect your CGM app or AID system to push data to Nocturne"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
 #: src/routes/settings/services/+page.svelte
@@ -11020,6 +11028,7 @@ msgstr ""
 msgid "CGM Apps"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
 #: src/routes/settings/services/+page.svelte
@@ -11131,6 +11140,7 @@ msgstr ""
 msgid "<0/> Set up {0}"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
 #: src/routes/settings/services/+page.svelte
@@ -12696,7 +12706,6 @@ msgstr ""
 
 #: src/lib/components/StepIndicator.svelte
 #: src/lib/components/layout/AppSidebar.svelte
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Setup"
 msgstr ""
@@ -12716,6 +12725,7 @@ msgstr ""
 #: src/lib/components/SiteFooter.svelte
 #: src/lib/components/SiteHeader.svelte
 #: src/lib/components/SiteHeader.svelte
+#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/(fullscreen)/setup/migrate/+page.svelte
 #: src/routes/settings/setup/migrate/+page.svelte
 msgid "Get Started"
@@ -12823,6 +12833,7 @@ msgstr ""
 #~ msgid "Fresh Install Setup"
 #~ msgstr ""
 
+#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/setup/+page.svelte
 msgid "Migrate from Nightscout"
 msgstr ""
@@ -13937,6 +13948,7 @@ msgstr ""
 #~ msgid "Positive = ate after bolusing, Negative = ate before bolusing"
 #~ msgstr ""
 
+#: src/lib/components/dashboard/SetupCard.svelte
 #: src/lib/components/meal-matching/MealMatchReviewDialog.svelte
 #: src/routes/meals/+page.svelte
 msgid "Dismiss"
@@ -18903,7 +18915,6 @@ msgid "mg/dL/U <0/>"
 msgstr ""
 
 #: src/lib/components/layout/AppSidebar.svelte
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/(fullscreen)/setup/patient/+page.svelte
 #: src/routes/settings/patient/+page.svelte
 #: src/routes/settings/setup/+page.svelte
@@ -19058,7 +19069,7 @@ msgstr ""
 msgid "SN: {0}"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
+#: src/lib/components/dashboard/SetupCard.svelte
 #: src/routes/settings/patient/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Insulins"
@@ -19124,7 +19135,6 @@ msgid "Serial Number"
 msgstr ""
 
 #: src/lib/components/patient/PatientDeviceManager.svelte
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Optional"
 msgstr ""
@@ -19193,34 +19203,28 @@ msgid ""
 "undone."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Set your diabetes type and clinical information"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Add the devices you currently use"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Add the insulins you currently use"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Connect external data sources"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/(fullscreen)/setup/profile/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 #: src/routes/settings/setup/profile/+page.svelte
 msgid "Therapy Profile"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Configure your basal rates and therapy settings"
 msgstr ""
@@ -20276,16 +20280,15 @@ msgstr ""
 #~ msgid "<0/> {0} Synced Successfully"
 #~ msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Uploaders"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Configure a phone app to push data to Nocturne"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "General Uploaders"
@@ -20298,16 +20301,19 @@ msgstr ""
 msgid "Failed to load uploader apps"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Android"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Desktop"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Web"
@@ -20344,22 +20350,26 @@ msgid "<0/> Back to uploaders"
 msgstr ""
 
 #. placeholder {0}: selectedApp?.name
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Copy these values into your {0} app settings."
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "API URL"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "xDrip-style URL (with embedded secret)"
 msgstr ""
 
 #. placeholder {0}: selectedApp.name
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "<0/> Download {0}"
@@ -20367,38 +20377,45 @@ msgstr ""
 
 #. placeholder {0}: selectedApp?.name
 #. placeholder {1}: ds.entriesLast24h ?? 0
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "{0} is sending data. {1} entries in the last 24 hours."
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Waiting for data"
 msgstr ""
 
 #. placeholder {0}: selectedApp?.name
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Once you've configured {0}, it can take up to five minutes for the first glucose data to arrive. This page will update automatically."
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Failed to load setup instructions"
 msgstr ""
 
 #. placeholder {0}: selectedApp?.name
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Could not load setup details for {0}. Please try again."
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "<0/> iOS"
 msgstr ""
 
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "<0/> Android"
@@ -21307,12 +21324,10 @@ msgstr ""
 msgid "API Access"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Passkey"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Set up passwordless authentication with a passkey"
 msgstr ""
@@ -23190,12 +23205,10 @@ msgstr ""
 msgid "{0} synced so far"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Coming from Nightscout?"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Migrate your data and keep both systems in sync during transition"
 msgstr ""
@@ -23470,30 +23483,26 @@ msgstr ""
 msgid "Register a passkey to restore normal access."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
+#: src/lib/components/dashboard/SetupCard.svelte
 #: src/routes/(fullscreen)/setup/permissions/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 #: src/routes/settings/setup/permissions/+page.svelte
 msgid "Sharing & Privacy"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Choose who can see your data"
 msgstr ""
 
 #. placeholder {0}: requiredComplete
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "{0} of 6 required steps complete"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Finishing..."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/+page.svelte
 #: src/routes/settings/setup/+page.svelte
 msgid "Finish Setup"
 msgstr ""
@@ -24480,4 +24489,79 @@ msgstr ""
 msgid ""
 "Account not linked. Use /connect in {0} to\n"
 "enable delivery."
+msgstr ""
+
+#: src/lib/components/dashboard/SetupCard.svelte
+msgid "Patient details"
+msgstr ""
+
+#: src/lib/components/dashboard/SetupCard.svelte
+msgid "Therapy profile"
+msgstr ""
+
+#: src/lib/components/dashboard/SetupCard.svelte
+msgid "Finish setting up"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/+page.svelte
+msgid "Choose how you'd like to set up Nocturne."
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/+page.svelte
+msgid "Import your existing data — entries, treatments, and history."
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/+page.svelte
+msgid "Start Fresh"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/+page.svelte
+msgid "Connect a glucose data source to get started."
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "Failed to load data sources"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "Connect a Data Source - Setup - Nocturne"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "Connect a Data Source"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "Choose a cloud service or phone app to start sending glucose and treatment data to Nocturne."
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "<0/> Cloud Services"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "<0/> Phone Apps"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "No data sources available"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "There are no data sources available at this time."
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "Skip for now"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "<0/> Back to data sources"
+msgstr ""
+
+#: src/routes/(fullscreen)/setup/+page.svelte
+#: src/routes/(fullscreen)/setup/connect/+page.svelte
+msgid "Continue to Dashboard"
 msgstr ""
