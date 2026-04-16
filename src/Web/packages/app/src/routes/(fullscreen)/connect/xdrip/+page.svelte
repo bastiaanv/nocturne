@@ -9,13 +9,14 @@
     CardTitle,
   } from "$lib/components/ui/card";
   import { ExternalLink, Smartphone, Copy, Check } from "lucide-svelte";
+  import { buildXdripDeepLink } from "$lib/utils/xdrip-links";
 
   let viewState: "redirecting" | "fallback" = $state("redirecting");
   let copied = $state(false);
   let copyTimeout: ReturnType<typeof setTimeout> | null = null;
 
   const instanceUrl = typeof window !== "undefined" ? window.location.origin : "";
-  const deepLink = `xdrip://connect/nocturne?url=${encodeURIComponent(instanceUrl)}`;
+  const deepLink = buildXdripDeepLink(instanceUrl);
 
   onMount(() => {
     window.location.href = deepLink;
