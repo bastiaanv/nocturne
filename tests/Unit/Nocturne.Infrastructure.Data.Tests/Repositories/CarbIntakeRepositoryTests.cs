@@ -125,4 +125,46 @@ public class CarbIntakeRepositoryTests : IDisposable
         var count = await _context.CarbIntakes.CountAsync();
         count.Should().Be(2);
     }
+
+    [Fact]
+    public async Task BulkCreateAsync_WithDuplicateSyncIdentifierInBatch_DeduplicatesByUpsert()
+    {
+        var timestamp = DateTime.UtcNow;
+        var existing = await _repo.CreateAsync(new CarbIntake
+        {
+            Timestamp = timestamp,
+            DataSource = "aaps",
+            SyncIdentifier = "sync-1",
+            Carbs = 30.0,
+        });
+
+        var results = await _repo.BulkCreateAsync(new[]
+        {
+            new CarbIntake { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-1", Carbs = 42.0 },
+            new CarbIntake { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-2", Carbs = 15.0 },
+        });
+
+        results.Should().HaveCount(2);
+        var dbCount = await _context.CarbIntakes.CountAsync();
+        dbCount.Should().Be(2);
+
+        var updated = await _context.CarbIntakes.FindAsync(existing.Id);
+        updated!.Carbs.Should().Be(42.0);
+    }
+
+    [Fact]
+    public async Task BulkCreateAsync_WithIntraBatchSyncIdentifierCollision_DeduplicatesToLatest()
+    {
+        var timestamp = DateTime.UtcNow;
+        var results = await _repo.BulkCreateAsync(new[]
+        {
+            new CarbIntake { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-1", Carbs = 30.0 },
+            new CarbIntake { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-1", Carbs = 42.0 },
+        });
+
+        var dbCount = await _context.CarbIntakes.CountAsync();
+        dbCount.Should().Be(1);
+        var only = await _context.CarbIntakes.FirstAsync();
+        only.Carbs.Should().Be(42.0);
+    }
 }

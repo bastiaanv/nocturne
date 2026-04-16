@@ -129,4 +129,50 @@ public class BolusRepositoryTests : IDisposable
         var count = await _context.Boluses.CountAsync();
         count.Should().Be(2);
     }
+
+    [Fact]
+    public async Task BulkCreateAsync_WithDuplicateSyncIdentifierInBatch_DeduplicatesByUpsert()
+    {
+        var timestamp = DateTime.UtcNow;
+        // Seed an existing record
+        var existing = await _repo.CreateAsync(new Bolus
+        {
+            Timestamp = timestamp,
+            DataSource = "aaps",
+            SyncIdentifier = "sync-1",
+            Insulin = 5.0,
+        });
+
+        // Bulk insert with one colliding SyncIdentifier + one new
+        var results = await _repo.BulkCreateAsync(new[]
+        {
+            new Bolus { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-1", Insulin = 6.4 },
+            new Bolus { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-2", Insulin = 3.0 },
+        });
+
+        results.Should().HaveCount(2);
+        var dbCount = await _context.Boluses.CountAsync();
+        dbCount.Should().Be(2);  // existing updated + one new = 2 rows
+
+        // Original row was updated in place
+        var updated = await _context.Boluses.FindAsync(existing.Id);
+        updated!.Insulin.Should().Be(6.4);
+    }
+
+    [Fact]
+    public async Task BulkCreateAsync_WithIntraBatchSyncIdentifierCollision_DeduplicatesToLatest()
+    {
+        // Two records in the same batch with the same (DataSource, SyncIdentifier) — last wins.
+        var timestamp = DateTime.UtcNow;
+        var results = await _repo.BulkCreateAsync(new[]
+        {
+            new Bolus { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-1", Insulin = 5.0 },
+            new Bolus { Timestamp = timestamp, DataSource = "aaps", SyncIdentifier = "sync-1", Insulin = 6.4 },
+        });
+
+        var dbCount = await _context.Boluses.CountAsync();
+        dbCount.Should().Be(1);
+        var only = await _context.Boluses.FirstAsync();
+        only.Insulin.Should().Be(6.4);
+    }
 }
