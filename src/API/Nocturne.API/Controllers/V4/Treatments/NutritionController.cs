@@ -102,7 +102,7 @@ public class NutritionController : ControllerBase
             SyncIdentifier = request.SyncIdentifier,
             CarbTime = request.CarbTime,
             AbsorptionTime = request.AbsorptionTime,
-            CorrelationId = request.CorrelationId,
+            CorrelationId = request.CorrelationId ?? Guid.CreateVersion7(),
         };
 
         var created = await _carbIntakeRepo.CreateAsync(model, ct);

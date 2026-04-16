@@ -92,6 +92,26 @@ public class BolusControllerTests
     }
 
     [Fact]
+    public async Task Create_WithoutCorrelationId_ServerMintsNonEmptyGuid()
+    {
+        Bolus? captured = null;
+        SetupCreatePassthrough(b => captured = b);
+
+        var controller = CreateController();
+        var request = new CreateBolusRequest
+        {
+            Timestamp = DateTimeOffset.UtcNow,
+            Insulin = 5.0,
+            // CorrelationId intentionally omitted
+        };
+
+        await controller.Create(request);
+
+        captured.Should().NotBeNull();
+        captured!.CorrelationId.Should().NotBeNull().And.NotBe(Guid.Empty);
+    }
+
+    [Fact]
     public async Task Update_PreservesExistingCorrelationId_WhenRequestOmits()
     {
         var existingCid = Guid.NewGuid();
