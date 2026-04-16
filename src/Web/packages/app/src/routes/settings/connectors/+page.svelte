@@ -110,6 +110,7 @@
   import type { DataSourceStatus } from "$lib/components/settings/DataSourceRow.svelte";
   import ConnectedApps from "$lib/components/settings/ConnectedApps.svelte";
   import ApiTokens from "$lib/components/settings/ApiTokens.svelte";
+  import XdripQuickConnect from "$lib/components/XdripQuickConnect.svelte";
   import Apple from "lucide-svelte/icons/apple";
   import TabletSmartphone from "lucide-svelte/icons/tablet-smartphone";
   import { getApiClient } from "$lib/api";
@@ -1714,6 +1715,12 @@
       </Dialog.Header>
 
       <div class="space-y-6 py-4">
+        {#if selectedUploader?.id === "xdrip" && typeof window !== "undefined"}
+          <div class="border-b pb-4 mb-4">
+            <XdripQuickConnect instanceUrl={window.location.origin} />
+          </div>
+        {/if}
+
         <!-- Connection Info -->
         <div class="space-y-3">
           <h4 class="font-medium">Connection Details</h4>
