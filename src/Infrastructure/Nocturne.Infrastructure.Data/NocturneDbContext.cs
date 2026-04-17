@@ -1223,9 +1223,10 @@ public class NocturneDbContext : DbContext
             {
                 n.UserId,
                 n.Type,
+                n.SourceId,
                 n.IsArchived,
             })
-            .HasDatabaseName("ix_in_app_notifications_user_type_archived");
+            .HasDatabaseName("ix_in_app_notifications_user_type_source_archived");
 
         modelBuilder
             .Entity<InAppNotificationEntity>()
@@ -2341,7 +2342,7 @@ public class NocturneDbContext : DbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             // Store enums as strings in the database
-            entity.Property(e => e.Type).HasConversion<string>();
+            entity.Property(e => e.Category).HasConversion<string>();
             entity.Property(e => e.Urgency).HasConversion<string>();
             entity.Property(e => e.ArchiveReason).HasConversion<string>();
         });

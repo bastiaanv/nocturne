@@ -7,7 +7,6 @@
   import { executeAction } from "$api/generated/notifications.generated.remote";
   import {
     NotificationUrgency,
-    InAppNotificationType,
     type InAppNotificationDto,
   } from "$lib/api/generated/nocturne-api-client";
   import NotificationItem from "./NotificationItem.svelte";
@@ -77,7 +76,7 @@
 
     // Handle review action for meal match notifications
     if (
-      notification.type === InAppNotificationType.SuggestedMealMatch &&
+      notification.type === "meal_matching.suggested_match" &&
       actionId === "review"
     ) {
       reviewNotification = notification;

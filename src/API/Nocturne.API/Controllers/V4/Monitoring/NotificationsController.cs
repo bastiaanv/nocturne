@@ -31,6 +31,55 @@ public class NotificationsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Create a notification programmatically (for integrations and services)
+    /// </summary>
+    [HttpPost]
+    [Authorize]
+    [ProducesResponseType(typeof(InAppNotificationDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> CreateNotification(
+        [FromBody] CreateNotificationRequest request,
+        CancellationToken cancellationToken)
+    {
+        var userId = HttpContext.GetSubjectIdString();
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        try
+        {
+            var notification = await _notificationService.CreateNotificationAsync(
+                userId,
+                request.Type,
+                request.Title,
+                category: request.Category,
+                urgency: request.Urgency,
+                icon: request.Icon,
+                source: request.Source,
+                subtitle: request.Subtitle,
+                sourceId: request.SourceId,
+                actions: request.Actions,
+                resolutionConditions: request.ResolutionConditions,
+                metadata: request.Metadata,
+                cancellationToken: cancellationToken);
+
+            return Created($"/api/v4/notifications/{notification.Id}", notification);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("Rate limit"))
+        {
+            return StatusCode(429, new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     /// <inheritdoc cref="IInAppNotificationService.GetActiveNotificationsAsync"/>
     [HttpGet]
     [RemoteQuery]
