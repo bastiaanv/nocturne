@@ -137,22 +137,14 @@ public class DataSourceService : IDataSourceService
     }
 
     /// <inheritdoc />
-    public async Task<List<AvailableConnector>> GetAvailableConnectorsAsync(
-        CancellationToken cancellationToken = default)
+    public List<AvailableConnector> GetAvailableConnectors()
     {
         var connectors = ConnectorMetadataService.GetAll()
             .Select(connector => new AvailableConnector
             {
                 Id = connector.ConnectorName.ToLowerInvariant(),
                 Name = connector.DisplayName,
-                Category = connector.Category switch
-                {
-                    Nocturne.Connectors.Core.Models.ConnectorCategory.Cgm => DataSourceCategory.Cgm,
-                    Nocturne.Connectors.Core.Models.ConnectorCategory.Pump => DataSourceCategory.Pump,
-                    Nocturne.Connectors.Core.Models.ConnectorCategory.Nutrition => DataSourceCategory.Connector,
-                    Nocturne.Connectors.Core.Models.ConnectorCategory.Sync => DataSourceCategory.Connector,
-                    _ => DataSourceCategory.Connector,
-                },
+                Category = connector.Category.ToString().ToLowerInvariant(),
                 Description = connector.Description,
                 Icon = connector.Icon,
                 Available = true,
@@ -164,16 +156,10 @@ public class DataSourceService : IDataSourceService
             .OrderBy(connector => connector.Name)
             .ToList();
 
-        // Check which connectors have actual user-saved configuration in the database
-        var configuredConnectorNames = (await _context.ConnectorConfigurations
-            .AsNoTracking()
-            .Select(c => c.ConnectorName.ToLower())
-            .ToListAsync(cancellationToken))
-            .ToHashSet();
 
         foreach (var connector in connectors)
         {
-            connector.IsConfigured = configuredConnectorNames.Contains(connector.Id?.ToLowerInvariant() ?? "");
+            connector.IsConfigured = ConnectorMetadataService.GetByConnectorId(connector.Id) != null;
         }
 
         return connectors;
@@ -226,415 +212,82 @@ public class DataSourceService : IDataSourceService
             new()
             {
                 Id = "xdrip",
-                Name = "xDrip+",
-                Platform = "android",
-                Category = DataSourceCategory.Cgm,
-                Description =
-                    "Popular Android CGM app supporting many sensors. Can upload data directly to Nocturne.",
+                Platform = UploaderPlatform.Android,
+                Category = UploaderCategory.Cgm,
                 Icon = "xdrip",
                 Url = "https://github.com/NightscoutFoundation/xDrip",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open xDrip+ Settings",
-                        Description = "Tap the hamburger menu (☰) and select Settings.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Cloud Upload",
-                        Description = "Navigate to Cloud Upload → Nightscout Sync (REST-API).",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Enable Upload",
-                        Description = "Enable 'Nightscout Sync (REST-API)'.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "Set Base URL",
-                        Description =
-                            "Enter your Nocturne URL with API secret: https://YOUR-API-SECRET@your-nocturne-url.com/api/v1",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Test Connection",
-                        Description = "Tap 'Test Connection' to verify the setup.",
-                    },
-                },
             },
             new()
             {
                 Id = "spike",
-                Name = "Spike",
-                Platform = "ios",
-                Category = DataSourceCategory.Cgm,
-                Description = "iOS CGM app supporting Dexcom, Libre, and other sensors.",
+                Platform = UploaderPlatform.iOS,
+                Category = UploaderCategory.Cgm,
                 Icon = "spike",
                 Url = "https://spike-app.com",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open Spike Settings",
-                        Description = "Go to Settings in the Spike app.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Integration",
-                        Description = "Navigate to Integration → Nightscout.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure URL",
-                        Description = "Enter your Nocturne URL.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "API Secret",
-                        Description = "Enter your API secret.",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Enable Upload",
-                        Description = "Toggle on 'Upload readings to Nightscout'.",
-                    },
-                },
             },
             new()
             {
                 Id = "loop",
-                Name = "Loop",
-                Platform = "ios",
-                Category = DataSourceCategory.AidSystem,
-                Description = "DIY automated insulin delivery system for iOS.",
+                Platform = UploaderPlatform.iOS,
+                Category = UploaderCategory.AidSystem,
                 Icon = "loop",
                 Url = "https://loopkit.github.io/loopdocs/",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open Loop Settings",
-                        Description = "Go to Loop Settings in the app.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Services",
-                        Description = "Navigate to Services → Nightscout.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure",
-                        Description = "Enter your Nocturne URL and API secret.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "Enable",
-                        Description = "Toggle on Nightscout upload.",
-                    },
-                },
             },
             new()
             {
                 Id = "aaps",
-                Name = "AAPS (AndroidAPS)",
-                Platform = "android",
-                Category = DataSourceCategory.AidSystem,
-                Description = "DIY automated insulin delivery system for Android.",
+                Platform = UploaderPlatform.Android,
+                Category = UploaderCategory.AidSystem,
                 Icon = "aaps",
                 Url = "https://wiki.aaps.app",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open AAPS Config Builder",
-                        Description = "Navigate to Config Builder in AAPS.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Enable NSClient",
-                        Description = "Enable NSClient or NSClientV3 under Synchronization.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure URL",
-                        Description = "Enter your Nocturne URL in NSClient settings.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "API Secret",
-                        Description = "Enter your API secret (use SHA-1 hash if using v1).",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Select Data",
-                        Description =
-                            "Choose which data to upload (BG, treatments, profiles, etc.).",
-                    },
-                },
             },
             new()
             {
                 Id = "trio",
-                Name = "Trio",
-                Platform = "ios",
-                Category = DataSourceCategory.AidSystem,
-                Description = "Open source automated insulin delivery system for iOS.",
+                Platform = UploaderPlatform.iOS,
+                Category = UploaderCategory.AidSystem,
                 Icon = "trio",
                 Url = "https://diy-trio.org",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open Trio Settings",
-                        Description = "Go to Settings in the Trio app.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Services",
-                        Description = "Navigate to Services → Nightscout.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure",
-                        Description = "Enter your Nocturne URL and API secret.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "Enable Upload",
-                        Description = "Enable the data you want to upload.",
-                    },
-                },
             },
             new()
             {
                 Id = "iaps",
-                Name = "iAPS",
-                Platform = "ios",
-                Category = DataSourceCategory.AidSystem,
-                Description =
-                    "Open source automated insulin delivery system for iOS (fork of OpenAPS).",
+                Platform = UploaderPlatform.iOS,
+                Category = UploaderCategory.AidSystem,
                 Icon = "iaps",
                 Url = "https://iaps.readthedocs.io",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open iAPS Settings",
-                        Description = "Go to Settings in the iAPS app.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Nightscout",
-                        Description = "Navigate to Services → Nightscout.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure URL",
-                        Description = "Enter your Nocturne URL.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "API Secret",
-                        Description = "Enter your API secret.",
-                    },
-                },
             },
             new()
             {
                 Id = "nightscout-uploader",
-                Name = "Nightscout Uploader",
-                Platform = "android",
-                Category = DataSourceCategory.Uploader,
-                Description = "Android app for uploading data from various BG meters and CGMs.",
+                Platform = UploaderPlatform.Android,
+                Category = UploaderCategory.Uploader,
                 Icon = "nightscout",
                 Url = "https://github.com/nightscout/android-uploader",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Install App",
-                        Description = "Install from Google Play or GitHub releases.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Configure",
-                        Description = "Enter your Nocturne URL.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "API Secret",
-                        Description = "Enter your API secret.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "Select Source",
-                        Description = "Choose your data source device.",
-                    },
-                },
             },
             new()
             {
                 Id = "xdrip4ios",
-                Name = "xDrip4iOS",
-                Platform = "ios",
-                Category = DataSourceCategory.Cgm,
-                Description =
-                    "iOS CGM app supporting Dexcom, Libre, and other sensors with Nightscout upload.",
+                Platform = UploaderPlatform.iOS,
+                Category = UploaderCategory.Cgm,
                 Icon = "xdrip4ios",
                 Url = "https://github.com/JohanDegraworksve/xdripswift",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open xDrip4iOS Settings",
-                        Description = "Tap the Settings tab in the app.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Nightscout Upload",
-                        Description = "Navigate to Nightscout → Upload.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure URL",
-                        Description = "Enter your Nocturne URL.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "API Secret",
-                        Description = "Enter your API secret.",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Enable Upload",
-                        Description = "Toggle on 'Upload to Nightscout'.",
-                    },
-                },
             },
             new()
             {
                 Id = "juggluco",
-                Name = "Juggluco",
-                Platform = "android",
-                Category = DataSourceCategory.Cgm,
-                Description =
-                    "Android app for FreeStyle Libre sensors with Nightscout upload support.",
+                Platform = UploaderPlatform.Android,
+                Category = UploaderCategory.Cgm,
                 Icon = "juggluco",
                 Url = "https://juggluco.nl",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open Juggluco Settings",
-                        Description = "Tap the hamburger menu and select Settings.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Nightscout Connection",
-                        Description = "Navigate to the Nightscout section.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure URL",
-                        Description = "Enter your Nocturne URL.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "API Secret",
-                        Description = "Enter your API secret.",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Enable Sync",
-                        Description = "Toggle on Nightscout synchronisation.",
-                    },
-                },
             },
             new()
             {
                 Id = "glucotracker",
-                Name = "GlucoTracker",
-                Platform = "android",
-                Category = DataSourceCategory.Cgm,
-                Description =
-                    "Android glucose tracking app with Nightscout upload capability.",
+                Platform = UploaderPlatform.Android,
+                Category = UploaderCategory.Cgm,
                 Icon = "glucotracker",
                 Url = "https://glucotracker.app",
-                SetupInstructions = new List<SetupStep>
-                {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open GlucoTracker Settings",
-                        Description = "Go to Settings in the app.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Cloud Sync",
-                        Description = "Navigate to Cloud Sync → Nightscout.",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Configure URL",
-                        Description = "Enter your Nocturne URL.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "API Secret",
-                        Description = "Enter your API secret.",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Enable Upload",
-                        Description = "Toggle on 'Upload to Nightscout'.",
-                    },
-                },
             },
         };
     }
@@ -651,7 +304,7 @@ public class DataSourceService : IDataSourceService
         return new ServicesOverview
         {
             ActiveDataSources = dataSources,
-            AvailableConnectors = await GetAvailableConnectorsAsync(cancellationToken),
+            AvailableConnectors = GetAvailableConnectors(),
             UploaderApps = GetUploaderApps(),
             ApiEndpoint = new ApiEndpointInfo
             {
@@ -680,7 +333,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "xDrip4iOS";
             info.SourceType = "xdrip4ios";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "xdrip4ios";
             info.Description = ExtractDeviceDescription(deviceId, "xDrip4iOS on");
         }
@@ -688,7 +341,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "xDrip+";
             info.SourceType = "xdrip";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "xdrip";
             info.Description = ExtractDeviceDescription(deviceId, "xDrip+ on");
         }
@@ -696,7 +349,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Juggluco";
             info.SourceType = "juggluco";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "juggluco";
             info.Description = ExtractDeviceDescription(deviceId, "Juggluco on");
         }
@@ -704,7 +357,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "GlucoTracker";
             info.SourceType = "glucotracker";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "glucotracker";
             info.Description = ExtractDeviceDescription(deviceId, "GlucoTracker on");
         }
@@ -712,7 +365,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Spike";
             info.SourceType = "spike";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "spike";
             info.Description = ExtractDeviceDescription(deviceId, "Spike");
         }
@@ -720,7 +373,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Loop";
             info.SourceType = "loop";
-            info.Category = DataSourceCategory.AidSystem;
+            info.Category = "aid-system";
             info.Icon = "loop";
             info.Description = "Loop iOS AID System";
         }
@@ -728,7 +381,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "AndroidAPS";
             info.SourceType = "aaps";
-            info.Category = DataSourceCategory.AidSystem;
+            info.Category = "aid-system";
             info.Icon = "aaps";
             info.Description = "AndroidAPS AID System";
         }
@@ -736,7 +389,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "OpenAPS";
             info.SourceType = "openaps";
-            info.Category = DataSourceCategory.AidSystem;
+            info.Category = "aid-system";
             info.Icon = "openaps";
             info.Description = "OpenAPS AID System";
         }
@@ -744,7 +397,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Trio";
             info.SourceType = "trio";
-            info.Category = DataSourceCategory.AidSystem;
+            info.Category = "aid-system";
             info.Icon = "trio";
             info.Description = "Trio iOS AID System";
         }
@@ -752,7 +405,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "iAPS";
             info.SourceType = "iaps";
-            info.Category = DataSourceCategory.AidSystem;
+            info.Category = "aid-system";
             info.Icon = "iaps";
             info.Description = "iAPS iOS AID System";
         }
@@ -760,7 +413,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Dexcom";
             info.SourceType = "dexcom";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "dexcom";
             info.Description = ExtractDeviceDescription(deviceId, "Dexcom CGM");
         }
@@ -768,7 +421,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "FreeStyle Libre";
             info.SourceType = "libre";
-            info.Category = DataSourceCategory.Cgm;
+            info.Category = "cgm";
             info.Icon = "libre";
             info.Description = "FreeStyle Libre CGM";
         }
@@ -780,7 +433,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Medtronic";
             info.SourceType = "medtronic";
-            info.Category = DataSourceCategory.Pump;
+            info.Category = "pump";
             info.Icon = "medtronic";
             info.Description = "Medtronic Pump/CGM";
         }
@@ -788,7 +441,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Omnipod";
             info.SourceType = "omnipod";
-            info.Category = DataSourceCategory.Pump;
+            info.Category = "pump";
             info.Icon = "omnipod";
             info.Description = "Omnipod Pump";
         }
@@ -796,7 +449,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Tandem";
             info.SourceType = "tandem";
-            info.Category = DataSourceCategory.Pump;
+            info.Category = "pump";
             info.Icon = "tandem";
             info.Description = "Tandem Pump";
         }
@@ -805,7 +458,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = connectorInfo.ConnectorName;
             info.SourceType = connectorInfo.DataSourceId;
-            info.Category = DataSourceCategory.Connector;
+            info.Category = "connector";
             info.Icon = connectorInfo.Icon;
             info.Description = connectorInfo.Description;
         }
@@ -813,7 +466,7 @@ public class DataSourceService : IDataSourceService
         {
             info.Name = "Demo Data";
             info.SourceType = "demo";
-            info.Category = DataSourceCategory.Unknown;
+            info.Category = "demo";
             info.Icon = "demo";
             info.Description = "Simulated demo data";
         }
@@ -822,7 +475,7 @@ public class DataSourceService : IDataSourceService
             // Unknown device - use the raw identifier
             info.Name = CleanDeviceName(deviceId);
             info.SourceType = "unknown";
-            info.Category = DataSourceCategory.Unknown;
+            info.Category = "unknown";
             info.Icon = "device";
             info.Description = deviceId;
         }

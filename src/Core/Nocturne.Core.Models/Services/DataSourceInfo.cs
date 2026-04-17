@@ -30,7 +30,7 @@ public class DataSourceInfo
     /// Category of data source: cgm, pump, uploader, aid-system, connector, manual, unknown
     /// </summary>
     [JsonPropertyName("category")]
-    public DataSourceCategory Category { get; set; } = DataSourceCategory.Unknown;
+    public string Category { get; set; } = "unknown";
 
     /// <summary>
     /// More specific type of data source (e.g., "xdrip", "dexcom-share", "loop", "aaps")
@@ -115,7 +115,7 @@ public class AvailableConnector
     /// Category: cgm, pump, data, food
     /// </summary>
     [JsonPropertyName("category")]
-    public DataSourceCategory Category { get; set; } = DataSourceCategory.Unknown;
+    public string Category { get; set; } = string.Empty;
 
     /// <summary>
     /// Description of what this connector does
@@ -228,39 +228,52 @@ public class SelectOption
 }
 
 /// <summary>
-/// Represents an uploader application that can push data to Nocturne
+/// Platform an uploader app runs on
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<UploaderPlatform>))]
+public enum UploaderPlatform
+{
+    [JsonStringEnumMemberName("android")] Android,
+    [JsonStringEnumMemberName("ios")] iOS,
+    [JsonStringEnumMemberName("desktop")] Desktop,
+    [JsonStringEnumMemberName("web")] Web,
+}
+
+/// <summary>
+/// Category of uploader app
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<UploaderCategory>))]
+public enum UploaderCategory
+{
+    [JsonStringEnumMemberName("cgm")] Cgm,
+    [JsonStringEnumMemberName("aid-system")] AidSystem,
+    [JsonStringEnumMemberName("uploader")] Uploader,
+}
+
+/// <summary>
+/// Represents an uploader application that can push data to Nocturne.
+/// Display strings (name, description, setup instructions) live on the frontend,
+/// keyed by <see cref="Id"/>.
 /// </summary>
 public class UploaderApp
 {
     /// <summary>
-    /// Unique identifier
+    /// Unique identifier (e.g. "xdrip", "loop", "aaps")
     /// </summary>
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Display name
-    /// </summary>
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Platform: android, ios, desktop, web
+    /// Platform the app runs on
     /// </summary>
     [JsonPropertyName("platform")]
-    public string Platform { get; set; } = string.Empty;
+    public UploaderPlatform Platform { get; set; }
 
     /// <summary>
-    /// Short description
-    /// </summary>
-    [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Category: cgm, pump, aid-system, uploader
+    /// Category of uploader
     /// </summary>
     [JsonPropertyName("category")]
-    public DataSourceCategory Category { get; set; } = DataSourceCategory.Unknown;
+    public UploaderCategory Category { get; set; }
 
     /// <summary>
     /// Icon identifier
@@ -269,34 +282,10 @@ public class UploaderApp
     public string Icon { get; set; } = string.Empty;
 
     /// <summary>
-    /// Setup instructions
-    /// </summary>
-    [JsonPropertyName("setupInstructions")]
-    public List<SetupStep>? SetupInstructions { get; set; }
-
-    /// <summary>
     /// URL for app download or more info
     /// </summary>
     [JsonPropertyName("url")]
     public string? Url { get; set; }
-}
-
-/// <summary>
-/// A step in setup instructions
-/// </summary>
-public class SetupStep
-{
-    [JsonPropertyName("step")]
-    public int Step { get; set; }
-
-    [JsonPropertyName("title")]
-    public string Title { get; set; } = string.Empty;
-
-    [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
-
-    [JsonPropertyName("imageUrl")]
-    public string? ImageUrl { get; set; }
 }
 
 /// <summary>
