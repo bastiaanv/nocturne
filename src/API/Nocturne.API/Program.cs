@@ -145,6 +145,13 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<NightscoutJsonFilter>();
+})
+.ConfigureApplicationPartManager(manager =>
+{
+    if (!builder.Environment.IsDevelopment())
+    {
+        manager.FeatureProviders.Add(new RemoveDevOnlyControllersFeatureProvider());
+    }
 });
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -488,6 +495,22 @@ static bool IsRunningInNSwagContext()
     }
 
     return false;
+}
+
+/// <summary>
+/// Removes controllers in the .DevOnly namespace from non-development environments.
+/// Defined here to avoid creating a Nocturne.API.Infrastructure namespace that
+/// collides with relative namespace resolution in other files.
+/// </summary>
+file class RemoveDevOnlyControllersFeatureProvider
+    : Microsoft.AspNetCore.Mvc.Controllers.ControllerFeatureProvider
+{
+    protected override bool IsController(System.Reflection.TypeInfo typeInfo)
+    {
+        if (typeInfo.Namespace?.Contains(".DevOnly", StringComparison.Ordinal) == true)
+            return false;
+        return base.IsController(typeInfo);
+    }
 }
 
 // Make Program accessible for testing

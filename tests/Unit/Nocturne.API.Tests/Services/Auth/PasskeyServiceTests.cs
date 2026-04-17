@@ -3,8 +3,10 @@ using FluentAssertions;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Moq;
 using Nocturne.API.Services.Auth;
 using Nocturne.Core.Contracts;
 using Nocturne.Infrastructure.Data;
@@ -336,7 +338,8 @@ public class PasskeyServiceTests
         var fido2Options = Options.Create(fido2Config);
         var logger = NullLogger<PasskeyService>.Instance;
 
-        return new PasskeyService(_dbContext, fido2, dataProtectionProvider, fido2Options, logger);
+        var environment = Mock.Of<IHostEnvironment>(e => e.EnvironmentName == "Development");
+        return new PasskeyService(_dbContext, fido2, dataProtectionProvider, fido2Options, logger, environment);
     }
 
     private static PasskeyCredentialEntity CreateCredentialEntity(

@@ -32,6 +32,7 @@ appsettings.*.json
 
 # Aspire publish temporary output
 aspire-output/
+docs/seed/dev-snapshot.json
 
 # Widget publish output
 **/publish/

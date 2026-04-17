@@ -262,6 +262,14 @@ class Program
         // forwards those sections.
 
         // ------------------------------------------------------------------
+        // Dev snapshot commands (dashboard buttons for export/import/sync)
+        // ------------------------------------------------------------------
+        if (builder.ExecutionContext.IsRunMode && postgresServer != null)
+        {
+            postgresServer.WithDevSnapshotCommands(api);
+        }
+
+        // ------------------------------------------------------------------
         // Demo data service (optional)
         // ------------------------------------------------------------------
         var demoService = builder.AddDemoService<Projects.Nocturne_Services_Demo>(
