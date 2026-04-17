@@ -77,9 +77,10 @@ public class DevAdminController : ControllerBase
                 .Where(m => m.TenantId == tenant.Id)
                 .ToListAsync(ct);
 
+            var memberIds = members.Select(m => m.Id).ToList();
             var memberRoles = await _db.TenantMemberRoles
                 .AsNoTracking()
-                .Where(mr => members.Select(m => m.Id).Contains(mr.TenantMemberId))
+                .Where(mr => memberIds.Contains(mr.TenantMemberId))
                 .ToListAsync(ct);
 
             var oauthClients = await _db.OAuthClients
@@ -285,7 +286,45 @@ public class DevAdminController : ControllerBase
             var allSubjectIds = allSubjectDtos.Select(s => s.Id).Distinct().ToList();
             var allPasskeyIds = allPasskeyDtos.Select(p => p.Id).Distinct().ToList();
 
-            // Upsert non-scoped: passkeys first (FK to subjects), then subjects
+            // Phase 1: Per-tenant scoped cleanup (must happen before subject deletion to avoid FK violations)
+            foreach (var ts in snapshot.Tenants)
+            {
+                var tenantId = ts.Tenant.Id;
+                await SetTenantGuc(tenantId, ct);
+
+                // Delete in FK-safe order: member-roles -> members -> roles -> OAuth clients -> connector configs
+                var existingMemberRoles = await _db.TenantMemberRoles
+                    .Where(mr => _db.TenantMembers
+                        .Where(m => m.TenantId == tenantId)
+                        .Select(m => m.Id)
+                        .Contains(mr.TenantMemberId))
+                    .ToListAsync(ct);
+                _db.TenantMemberRoles.RemoveRange(existingMemberRoles);
+
+                var existingMembers = await _db.TenantMembers
+                    .Where(m => m.TenantId == tenantId)
+                    .ToListAsync(ct);
+                _db.TenantMembers.RemoveRange(existingMembers);
+
+                var existingRoles = await _db.TenantRoles
+                    .Where(r => r.TenantId == tenantId)
+                    .ToListAsync(ct);
+                _db.TenantRoles.RemoveRange(existingRoles);
+
+                var existingOAuthClients = await _db.OAuthClients
+                    .Where(c => c.TenantId == tenantId)
+                    .ToListAsync(ct);
+                _db.OAuthClients.RemoveRange(existingOAuthClients);
+
+                var existingConnectorConfigs = await _db.ConnectorConfigurations
+                    .Where(c => c.TenantId == tenantId)
+                    .ToListAsync(ct);
+                _db.ConnectorConfigurations.RemoveRange(existingConnectorConfigs);
+
+                await _db.SaveChangesAsync(ct);
+            }
+
+            // Phase 2: Non-scoped cleanup and upsert (passkeys first due to FK to subjects, then subjects)
             var existingPasskeys = await _db.PasskeyCredentials
                 .Where(p => allPasskeyIds.Contains(p.Id))
                 .ToListAsync(ct);
@@ -297,36 +336,51 @@ public class DevAdminController : ControllerBase
             _db.Subjects.RemoveRange(existingSubjects);
             await _db.SaveChangesAsync(ct);
 
-            // Upsert tenants
-            var tenantIds = snapshot.Tenants.Select(t => t.Tenant.Id).ToList();
-            var existingTenants = await _db.Tenants
-                .Where(t => tenantIds.Contains(t.Id))
-                .ToListAsync(ct);
-            _db.Tenants.RemoveRange(existingTenants);
-            await _db.SaveChangesAsync(ct);
-
-            // Re-add tenants
+            // Phase 3: Upsert tenants (update-or-insert to avoid cascade-deleting clinical data)
             foreach (var ts in snapshot.Tenants)
             {
                 var td = ts.Tenant;
-                _db.Tenants.Add(new()
+                var existingTenant = await _db.Tenants.FindAsync([td.Id], ct);
+
+                if (existingTenant is not null)
                 {
-                    Id = td.Id,
-                    Slug = td.Slug,
-                    DisplayName = td.DisplayName,
-                    ApiSecretHash = td.ApiSecretHash,
-                    IsActive = td.IsActive,
-                    IsDefault = td.IsDefault,
-                    LastReadingAt = td.LastReadingAt,
-                    Timezone = td.Timezone,
-                    SubjectName = td.SubjectName,
-                    QuietHoursStart = td.QuietHoursStart,
-                    QuietHoursEnd = td.QuietHoursEnd,
-                    QuietHoursOverrideCritical = td.QuietHoursOverrideCritical,
-                    AllowAccessRequests = td.AllowAccessRequests,
-                    SysCreatedAt = td.SysCreatedAt,
-                    SysUpdatedAt = td.SysUpdatedAt,
-                });
+                    // Update scalar properties in-place
+                    existingTenant.Slug = td.Slug;
+                    existingTenant.DisplayName = td.DisplayName;
+                    existingTenant.ApiSecretHash = td.ApiSecretHash;
+                    existingTenant.IsActive = td.IsActive;
+                    existingTenant.IsDefault = td.IsDefault;
+                    existingTenant.LastReadingAt = td.LastReadingAt;
+                    existingTenant.Timezone = td.Timezone;
+                    existingTenant.SubjectName = td.SubjectName;
+                    existingTenant.QuietHoursStart = td.QuietHoursStart;
+                    existingTenant.QuietHoursEnd = td.QuietHoursEnd;
+                    existingTenant.QuietHoursOverrideCritical = td.QuietHoursOverrideCritical;
+                    existingTenant.AllowAccessRequests = td.AllowAccessRequests;
+                    existingTenant.SysCreatedAt = td.SysCreatedAt;
+                    existingTenant.SysUpdatedAt = td.SysUpdatedAt;
+                }
+                else
+                {
+                    _db.Tenants.Add(new()
+                    {
+                        Id = td.Id,
+                        Slug = td.Slug,
+                        DisplayName = td.DisplayName,
+                        ApiSecretHash = td.ApiSecretHash,
+                        IsActive = td.IsActive,
+                        IsDefault = td.IsDefault,
+                        LastReadingAt = td.LastReadingAt,
+                        Timezone = td.Timezone,
+                        SubjectName = td.SubjectName,
+                        QuietHoursStart = td.QuietHoursStart,
+                        QuietHoursEnd = td.QuietHoursEnd,
+                        QuietHoursOverrideCritical = td.QuietHoursOverrideCritical,
+                        AllowAccessRequests = td.AllowAccessRequests,
+                        SysCreatedAt = td.SysCreatedAt,
+                        SysUpdatedAt = td.SysUpdatedAt,
+                    });
+                }
             }
             await _db.SaveChangesAsync(ct);
 
@@ -379,42 +433,11 @@ public class DevAdminController : ControllerBase
             }
             await _db.SaveChangesAsync(ct);
 
-            // Tenant-scoped entities: for each tenant, set GUC then delete + insert
+            // Phase 4: Per-tenant scoped inserts
             foreach (var ts in snapshot.Tenants)
             {
                 var tenantId = ts.Tenant.Id;
                 await SetTenantGuc(tenantId, ct);
-
-                // Delete in FK-safe order: member-roles -> members -> roles -> OAuth clients -> connector configs
-                var existingMemberRoles = await _db.TenantMemberRoles
-                    .Where(mr => _db.TenantMembers
-                        .Where(m => m.TenantId == tenantId)
-                        .Select(m => m.Id)
-                        .Contains(mr.TenantMemberId))
-                    .ToListAsync(ct);
-                _db.TenantMemberRoles.RemoveRange(existingMemberRoles);
-
-                var existingMembers = await _db.TenantMembers
-                    .Where(m => m.TenantId == tenantId)
-                    .ToListAsync(ct);
-                _db.TenantMembers.RemoveRange(existingMembers);
-
-                var existingRoles = await _db.TenantRoles
-                    .Where(r => r.TenantId == tenantId)
-                    .ToListAsync(ct);
-                _db.TenantRoles.RemoveRange(existingRoles);
-
-                var existingOAuthClients = await _db.OAuthClients
-                    .Where(c => c.TenantId == tenantId)
-                    .ToListAsync(ct);
-                _db.OAuthClients.RemoveRange(existingOAuthClients);
-
-                var existingConnectorConfigs = await _db.ConnectorConfigurations
-                    .Where(c => c.TenantId == tenantId)
-                    .ToListAsync(ct);
-                _db.ConnectorConfigurations.RemoveRange(existingConnectorConfigs);
-
-                await _db.SaveChangesAsync(ct);
 
                 // Insert roles
                 foreach (var r in ts.Roles)
@@ -561,20 +584,40 @@ public class DevAdminController : ControllerBase
                 _tenantAccessor.SetTenant(new TenantContext(
                     tenant.Id, tenant.Slug, tenant.DisplayName, tenant.IsActive));
 
-                var request = new SyncRequest();
-                var result = await _syncService.TriggerSyncAsync(
-                    config.ConnectorName, request, ct);
-
-                results.Add(new
+                try
                 {
-                    tenantSlug = tenant.Slug,
-                    tenantId = tenant.Id,
-                    connectorName = config.ConnectorName,
-                    connectorConfigId = config.Id,
-                    success = result.Success,
-                    message = result.Message,
-                    itemsSynced = result.ItemsSynced,
-                });
+                    var request = new SyncRequest();
+                    var result = await _syncService.TriggerSyncAsync(
+                        config.ConnectorName, request, ct);
+
+                    results.Add(new
+                    {
+                        tenantSlug = tenant.Slug,
+                        tenantId = tenant.Id,
+                        connectorName = config.ConnectorName,
+                        connectorConfigId = config.Id,
+                        success = result.Success,
+                        message = result.Message,
+                        itemsSynced = result.ItemsSynced,
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Sync failed for connector {ConnectorName} in tenant {TenantSlug}",
+                        config.ConnectorName, tenant.Slug);
+
+                    results.Add(new
+                    {
+                        tenantSlug = tenant.Slug,
+                        tenantId = tenant.Id,
+                        connectorName = config.ConnectorName,
+                        connectorConfigId = config.Id,
+                        success = false,
+                        message = ex.Message,
+                        itemsSynced = 0,
+                    });
+                }
             }
         }
 
