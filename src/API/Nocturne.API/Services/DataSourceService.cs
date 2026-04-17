@@ -221,37 +221,9 @@ public class DataSourceService : IDataSourceService
                 Url = "https://github.com/NightscoutFoundation/xDrip",
                 SetupInstructions = new List<SetupStep>
                 {
-                    new()
-                    {
-                        Step = 1,
-                        Title = "Open xDrip+ Settings",
-                        Description = "Tap the hamburger menu (☰) and select Settings.",
-                    },
-                    new()
-                    {
-                        Step = 2,
-                        Title = "Cloud Upload",
-                        Description = "Navigate to Cloud Upload → Nightscout Sync (REST-API).",
-                    },
-                    new()
-                    {
-                        Step = 3,
-                        Title = "Enable Upload",
-                        Description = "Enable 'Nightscout Sync (REST-API)'.",
-                    },
-                    new()
-                    {
-                        Step = 4,
-                        Title = "Set Base URL",
-                        Description =
-                            "Enter your Nocturne URL with API secret: https://YOUR-API-SECRET@your-nocturne-url.com/api/v1",
-                    },
-                    new()
-                    {
-                        Step = 5,
-                        Title = "Test Connection",
-                        Description = "Tap 'Test Connection' to verify the setup.",
-                    },
+                    new() { Step = 1, Title = "scan_qr", Description = "scan_qr" },
+                    new() { Step = 2, Title = "approve_connection", Description = "approve_connection" },
+                    new() { Step = 3, Title = "done", Description = "done" },
                 },
             },
             new()

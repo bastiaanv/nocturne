@@ -245,20 +245,19 @@ public class ServicesController : ControllerBase
 
         var baseUrl = GetBaseUrl();
 
-        return Ok(
-            new UploaderSetupResponse
-            {
-                App = app,
-                BaseUrl = baseUrl,
-                ApiSecretPlaceholder = "YOUR-API-SECRET",
-                FullApiUrl = $"{baseUrl}/api/v1",
-                EntriesUrl = $"{baseUrl}/api/v1/entries",
-                TreatmentsUrl = $"{baseUrl}/api/v1/treatments",
-                DeviceStatusUrl = $"{baseUrl}/api/v1/devicestatus",
-                // Format for xDrip+ style URL with embedded secret
-                XdripStyleUrl = $"https://YOUR-API-SECRET@{GetHostFromUrl(baseUrl)}/api/v1",
-            }
-        );
+        var response = new UploaderSetupResponse
+        {
+            App = app,
+            BaseUrl = baseUrl,
+        };
+
+        // Apps that support OAuth device authorization get a deep-link URL for QR code scanning
+        if (appId.Equals("xdrip", StringComparison.OrdinalIgnoreCase))
+        {
+            response.ConnectUrl = $"xdrip://connect/nocturne?url={Uri.EscapeDataString(baseUrl)}";
+        }
+
+        return Ok(response);
     }
 
     /// <summary>
@@ -550,18 +549,6 @@ public class ServicesController : ControllerBase
         return $"{request.Scheme}://{request.Host}";
     }
 
-    private static string GetHostFromUrl(string url)
-    {
-        try
-        {
-            var uri = new Uri(url);
-            return uri.Host + (uri.Port != 80 && uri.Port != 443 ? $":{uri.Port}" : "");
-        }
-        catch
-        {
-            return url.Replace("https://", "").Replace("http://", "").TrimEnd('/');
-        }
-    }
 }
 
 /// <summary>
@@ -580,34 +567,11 @@ public class UploaderSetupResponse
     public string BaseUrl { get; set; } = string.Empty;
 
     /// <summary>
-    /// Placeholder for where the API secret goes
+    /// Deep-link URL for apps that support OAuth device authorization via QR code
+    /// (e.g. xdrip://connect/nocturne?url=https://your-instance.com).
+    /// When present, the frontend shows a QR code and inline device-code input.
     /// </summary>
-    public string ApiSecretPlaceholder { get; set; } = "YOUR-API-SECRET";
-
-    /// <summary>
-    /// Full API URL (base + /api/v1)
-    /// </summary>
-    public string FullApiUrl { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Entries endpoint URL
-    /// </summary>
-    public string EntriesUrl { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Treatments endpoint URL
-    /// </summary>
-    public string TreatmentsUrl { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Device status endpoint URL
-    /// </summary>
-    public string DeviceStatusUrl { get; set; } = string.Empty;
-
-    /// <summary>
-    /// xDrip+ style URL with embedded secret placeholder
-    /// </summary>
-    public string XdripStyleUrl { get; set; } = string.Empty;
+    public string? ConnectUrl { get; set; }
 }
 
 /// <summary>
