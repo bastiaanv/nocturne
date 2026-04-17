@@ -80,6 +80,18 @@ public class InAppNotificationService : IInAppNotificationService
         var resolvedActions = actions ?? template?.DefaultActions;
         var resolvedConditions = resolutionConditions ?? template?.DefaultResolutionConditions;
 
+        var resolvedSourceForRateLimit = source ?? template?.Source;
+        if (resolvedSourceForRateLimit != null)
+        {
+            var activeCount = await _repository.GetActiveCountBySourceAsync(
+                userId, resolvedSourceForRateLimit, cancellationToken);
+            if (activeCount >= 10)
+            {
+                throw new InvalidOperationException(
+                    $"Rate limit exceeded: source '{resolvedSourceForRateLimit}' has {activeCount} active notifications for user");
+            }
+        }
+
         var entity = new InAppNotificationEntity
         {
             UserId = userId,

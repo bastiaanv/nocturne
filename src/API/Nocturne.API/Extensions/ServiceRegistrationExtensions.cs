@@ -536,6 +536,7 @@ public static class ServiceRegistrationExtensions
         services.AddScoped<IInAppNotificationRepository, InAppNotificationRepository>();
         services.AddScoped<IInAppNotificationService, InAppNotificationService>();
         services.AddHostedService<NotificationResolutionService>();
+        services.AddHostedService<NotificationCleanupService>();
 
         // Notification template registry (singleton -- templates are immutable after startup)
         var templateRegistry = new NotificationTemplateRegistry().AddBuiltInTemplates();
