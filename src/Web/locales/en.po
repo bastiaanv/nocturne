@@ -810,7 +810,9 @@ msgstr "Snooze"
 msgid "Schedules"
 msgstr "Schedules"
 
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/lib/components/admin/RoleDialog.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/alerts/GeneralTab.svelte
 #: src/lib/components/alerts/SchedulesTab.svelte
 #: src/lib/components/food/AddFoodDialog.svelte
@@ -820,8 +822,6 @@ msgstr "Schedules"
 #: src/routes/(authenticated)/food/FoodEditor.svelte
 #: src/routes/(authenticated)/food/FoodFilters.svelte
 #: src/routes/(authenticated)/food/FoodList.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/roles/+page.svelte
 #: src/routes/(authenticated)/settings/roles/+page.svelte
 msgid "Name"
@@ -891,10 +891,10 @@ msgid "Sort Order"
 msgstr "Sort Order"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 #: src/lib/components/alerts/GeneralTab.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -1154,7 +1154,9 @@ msgid "<0/> Add Schedule"
 msgstr "<0/> Add Schedule"
 
 #: src/lib/components/account/TotpSetupDialog.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/lib/components/admin/RoleDialog.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/alerts/RuleEditorSheet.svelte
 #: src/lib/components/connectors/ApiSecretSection.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
@@ -1201,8 +1203,6 @@ msgstr "<0/> Add Schedule"
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 #: src/routes/(authenticated)/settings/alerts/+page.svelte
 #: src/routes/(authenticated)/settings/alerts/setup/+page.svelte
@@ -1225,62 +1225,62 @@ msgid "Update Rule"
 msgstr "Update Rule"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 msgid "Identity Providers"
 msgstr "Identity Providers"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 msgid "Configure OpenID Connect providers for single sign-on."
 msgstr "Configure OpenID Connect providers for single sign-on."
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 msgid "<0/> Add Provider"
 msgstr "<0/> Add Provider"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 msgid "No identity providers configured."
 msgstr "No identity providers configured."
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/alerts/+page.svelte
 msgid "Disabled"
 msgstr "Disabled"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 #: src/lib/components/dashboard/PredictionSettings.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Disable"
 msgstr "Disable"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 msgid "Enable"
 msgstr "Enable"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 #: src/routes/(authenticated)/clock/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/integrations/discord/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Edit"
 msgstr "Edit"
 
 #: src/lib/components/admin/IdentityProvidersTabContent.svelte
+#: src/lib/components/admin/OidcProvidersTabContent.svelte
 #: src/lib/components/patient/PatientDeviceManager.svelte
 #: src/lib/components/patient/PatientInsulinManager.svelte
 #: src/lib/components/settings/CustomSoundUpload.svelte
 #: src/lib/components/treatments/TreatmentsDataTable.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
@@ -1344,9 +1344,9 @@ msgid "Update role details and permissions."
 msgstr "Update role details and permissions."
 
 #: src/lib/components/admin/RoleDialog.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/trackers/TrackerCompletionDialog.svelte
 #: src/lib/components/trackers/TrackerStartDialog.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Notes (optional)"
 msgstr "Notes (optional)"
 
@@ -1371,21 +1371,21 @@ msgid "Selected Permissions ({0})"
 msgstr "Selected Permissions ({0})"
 
 #: src/lib/components/admin/RoleDialog.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/entries/EntryEditDialog.svelte
 #: src/lib/components/food/AddFoodDialog.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Create"
 msgstr "Create"
 
 #: src/lib/components/admin/RoleDialog.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/settings/notifications/webhooks/WebhookSettingsModal.svelte
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/lib/components/trackers/TrackerEditorDialog.svelte
 #: src/lib/components/treatments/TreatmentFoodEntryEditDialog.svelte
 #: src/routes/(authenticated)/food/QuickPicksList.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/trackers/+page.svelte
 msgid "Save"
 msgstr "Save"
@@ -3190,11 +3190,11 @@ msgstr "<0/> Delete"
 msgid "<0/> Saving..."
 msgstr "<0/> Saving..."
 
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/lib/components/entries/EntryEditDialog.svelte
 #: src/lib/components/profile/ProfileEditDialog.svelte
 #: src/lib/components/treatments/TreatmentEditDialog.svelte
 #: src/routes/(authenticated)/food/FoodEditor.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Save Changes"
 msgstr "Save Changes"
 
@@ -4129,10 +4129,10 @@ msgstr "Connectors & Apps"
 msgid "Members"
 msgstr "Members"
 
+#: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/layout/AppSidebar.svelte
 #: src/lib/components/layout/UserMenu.svelte
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
 #: src/routes/(authenticated)/settings/roles/+page.svelte
@@ -4800,8 +4800,8 @@ msgstr "Targets"
 msgid "Profile Name"
 msgstr "Profile Name"
 
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/lib/components/profile/ProfileEditDialog.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Icon"
 msgstr "Icon"
 
@@ -6693,8 +6693,8 @@ msgstr "Choose a label and select the scopes this token should have access to."
 msgid "Label"
 msgstr "Label"
 
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/lib/components/settings/ApiTokens.svelte
-#: src/routes/(authenticated)/settings/admin/+page.svelte
 msgid "Scopes"
 msgstr "Scopes"
 
@@ -13433,11 +13433,11 @@ msgstr "Failed to update platform admin status."
 msgid "Failed to load identity providers"
 msgstr "Failed to load identity providers"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Failed to save provider"
 msgstr "Failed to save provider"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "This change would lock out all users. Ensure at least one authentication method remains available."
 msgstr "This change would lock out all users. Ensure at least one authentication method remains available."
 
@@ -13462,7 +13462,7 @@ msgstr "Failed to toggle provider"
 msgid "Disabling this provider would lock out all users."
 msgstr "Disabling this provider would lock out all users."
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Test failed"
 msgstr "Test failed"
 
@@ -13498,118 +13498,118 @@ msgstr "<0/> Connected Devices <1/>"
 msgid "<0/> Identity Providers <1/>"
 msgstr "<0/> Identity Providers <1/>"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Edit Identity Provider"
 msgstr "Edit Identity Provider"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Add Identity Provider"
 msgstr "Add Identity Provider"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Configure an OpenID Connect provider for single sign-on."
 msgstr "Configure an OpenID Connect provider for single sign-on."
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "My Provider"
 msgstr "My Provider"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Issuer URL"
 msgstr "Issuer URL"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Client ID"
 msgstr "Client ID"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Client Secret"
 msgstr "Client Secret"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Leave blank to keep existing"
 msgstr "Leave blank to keep existing"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Comma or space separated"
 msgstr "Comma or space separated"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Default Roles"
 msgstr "Default Roles"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Comma-separated roles assigned to new users from this provider"
 msgstr "Comma-separated roles assigned to new users from this provider"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Button Color"
 msgstr "Button Color"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Display Order"
 msgstr "Display Order"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "<0/> Test Connection"
 msgstr "<0/> Test Connection"
 
 #. placeholder {0}: testResult.responseTime ? ` (${testResult.responseTime})` : ""
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Connection successful{0}. <0/>"
 msgstr "Connection successful{0}. <0/>"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 msgid "Connection test failed"
 msgstr "Connection test failed"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/OidcProviderDialog.svelte
 msgid "Create Provider"
 msgstr "Create Provider"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "New User"
 msgstr "New User"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Edit User"
 msgstr "Edit User"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Create a new user account."
 msgstr "Create a new user account."
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Update user details and role assignments."
 msgstr "Update user details and role assignments."
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Additional information about this user"
 msgstr "Additional information about this user"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "No roles available"
 msgstr "No roles available"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Predefined"
 msgstr "Predefined"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Custom Roles"
 msgstr "Custom Roles"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Use predefined roles for standard access levels. OAuth scopes provide fine-grained device permissions."
 msgstr "Use predefined roles for standard access levels. OAuth scopes provide fine-grained device permissions."
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid "Full Admin Access"
 msgstr "Full Admin Access"
 
-#: src/routes/(authenticated)/settings/admin/+page.svelte
+#: src/lib/components/admin/SubjectEditDialog.svelte
 msgid ""
 "This user will have complete control of this Nocturne instance,\n"
 "including the ability to manage other users, modify all data,\n"
