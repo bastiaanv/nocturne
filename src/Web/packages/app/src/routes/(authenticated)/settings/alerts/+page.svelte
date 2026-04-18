@@ -17,43 +17,29 @@
     ActiveExcursionResponse,
     AlertHistoryResponse,
   } from "$api-clients";
-  import { AlertConditionType } from "$api-clients";
   import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
   } from "$lib/components/ui/card";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
-  import { Switch } from "$lib/components/ui/switch";
-  import { Label } from "$lib/components/ui/label";
-  import { Input } from "$lib/components/ui/input";
-  import { Separator } from "$lib/components/ui/separator";
-  import * as AlertDialog from "$lib/components/ui/alert-dialog";
   import SettingsPageSkeleton from "$lib/components/settings/SettingsPageSkeleton.svelte";
   import {
     Bell,
     Plus,
-    Trash2,
     AlertTriangle,
     Check,
-    ChevronDown,
-    ChevronUp,
-    Clock,
     Loader2,
-    Shield,
     Zap,
-    WifiOff,
-    TrendingDown,
-    ArrowUpRight,
-    Moon,
-    Save,
   } from "lucide-svelte";
   import { goto } from "$app/navigation";
   import RuleEditorSheet from "$lib/components/alerts/RuleEditorSheet.svelte";
-  import { Pencil } from "lucide-svelte";
+  import AlertRuleRow from "$lib/components/alerts/AlertRuleRow.svelte";
+  import QuietHoursCard from "$lib/components/alerts/QuietHoursCard.svelte";
+  import AlertHistoryCard from "$lib/components/alerts/AlertHistoryCard.svelte";
+  import { AlertConditionType } from "$api-clients";
 
   let rules = $state<AlertRuleResponse[]>([]);
   let activeAlerts = $state<ActiveExcursionResponse[]>([]);
@@ -76,34 +62,6 @@
   let quietHoursOverrideCritical = $state(true);
   let quietHoursSaving = $state(false);
 
-  function getConditionIcon(conditionType: AlertConditionType | undefined) {
-    switch (conditionType) {
-      case AlertConditionType.Threshold:
-        return TrendingDown;
-      case AlertConditionType.RateOfChange:
-        return Zap;
-      case AlertConditionType.SignalLoss:
-        return WifiOff;
-      case AlertConditionType.Composite:
-        return Shield;
-      default:
-        return Bell;
-    }
-  }
-
-  function getConditionBadgeVariant(
-    conditionType: AlertConditionType | undefined,
-  ): "default" | "secondary" | "destructive" | "outline" {
-    switch (conditionType) {
-      case AlertConditionType.Threshold:
-        return "destructive";
-      case AlertConditionType.SignalLoss:
-        return "secondary";
-      default:
-        return "outline";
-    }
-  }
-
   function getConditionLabel(conditionType: AlertConditionType | undefined): string {
     switch (conditionType) {
       case AlertConditionType.Threshold:
@@ -119,30 +77,6 @@
     }
   }
 
-  function getConditionSummary(rule: AlertRuleResponse): string {
-    const params = rule.conditionParams;
-    if (!params) return "No condition configured";
-
-    switch (rule.conditionType) {
-      case AlertConditionType.Threshold: {
-        const dir = (params as Record<string, unknown>)["direction"];
-        if (dir === "below") return `Below ${(params as Record<string, unknown>)["threshold"] ?? "?"} mg/dL`;
-        if (dir === "above") return `Above ${(params as Record<string, unknown>)["threshold"] ?? "?"} mg/dL`;
-        return `Threshold: ${(params as Record<string, unknown>)["threshold"] ?? "?"} mg/dL`;
-      }
-      case AlertConditionType.RateOfChange: {
-        const dir = (params as Record<string, unknown>)["direction"] === "falling" ? "Falling" : "Rising";
-        return `${dir} faster than ${(params as Record<string, unknown>)["rateThreshold"] ?? "?"} mg/dL/min`;
-      }
-      case AlertConditionType.SignalLoss:
-        return `No data for ${(params as Record<string, unknown>)["minutes"] ?? "?"} minutes`;
-      case AlertConditionType.Composite:
-        return "Multiple conditions combined";
-      default:
-        return "Custom condition";
-    }
-  }
-
   function formatDate(date: Date | string | undefined): string {
     if (!date) return "-";
     const d = typeof date === "string" ? new Date(date) : date;
@@ -152,20 +86,6 @@
       hour: "2-digit",
       minute: "2-digit",
     });
-  }
-
-  function formatDuration(
-    start: Date | string | undefined,
-    end: Date | string | undefined,
-  ): string {
-    if (!start || !end) return "-";
-    const s = typeof start === "string" ? new Date(start) : start;
-    const e = typeof end === "string" ? new Date(end) : end;
-    const diffMin = Math.round((e.getTime() - s.getTime()) / 60000);
-    if (diffMin < 60) return `${diffMin}m`;
-    const h = Math.floor(diffMin / 60);
-    const m = diffMin % 60;
-    return `${h}h ${m}m`;
   }
 
   async function loadData() {
@@ -381,9 +301,6 @@
               <Bell class="h-5 w-5" />
               Alert Rules
             </CardTitle>
-            <CardDescription>
-              Rules define when alerts trigger and how they escalate
-            </CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -405,378 +322,38 @@
           </div>
         {:else}
           {#each rules as rule (rule.id)}
-            {@const ConditionIcon = getConditionIcon(rule.conditionType)}
-            <div class="rounded-lg border transition-all hover:shadow-sm">
-              <!-- Rule Summary Row -->
-              <button
-                class="flex items-center gap-4 p-4 w-full text-left"
-                onclick={() => toggleExpand(rule.id ?? "")}
-              >
-                <ConditionIcon
-                  class="h-5 w-5 shrink-0 {rule.isEnabled
-                    ? 'text-primary'
-                    : 'text-muted-foreground'}"
-                />
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="font-medium truncate">
-                      {rule.name ?? "Unnamed Rule"}
-                    </span>
-                    <Badge variant={getConditionBadgeVariant(rule.conditionType)}>
-                      {getConditionLabel(rule.conditionType)}
-                    </Badge>
-                    {#if !rule.isEnabled}
-                      <Badge variant="secondary">Disabled</Badge>
-                    {/if}
-                  </div>
-                  <div
-                    class="flex items-center gap-4 text-sm text-muted-foreground"
-                  >
-                    <span>{getConditionSummary(rule)}</span>
-                    {#if rule.schedules && rule.schedules.length > 0}
-                      <span class="flex items-center gap-1">
-                        <Clock class="h-3 w-3" />
-                        {rule.schedules.length} schedule{rule.schedules.length !== 1 ? "s" : ""}
-                      </span>
-                    {/if}
-                    {#if rule.schedules}
-                      {@const stepCount = rule.schedules.reduce(
-                        (acc, s) => acc + (s.escalationSteps?.length ?? 0),
-                        0,
-                      )}
-                      {#if stepCount > 0}
-                        <span class="flex items-center gap-1">
-                          <ArrowUpRight class="h-3 w-3" />
-                          {stepCount} escalation step{stepCount !== 1 ? "s" : ""}
-                        </span>
-                      {/if}
-                    {/if}
-                    {#if rule.confirmationReadings && rule.confirmationReadings > 1}
-                      <span>{rule.confirmationReadings} confirmations</span>
-                    {/if}
-                  </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <Switch
-                    checked={rule.isEnabled ?? false}
-                    onCheckedChange={() => handleToggleRule(rule.id ?? "")}
-                    disabled={togglingRuleId === rule.id}
-                    onclick={(e: MouseEvent) => e.stopPropagation()}
-                  />
-                  {#if expandedRuleId === rule.id}
-                    <ChevronUp class="h-4 w-4 text-muted-foreground" />
-                  {:else}
-                    <ChevronDown class="h-4 w-4 text-muted-foreground" />
-                  {/if}
-                </div>
-              </button>
-
-              <!-- Expanded Detail -->
-              {#if expandedRuleId === rule.id}
-                <div class="border-t px-4 py-4 space-y-4 bg-muted/30">
-                  {#if rule.description}
-                    <p class="text-sm text-muted-foreground">
-                      {rule.description}
-                    </p>
-                  {/if}
-
-                  <div class="grid gap-4 sm:grid-cols-3 text-sm">
-                    <div>
-                      <p class="text-muted-foreground mb-1">Hysteresis</p>
-                      <p class="font-medium">
-                        {rule.hysteresisMinutes ?? 0} minutes
-                      </p>
-                    </div>
-                    <div>
-                      <p class="text-muted-foreground mb-1">Confirmations</p>
-                      <p class="font-medium">
-                        {rule.confirmationReadings ?? 1} reading{(rule.confirmationReadings ?? 1) !== 1 ? "s" : ""}
-                      </p>
-                    </div>
-                    <div>
-                      <p class="text-muted-foreground mb-1">Sort Order</p>
-                      <p class="font-medium">{rule.sortOrder ?? 0}</p>
-                    </div>
-                  </div>
-
-                  <!-- Schedules -->
-                  {#if rule.schedules && rule.schedules.length > 0}
-                    <Separator />
-                    <div>
-                      <h4 class="text-sm font-medium mb-3">Schedules</h4>
-                      {#each rule.schedules as schedule (schedule.id)}
-                        <div class="mb-3 p-3 rounded-md border bg-background">
-                          <div class="flex items-center gap-2 mb-2">
-                            <Clock class="h-4 w-4 text-muted-foreground" />
-                            <span class="text-sm font-medium">
-                              {schedule.name ?? "Default Schedule"}
-                            </span>
-                            {#if schedule.isDefault}
-                              <Badge variant="secondary">Default</Badge>
-                            {/if}
-                          </div>
-                          {#if schedule.startTime || schedule.endTime}
-                            <p class="text-xs text-muted-foreground mb-2">
-                              {schedule.startTime ?? "00:00"} - {schedule.endTime ?? "23:59"}
-                              ({schedule.timezone ?? "UTC"})
-                            </p>
-                          {/if}
-                          {#if schedule.daysOfWeek && schedule.daysOfWeek.length > 0 && schedule.daysOfWeek.length < 7}
-                            <p class="text-xs text-muted-foreground mb-2">
-                              Days: {schedule.daysOfWeek.map((d) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d] ?? d).join(", ")}
-                            </p>
-                          {/if}
-
-                          <!-- Escalation Steps -->
-                          {#if schedule.escalationSteps && schedule.escalationSteps.length > 0}
-                            <div class="mt-2 space-y-1">
-                              {#each schedule.escalationSteps.sort((a, b) => (a.stepOrder ?? 0) - (b.stepOrder ?? 0)) as step, idx}
-                                <div
-                                  class="flex items-center gap-2 text-xs text-muted-foreground pl-4 border-l-2 border-muted py-1"
-                                >
-                                  <span class="font-medium text-foreground">
-                                    Step {idx + 1}
-                                  </span>
-                                  {#if step.delaySeconds && step.delaySeconds > 0}
-                                    <span>
-                                      after {Math.round(step.delaySeconds / 60)}m
-                                    </span>
-                                  {:else}
-                                    <span>immediately</span>
-                                  {/if}
-                                  {#if step.channels && step.channels.length > 0}
-                                    <span class="mx-1">via</span>
-                                    {#each step.channels as channel}
-                                      <Badge variant="outline" class="text-xs">
-                                        {channel.channelType}
-                                        {#if channel.destinationLabel}
-                                          : {channel.destinationLabel}
-                                        {/if}
-                                      </Badge>
-                                    {/each}
-                                  {/if}
-                                </div>
-                              {/each}
-                            </div>
-                          {/if}
-                        </div>
-                      {/each}
-                    </div>
-                  {/if}
-
-                  <!-- Actions -->
-                  <Separator />
-                  <div class="flex items-center justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onclick={() => openEditEditor(rule)}
-                    >
-                      <Pencil class="h-4 w-4 mr-2" />
-                      Edit Rule
-                    </Button>
-                    <AlertDialog.Root>
-                      <AlertDialog.Trigger>
-                        {#snippet child({ props })}
-                          <Button
-                            {...props}
-                            variant="outline"
-                            size="sm"
-                            class="text-destructive"
-                          >
-                            <Trash2 class="h-4 w-4 mr-2" />
-                            Delete Rule
-                          </Button>
-                        {/snippet}
-                      </AlertDialog.Trigger>
-                      <AlertDialog.Content>
-                        <AlertDialog.Header>
-                          <AlertDialog.Title>Delete Alert Rule</AlertDialog.Title>
-                          <AlertDialog.Description>
-                            Are you sure you want to delete "{rule.name}"? This
-                            will also remove all associated schedules and
-                            escalation steps. This action cannot be undone.
-                          </AlertDialog.Description>
-                        </AlertDialog.Header>
-                        <AlertDialog.Footer>
-                          <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-                          <AlertDialog.Action
-                            onclick={() => handleDeleteRule(rule.id ?? "")}
-                          >
-                            {#if deletingRuleId === rule.id}
-                              <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-                            {/if}
-                            Delete
-                          </AlertDialog.Action>
-                        </AlertDialog.Footer>
-                      </AlertDialog.Content>
-                    </AlertDialog.Root>
-                  </div>
-                </div>
-              {/if}
-            </div>
+            <AlertRuleRow
+              {rule}
+              isExpanded={expandedRuleId === rule.id}
+              isToggling={togglingRuleId === rule.id}
+              isDeleting={deletingRuleId === rule.id}
+              onToggleExpand={() => toggleExpand(rule.id ?? "")}
+              onToggleEnabled={() => handleToggleRule(rule.id ?? "")}
+              onEdit={() => openEditEditor(rule)}
+              onDelete={() => handleDeleteRule(rule.id ?? "")}
+            />
           {/each}
         {/if}
       </CardContent>
     </Card>
 
     <!-- Quiet Hours -->
-    <Card>
-      <CardHeader>
-        <CardTitle class="flex items-center gap-2">
-          <Moon class="h-5 w-5" />
-          Quiet Hours
-        </CardTitle>
-        <CardDescription>
-          Suppress non-critical alerts during specific hours
-        </CardDescription>
-      </CardHeader>
-      <CardContent class="space-y-4">
-        <div class="flex items-center justify-between">
-          <Label for="qh-enabled">Enable quiet hours</Label>
-          <Switch id="qh-enabled" bind:checked={quietHoursEnabled} />
-        </div>
-
-        {#if quietHoursEnabled}
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label for="qh-start">Start Time</Label>
-              <Input id="qh-start" type="time" bind:value={quietHoursStart} />
-            </div>
-            <div class="space-y-2">
-              <Label for="qh-end">End Time</Label>
-              <Input id="qh-end" type="time" bind:value={quietHoursEnd} />
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <div>
-              <Label for="qh-override">Allow critical alerts during quiet hours</Label>
-              <p class="text-xs text-muted-foreground">
-                Critical alerts bypass quiet hours
-              </p>
-            </div>
-            <Switch id="qh-override" bind:checked={quietHoursOverrideCritical} />
-          </div>
-        {/if}
-
-        <div class="flex justify-end">
-          <Button
-            size="sm"
-            onclick={handleSaveQuietHours}
-            disabled={quietHoursSaving}
-          >
-            {#if quietHoursSaving}
-              <Loader2 class="h-4 w-4 mr-2 animate-spin" />
-            {:else}
-              <Save class="h-4 w-4 mr-2" />
-            {/if}
-            Save
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <QuietHoursCard
+      bind:enabled={quietHoursEnabled}
+      bind:start={quietHoursStart}
+      bind:end={quietHoursEnd}
+      bind:overrideCritical={quietHoursOverrideCritical}
+      saving={quietHoursSaving}
+      onSave={handleSaveQuietHours}
+    />
 
     <!-- Alert History -->
-    <Card>
-      <CardHeader>
-        <CardTitle class="flex items-center gap-2">
-          <Clock class="h-5 w-5" />
-          Alert History
-        </CardTitle>
-        <CardDescription>
-          Past alert excursions and their resolution
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {#if !history || !history.items || history.items.length === 0}
-          <div class="text-center py-8 text-muted-foreground">
-            <Clock class="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p class="font-medium">No alert history</p>
-            <p class="text-sm">
-              Resolved alerts will appear here
-            </p>
-          </div>
-        {:else}
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b">
-                  <th class="text-left py-2 pr-4 font-medium text-muted-foreground">Rule</th>
-                  <th class="text-left py-2 pr-4 font-medium text-muted-foreground">Type</th>
-                  <th class="text-left py-2 pr-4 font-medium text-muted-foreground">Started</th>
-                  <th class="text-left py-2 pr-4 font-medium text-muted-foreground">Duration</th>
-                  <th class="text-left py-2 font-medium text-muted-foreground">Acknowledged</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each history.items as item (item.id)}
-                  <tr class="border-b last:border-0">
-                    <td class="py-2 pr-4 font-medium">
-                      {item.ruleName ?? "-"}
-                    </td>
-                    <td class="py-2 pr-4">
-                      <Badge
-                        variant={getConditionBadgeVariant(item.conditionType)}
-                      >
-                        {getConditionLabel(item.conditionType)}
-                      </Badge>
-                    </td>
-                    <td class="py-2 pr-4 text-muted-foreground">
-                      {formatDate(item.startedAt)}
-                    </td>
-                    <td class="py-2 pr-4 text-muted-foreground">
-                      {formatDuration(item.startedAt, item.endedAt)}
-                    </td>
-                    <td class="py-2 text-muted-foreground">
-                      {#if item.acknowledgedAt}
-                        {formatDate(item.acknowledgedAt)}
-                        {#if item.acknowledgedBy}
-                          <span class="text-xs ml-1">
-                            by {item.acknowledgedBy}
-                          </span>
-                        {/if}
-                      {:else}
-                        <span class="text-muted-foreground/50">-</span>
-                      {/if}
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Pagination -->
-          {#if (history.totalPages ?? 1) > 1}
-            <div class="flex items-center justify-between mt-4 pt-4 border-t">
-              <p class="text-sm text-muted-foreground">
-                Page {history.page ?? 1} of {history.totalPages ?? 1}
-                ({history.totalCount ?? 0} total)
-              </p>
-              <div class="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={historyPage <= 1 || historyLoading}
-                  onclick={() => loadHistory(historyPage - 1)}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={historyPage >= (history.totalPages ?? 1) ||
-                    historyLoading}
-                  onclick={() => loadHistory(historyPage + 1)}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          {/if}
-        {/if}
-      </CardContent>
-    </Card>
+    <AlertHistoryCard
+      {history}
+      page={historyPage}
+      loading={historyLoading}
+      onLoadPage={loadHistory}
+    />
   {/if}
 </div>
 
