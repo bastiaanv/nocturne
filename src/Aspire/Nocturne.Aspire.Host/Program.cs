@@ -267,6 +267,9 @@ class Program
         if (builder.ExecutionContext.IsRunMode && postgresServer != null)
         {
             postgresServer.WithDevSnapshotCommands(api);
+            postgresServer.WithListTenantsCommand(api);
+            postgresServer.WithCreateTenantCommand(api);
+            postgresServer.WithDeleteTenantCommand(api);
         }
 
         // ------------------------------------------------------------------
@@ -419,7 +422,7 @@ class Program
             gateway.WithHttpsDeveloperCertificate();
             if (!isWorktree)
             {
-                gateway.WithHostPort(1612);
+                gateway.WithHttpsEndpoint(port: 1612);
             }
         }
         else
