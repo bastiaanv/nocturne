@@ -8,7 +8,7 @@
   interface Credential {
     id: string;
     label?: string | null;
-    createdAt: string | Date;
+    createdAt?: string | Date | null;
     lastUsedAt?: string | Date | null;
   }
 
@@ -97,7 +97,7 @@
             >
               <span class="flex items-center gap-1">
                 <Clock class="h-3 w-3" />
-                Created {formatDate(credential.createdAt)}
+                Created {credential.createdAt ? formatDate(credential.createdAt) : "Unknown"}
               </span>
               {#if credential.lastUsedAt}
                 <span class="flex items-center gap-1">
