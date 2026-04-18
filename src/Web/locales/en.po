@@ -1130,8 +1130,8 @@ msgstr "First step fires immediately"
 msgid "Destination"
 msgstr "Destination"
 
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/lib/components/alerts/SchedulesTab.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
 msgid "Label (optional)"
@@ -1153,6 +1153,7 @@ msgstr "<0/> Remove Schedule"
 msgid "<0/> Add Schedule"
 msgstr "<0/> Add Schedule"
 
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/lib/components/admin/RoleDialog.svelte
 #: src/lib/components/alerts/RuleEditorSheet.svelte
 #: src/lib/components/connectors/ApiSecretSection.svelte
@@ -1197,7 +1198,6 @@ msgstr "<0/> Add Schedule"
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
@@ -1433,8 +1433,8 @@ msgstr "Defines what unauthenticated users can access"
 msgid "Roles: {0}"
 msgstr "Roles: {0}"
 
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/lib/components/admin/UsersTabContent.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "No roles assigned"
 msgstr "No roles assigned"
 
@@ -6649,27 +6649,23 @@ msgstr ""
 "No API tokens. Create a token to enable programmatic access to\n"
 "your data."
 
+#. placeholder {0}: formatDate(credential.createdAt)
 #. placeholder {0}: formatDate(grant.createdAt)
 #. placeholder {0}: formatDate(app.createdAt)
-#. placeholder {0}: formatDate(credential.createdAt)
-#. placeholder {0}: formatDate(credential.createdAt)
+#: src/lib/components/account/SecurityCredentialCard.svelte
 #: src/lib/components/settings/ApiTokens.svelte
 #: src/lib/components/settings/ConnectedApps.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "<0/> Created {0}"
 msgstr "<0/> Created {0}"
 
+#. placeholder {0}: formatDate(credential.lastUsedAt)
 #. placeholder {0}: formatDate(grant.lastUsedAt)
 #. placeholder {0}: formatDate(app.lastUsedAt)
 #. placeholder {0}: formatDate(identity.lastUsedAt)
-#. placeholder {0}: formatDate(credential.lastUsedAt)
-#. placeholder {0}: formatDate(credential.lastUsedAt)
+#: src/lib/components/account/SecurityCredentialCard.svelte
 #: src/lib/components/settings/ApiTokens.svelte
 #: src/lib/components/settings/ConnectedApps.svelte
 #: src/lib/components/settings/LinkedOidcIdentities.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "<0/> Last used {0}"
 msgstr "<0/> Last used {0}"
 
@@ -13136,6 +13132,7 @@ msgstr "Failed to start authenticator setup."
 msgid "Authenticator app added successfully."
 msgstr "Authenticator app added successfully."
 
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Verification failed. Check the code and try again."
 msgstr "Verification failed. Check the code and try again."
@@ -13156,113 +13153,98 @@ msgstr "Account - Settings - Nocturne"
 msgid "Manage your account and security settings"
 msgstr "Manage your account and security settings"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "Account Details"
 msgstr "Account Details"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "Subject ID"
 msgstr "Subject ID"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "Session Expires"
 msgstr "Session Expires"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "<0/> Roles"
 msgstr "<0/> Roles"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "<0/> Permissions"
 msgstr "<0/> Permissions"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "No explicit permissions"
 msgstr "No explicit permissions"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "<0/> Back to Settings"
 msgstr "<0/> Back to Settings"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 msgid "<0/> Log Out"
 msgstr "<0/> Log Out"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid "<0/> Passkeys"
-msgstr "<0/> Passkeys"
+#~ msgid "<0/> Passkeys"
+#~ msgstr "<0/> Passkeys"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid ""
-"Passkeys provide secure, phishing-resistant authentication using\n"
-"your device's biometrics or security key."
-msgstr ""
-"Passkeys provide secure, phishing-resistant authentication using\n"
-"your device's biometrics or security key."
+#~ msgid ""
+#~ "Passkeys provide secure, phishing-resistant authentication using\n"
+#~ "your device's biometrics or security key."
+#~ msgstr ""
+#~ "Passkeys provide secure, phishing-resistant authentication using\n"
+#~ "your device's biometrics or security key."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid "<0/> Add passkey"
-msgstr "<0/> Add passkey"
+#~ msgid "<0/> Add passkey"
+#~ msgstr "<0/> Add passkey"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid ""
-"No passkeys registered. Add a passkey to enable passwordless\n"
-"sign-in."
-msgstr ""
-"No passkeys registered. Add a passkey to enable passwordless\n"
-"sign-in."
+#~ msgid ""
+#~ "No passkeys registered. Add a passkey to enable passwordless\n"
+#~ "sign-in."
+#~ msgstr ""
+#~ "No passkeys registered. Add a passkey to enable passwordless\n"
+#~ "sign-in."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Unnamed passkey"
 msgstr "Unnamed passkey"
 
-#. placeholder {0}: maxPasskeys
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid "Maximum of {0} passkeys reached."
-msgstr "Maximum of {0} passkeys reached."
+#~ msgid "Maximum of {0} passkeys reached."
+#~ msgstr "Maximum of {0} passkeys reached."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid ""
-"You cannot remove your only passkey without an alternative sign-in\n"
-"method linked to your account."
-msgstr ""
-"You cannot remove your only passkey without an alternative sign-in\n"
-"method linked to your account."
+#~ msgid ""
+#~ "You cannot remove your only passkey without an alternative sign-in\n"
+#~ "method linked to your account."
+#~ msgstr ""
+#~ "You cannot remove your only passkey without an alternative sign-in\n"
+#~ "method linked to your account."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid "<0/> Authenticator Apps"
-msgstr "<0/> Authenticator Apps"
+#~ msgid "<0/> Authenticator Apps"
+#~ msgstr "<0/> Authenticator Apps"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid ""
-"Use an authenticator app like Google Authenticator or Authy to\n"
-"generate time-based one-time passwords for sign-in."
-msgstr ""
-"Use an authenticator app like Google Authenticator or Authy to\n"
-"generate time-based one-time passwords for sign-in."
+#~ msgid ""
+#~ "Use an authenticator app like Google Authenticator or Authy to\n"
+#~ "generate time-based one-time passwords for sign-in."
+#~ msgstr ""
+#~ "Use an authenticator app like Google Authenticator or Authy to\n"
+#~ "generate time-based one-time passwords for sign-in."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid "<0/> Add authenticator"
-msgstr "<0/> Add authenticator"
+#~ msgid "<0/> Add authenticator"
+#~ msgstr "<0/> Add authenticator"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid ""
-"No authenticator apps registered. Add one for an additional\n"
-"sign-in method."
-msgstr ""
-"No authenticator apps registered. Add one for an additional\n"
-"sign-in method."
+#~ msgid ""
+#~ "No authenticator apps registered. Add one for an additional\n"
+#~ "sign-in method."
+#~ msgstr ""
+#~ "No authenticator apps registered. Add one for an additional\n"
+#~ "sign-in method."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Unnamed authenticator"
 msgstr "Unnamed authenticator"
 
-#. placeholder {0}: maxTotpCredentials
-#: src/routes/(authenticated)/settings/account/+page.svelte
-msgid "Maximum of {0} authenticators reached."
-msgstr "Maximum of {0} authenticators reached."
+#~ msgid "Maximum of {0} authenticators reached."
+#~ msgstr "Maximum of {0} authenticators reached."
 
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "<0/> Recovery Codes"
@@ -13398,11 +13380,11 @@ msgstr "<0/> Copied"
 msgid "<0/> Copy all codes"
 msgstr "<0/> Copy all codes"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 msgid "Set up authenticator app"
 msgstr "Set up authenticator app"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 msgid ""
 "Scan the QR code with your authenticator app, then enter the 6-digit\n"
 "code to verify."
@@ -13410,19 +13392,19 @@ msgstr ""
 "Scan the QR code with your authenticator app, then enter the 6-digit\n"
 "code to verify."
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 msgid "TOTP QR code"
 msgstr "TOTP QR code"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 msgid "Or enter this secret manually:"
 msgstr "Or enter this secret manually:"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 msgid "Verification code"
 msgstr "Verification code"
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 msgid "<0/> Verify and save"
 msgstr "<0/> Verify and save"
 
@@ -15761,6 +15743,7 @@ msgstr "Login Help"
 msgid "Learn about the different ways to sign in to Nocturne"
 msgstr "Learn about the different ways to sign in to Nocturne"
 
+#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(unauthenticated)/auth/help/+page.svelte
 msgid "Passkeys"
 msgstr "Passkeys"
@@ -16820,6 +16803,54 @@ msgstr "Back to Settings"
 msgid "Link failed"
 msgstr "Link failed"
 
+#. placeholder {0}: title.toLowerCase()
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid ""
+"No {0} registered. Add one to enable additional sign-in\n"
+"methods."
+msgstr ""
+"No {0} registered. Add one to enable additional sign-in\n"
+"methods."
+
+#. placeholder {0}: title.toLowerCase()
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid "Unnamed {0}"
+msgstr "Unnamed {0}"
+
+#. placeholder {0}: maxCredentials
+#. placeholder {1}: title.toLowerCase()
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid "Maximum of {0} {1} reached."
+msgstr "Maximum of {0} {1} reached."
+
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid ""
+"You cannot remove your only credential without an alternative sign-in\n"
+"method linked to your account."
+msgstr ""
+"You cannot remove your only credential without an alternative sign-in\n"
+"method linked to your account."
+
 #: src/lib/components/meals/MealsFilterBar.svelte
 msgid "Foods <0/> <1/>"
 msgstr "Foods <0/> <1/>"
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Passkeys provide secure, phishing-resistant authentication using your device's biometrics or security key."
+msgstr "Passkeys provide secure, phishing-resistant authentication using your device's biometrics or security key."
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Add passkey"
+msgstr "Add passkey"
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Authenticator Apps"
+msgstr "Authenticator Apps"
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Use an authenticator app like Google Authenticator or Authy to generate time-based one-time passwords for sign-in."
+msgstr "Use an authenticator app like Google Authenticator or Authy to generate time-based one-time passwords for sign-in."
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Add authenticator"
+msgstr "Add authenticator"

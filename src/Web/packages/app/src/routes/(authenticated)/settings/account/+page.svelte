@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as Card from "$lib/components/ui/card";
-  import * as Avatar from "$lib/components/ui/avatar";
   import * as Dialog from "$lib/components/ui/dialog";
   import { Button } from "$lib/components/ui/button";
   import { Badge } from "$lib/components/ui/badge";
@@ -9,15 +8,6 @@
   import { Separator } from "$lib/components/ui/separator";
   import {
     User,
-    Mail,
-    Shield,
-    Clock,
-    Key,
-    LogOut,
-    Settings,
-    Fingerprint,
-    Plus,
-    Trash2,
     ShieldAlert,
     RefreshCw,
     Copy,
@@ -26,13 +16,11 @@
     Loader2,
     Info,
     Server,
+    Fingerprint,
     Smartphone,
   } from "lucide-svelte";
-  import * as InputOTP from "$lib/components/ui/input-otp";
   import QRCode from "qrcode";
   import type { PageData } from "./$types";
-  import { formatSessionExpiry } from "$lib/stores/auth-store.svelte";
-  import { formatDate } from "$lib/utils/formatting";
   import { startRegistration } from "@simplewebauthn/browser";
   import {
     registerOptions,
@@ -49,30 +37,14 @@
     removeCredential as totpRemoveCredential,
   } from "$lib/api/generated/totps.generated.remote";
   import LinkedOidcIdentities from "$lib/components/settings/LinkedOidcIdentities.svelte";
+  import UserProfileCard from "$lib/components/account/UserProfileCard.svelte";
+  import SecurityCredentialCard from "$lib/components/account/SecurityCredentialCard.svelte";
+  import TotpSetupDialog from "$lib/components/account/TotpSetupDialog.svelte";
   import { page } from "$app/state";
 
   const { data }: { data: PageData } = $props();
 
   const user = $derived(data.user);
-
-  /** Get initials from user name */
-  function getInitials(name: string): string {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  }
-
-  /** Time until session expires in seconds */
-  const timeUntilExpiry = $derived.by(() => {
-    if (!user?.expiresAt) return null;
-    const now = new Date();
-    const expiresAt = new Date(user.expiresAt);
-    const diff = expiresAt.getTime() - now.getTime();
-    return Math.max(0, Math.floor(diff / 1000));
-  });
 
   /** Handle logout */
   function handleLogout() {
@@ -350,122 +322,7 @@
     </div>
 
     <!-- User Profile Card -->
-    <Card.Root>
-      <Card.Header>
-        <div class="flex items-start gap-4">
-          <Avatar.Root class="h-16 w-16">
-            <Avatar.Fallback class="bg-primary/10 text-primary text-xl">
-              {getInitials(user.name)}
-            </Avatar.Fallback>
-          </Avatar.Root>
-          <div class="space-y-1 flex-1">
-            <Card.Title class="text-xl">{user.name}</Card.Title>
-            {#if user.email}
-              <Card.Description class="flex items-center gap-2">
-                <Mail class="h-4 w-4" />
-                {user.email}
-              </Card.Description>
-            {/if}
-          </div>
-        </div>
-      </Card.Header>
-      <Card.Content class="space-y-6">
-        <!-- Account Details -->
-        <div class="space-y-4">
-          <h3
-            class="text-sm font-medium text-muted-foreground uppercase tracking-wider"
-          >
-            Account Details
-          </h3>
-
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div class="space-y-1">
-              <p class="text-sm text-muted-foreground">Subject ID</p>
-              <p class="text-sm font-mono bg-muted px-2 py-1 rounded">
-                {user.subjectId}
-              </p>
-            </div>
-
-            {#if user.expiresAt}
-              <div class="space-y-1">
-                <p class="text-sm text-muted-foreground">Session Expires</p>
-                <p class="text-sm flex items-center gap-2">
-                  <Clock class="h-4 w-4 text-muted-foreground" />
-                  {formatDate(user.expiresAt)}
-                  {#if timeUntilExpiry !== null}
-                    <span class="text-muted-foreground">
-                      ({formatSessionExpiry(timeUntilExpiry)})
-                    </span>
-                  {/if}
-                </p>
-              </div>
-            {/if}
-          </div>
-        </div>
-
-        <Separator />
-
-        <!-- Roles -->
-        <div class="space-y-4">
-          <h3
-            class="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2"
-          >
-            <Shield class="h-4 w-4" />
-            Roles
-          </h3>
-
-          {#if user.roles.length > 0}
-            <div class="flex flex-wrap gap-2">
-              {#each user.roles as role}
-                <Badge variant="secondary" class="text-sm">
-                  {role}
-                </Badge>
-              {/each}
-            </div>
-          {:else}
-            <p class="text-sm text-muted-foreground">No roles assigned</p>
-          {/if}
-        </div>
-
-        <Separator />
-
-        <!-- Permissions -->
-        <div class="space-y-4">
-          <h3
-            class="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2"
-          >
-            <Key class="h-4 w-4" />
-            Permissions
-          </h3>
-
-          {#if user.permissions.length > 0}
-            <div class="flex flex-wrap gap-2">
-              {#each user.permissions as permission}
-                <Badge variant="outline" class="text-xs font-mono">
-                  {permission}
-                </Badge>
-              {/each}
-            </div>
-          {:else}
-            <p class="text-sm text-muted-foreground">No explicit permissions</p>
-          {/if}
-        </div>
-      </Card.Content>
-      <Card.Footer class="flex flex-col sm:flex-row gap-2 border-t pt-6">
-        <Button variant="outline" href="/settings" class="w-full sm:w-auto">
-          <Settings class="mr-2 h-4 w-4" />
-          Back to Settings
-        </Button>
-        <Button
-          variant="destructive"
-          onclick={handleLogout}
-          class="w-full sm:w-auto"
-        >
-          <LogOut class="mr-2 h-4 w-4" />
-          Log Out
-        </Button>
-      </Card.Footer>
-    </Card.Root>
+    <UserProfileCard {user} onLogout={handleLogout} />
 
     {#if errorMessage}
       <div
@@ -497,199 +354,49 @@
       </Card.Root>
     {:else}
       <!-- Section 1: Registered Passkeys -->
-      <Card.Root>
-        <Card.Header>
-          <div class="flex items-center justify-between">
-            <div>
-              <Card.Title class="flex items-center gap-2">
-                <Fingerprint class="h-5 w-5" />
-                Passkeys
-              </Card.Title>
-              <Card.Description>
-                Passkeys provide secure, phishing-resistant authentication using
-                your device's biometrics or security key.
-              </Card.Description>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isRegistering || credentials.length >= maxPasskeys}
-              onclick={handleAddPasskey}
-            >
-              {#if isRegistering}
-                <Loader2 class="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              {:else}
-                <Plus class="mr-1.5 h-3.5 w-3.5" />
-              {/if}
-              Add passkey
-            </Button>
-          </div>
-        </Card.Header>
-        <Card.Content class="space-y-3">
-          {#if credentials.length === 0}
-            <div class="flex flex-col items-center justify-center py-8 text-center">
-              <div
-                class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
-              >
-                <Fingerprint class="h-6 w-6 text-muted-foreground" />
-              </div>
-              <p class="text-sm text-muted-foreground max-w-sm">
-                No passkeys registered. Add a passkey to enable passwordless
-                sign-in.
-              </p>
-            </div>
-          {:else}
-            {#each credentials as credential (credential.id)}
-              <div
-                class="flex items-center justify-between gap-4 rounded-md border p-3"
-              >
-                <div class="space-y-1 flex-1 min-w-0">
-                  <p class="text-sm font-medium">
-                    {credential.label ?? "Unnamed passkey"}
-                  </p>
-                  <div
-                    class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"
-                  >
-                    <span class="flex items-center gap-1">
-                      <Clock class="h-3 w-3" />
-                      Created {formatDate(credential.createdAt)}
-                    </span>
-                    {#if credential.lastUsedAt}
-                      <span class="flex items-center gap-1">
-                        <Clock class="h-3 w-3" />
-                        Last used {formatDate(credential.lastUsedAt)}
-                      </span>
-                    {/if}
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  class="text-destructive hover:text-destructive shrink-0"
-                  disabled={!canRemovePasskey ||
-                    isRemoving === credential.id}
-                  onclick={() => confirmRemovePasskey(credential)}
-                >
-                  {#if isRemoving === credential.id}
-                    <Loader2 class="h-3.5 w-3.5 animate-spin" />
-                  {:else}
-                    <Trash2 class="h-3.5 w-3.5" />
-                  {/if}
-                </Button>
-              </div>
-            {/each}
-          {/if}
-
-          {#if credentials.length >= maxPasskeys}
-            <p class="text-xs text-muted-foreground">
-              Maximum of {maxPasskeys} passkeys reached.
-            </p>
-          {/if}
-
-          {#if !canRemovePasskey && credentials.length > 0}
-            <p class="text-xs text-muted-foreground">
-              You cannot remove your only passkey without an alternative sign-in
-              method linked to your account.
-            </p>
-          {/if}
-        </Card.Content>
-      </Card.Root>
+      <SecurityCredentialCard
+        title="Passkeys"
+        description="Passkeys provide secure, phishing-resistant authentication using your device's biometrics or security key."
+        icon={Fingerprint}
+        addLabel="Add passkey"
+        credentials={credentials.map((c) => ({
+          id: c.id ?? "",
+          label: c.label,
+          createdAt: c.createdAt,
+          lastUsedAt: c.lastUsedAt,
+        }))}
+        isAdding={isRegistering}
+        isRemoving={isRemoving !== null}
+        removingId={isRemoving ?? undefined}
+        canRemove={canRemovePasskey}
+        maxCredentials={maxPasskeys}
+        onAdd={handleAddPasskey}
+        onRemove={(cred) => confirmRemovePasskey(cred)}
+      />
 
       <!-- Section 1b: Linked OIDC identities -->
       <LinkedOidcIdentities {primaryAuthFactorCount} />
 
       <!-- Section 2: Authenticator Apps -->
-      <Card.Root>
-        <Card.Header>
-          <div class="flex items-center justify-between">
-            <div>
-              <Card.Title class="flex items-center gap-2">
-                <Smartphone class="h-5 w-5" />
-                Authenticator Apps
-              </Card.Title>
-              <Card.Description>
-                Use an authenticator app like Google Authenticator or Authy to
-                generate time-based one-time passwords for sign-in.
-              </Card.Description>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={totpSetupLoading || totpCredentials.length >= maxTotpCredentials}
-              onclick={handleStartTotpSetup}
-            >
-              {#if totpSetupLoading}
-                <Loader2 class="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              {:else}
-                <Plus class="mr-1.5 h-3.5 w-3.5" />
-              {/if}
-              Add authenticator
-            </Button>
-          </div>
-        </Card.Header>
-        <Card.Content class="space-y-3">
-          {#if totpCredentials.length === 0}
-            <div class="flex flex-col items-center justify-center py-8 text-center">
-              <div
-                class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted"
-              >
-                <Smartphone class="h-6 w-6 text-muted-foreground" />
-              </div>
-              <p class="text-sm text-muted-foreground max-w-sm">
-                No authenticator apps registered. Add one for an additional
-                sign-in method.
-              </p>
-            </div>
-          {:else}
-            {#each totpCredentials as credential (credential.id)}
-              <div
-                class="flex items-center justify-between gap-4 rounded-md border p-3"
-              >
-                <div class="space-y-1 flex-1 min-w-0">
-                  <p class="text-sm font-medium">
-                    {credential.label ?? "Unnamed authenticator"}
-                  </p>
-                  <div
-                    class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground"
-                  >
-                    <span class="flex items-center gap-1">
-                      <Clock class="h-3 w-3" />
-                      Created {formatDate(credential.createdAt)}
-                    </span>
-                    {#if credential.lastUsedAt}
-                      <span class="flex items-center gap-1">
-                        <Clock class="h-3 w-3" />
-                        Last used {formatDate(credential.lastUsedAt)}
-                      </span>
-                    {/if}
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  class="text-destructive hover:text-destructive shrink-0"
-                  disabled={totpRemovingId === credential.id}
-                  onclick={() => confirmRemoveTotp(credential)}
-                >
-                  {#if totpRemovingId === credential.id}
-                    <Loader2 class="h-3.5 w-3.5 animate-spin" />
-                  {:else}
-                    <Trash2 class="h-3.5 w-3.5" />
-                  {/if}
-                </Button>
-              </div>
-            {/each}
-          {/if}
-
-          {#if totpCredentials.length >= maxTotpCredentials}
-            <p class="text-xs text-muted-foreground">
-              Maximum of {maxTotpCredentials} authenticators reached.
-            </p>
-          {/if}
-        </Card.Content>
-      </Card.Root>
+      <SecurityCredentialCard
+        title="Authenticator Apps"
+        description="Use an authenticator app like Google Authenticator or Authy to generate time-based one-time passwords for sign-in."
+        icon={Smartphone}
+        addLabel="Add authenticator"
+        credentials={totpCredentials.map((c) => ({
+          id: c.id ?? "",
+          label: c.label,
+          createdAt: c.createdAt,
+          lastUsedAt: c.lastUsedAt,
+        }))}
+        isAdding={totpSetupLoading}
+        isRemoving={totpRemovingId !== null}
+        removingId={totpRemovingId ?? undefined}
+        canRemove={true}
+        maxCredentials={maxTotpCredentials}
+        onAdd={handleStartTotpSetup}
+        onRemove={(cred) => confirmRemoveTotp(cred)}
+      />
 
       <!-- Section 3: Recovery Codes -->
       <Card.Root>
@@ -930,100 +637,24 @@
   </Dialog.Content>
 </Dialog.Root>
 
-<!-- TOTP Setup Dialog -->
-<Dialog.Root bind:open={showTotpSetup}>
-  <Dialog.Content class="max-w-md">
-    <Dialog.Header>
-      <Dialog.Title>Set up authenticator app</Dialog.Title>
-      <Dialog.Description>
-        Scan the QR code with your authenticator app, then enter the 6-digit
-        code to verify.
-      </Dialog.Description>
-    </Dialog.Header>
-    <div class="space-y-4 py-4">
-      {#if totpQrDataUrl}
-        <div class="flex justify-center">
-          <div class="rounded-md border bg-white p-2">
-            <img src={totpQrDataUrl} alt="TOTP QR code" class="h-[200px] w-[200px]" />
-          </div>
-        </div>
-      {/if}
-
-      {#if totpSetupData?.base32Secret}
-        <div class="space-y-1">
-          <p class="text-xs text-muted-foreground">
-            Or enter this secret manually:
-          </p>
-          <p class="rounded-md border bg-muted/30 px-3 py-2 font-mono text-xs text-center select-all break-all">
-            {totpSetupData.base32Secret}
-          </p>
-        </div>
-      {/if}
-
-      <div class="space-y-2">
-        <Label for="totp-label">Label (optional)</Label>
-        <Input
-          id="totp-label"
-          type="text"
-          placeholder="e.g. Google Authenticator"
-          bind:value={totpLabel}
-        />
-      </div>
-
-      <div class="space-y-2">
-        <Label>Verification code</Label>
-        <div class="flex justify-center">
-          <InputOTP.Root maxlength={6} bind:value={totpVerifyCode} onComplete={handleCompleteTotpSetup}>
-            {#snippet children({ cells })}
-              <InputOTP.Group>
-                {#each cells.slice(0, 3) as cell}
-                  <InputOTP.Slot {cell} />
-                {/each}
-              </InputOTP.Group>
-              <InputOTP.Separator />
-              <InputOTP.Group>
-                {#each cells.slice(3, 6) as cell}
-                  <InputOTP.Slot {cell} />
-                {/each}
-              </InputOTP.Group>
-            {/snippet}
-          </InputOTP.Root>
-        </div>
-      </div>
-
-      {#if totpSetupError}
-        <div class="flex items-start gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-3">
-          <AlertTriangle class="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-          <p class="text-sm text-destructive">{totpSetupError}</p>
-        </div>
-      {/if}
-    </div>
-    <Dialog.Footer>
-      <Button
-        variant="outline"
-        onclick={() => {
-          showTotpSetup = false;
-          totpSetupData = null;
-          totpQrDataUrl = null;
-          totpVerifyCode = "";
-          totpLabel = "";
-          totpSetupError = null;
-        }}
-      >
-        Cancel
-      </Button>
-      <Button
-        disabled={totpSetupLoading || totpVerifyCode.length !== 6}
-        onclick={handleCompleteTotpSetup}
-      >
-        {#if totpSetupLoading}
-          <Loader2 class="mr-1.5 h-4 w-4 animate-spin" />
-        {/if}
-        Verify and save
-      </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+<TotpSetupDialog
+  bind:open={showTotpSetup}
+  qrDataUrl={totpQrDataUrl ?? ""}
+  secret={totpSetupData?.base32Secret ?? ""}
+  bind:verifyCode={totpVerifyCode}
+  bind:label={totpLabel}
+  bind:loading={totpSetupLoading}
+  bind:error={totpSetupError}
+  onVerify={handleCompleteTotpSetup}
+  onCancel={() => {
+    showTotpSetup = false;
+    totpSetupData = null;
+    totpQrDataUrl = null;
+    totpVerifyCode = "";
+    totpLabel = "";
+    totpSetupError = null;
+  }}
+/>
 
 <!-- TOTP Remove Confirmation Dialog -->
 <Dialog.Root bind:open={showTotpRemoveDialog}>

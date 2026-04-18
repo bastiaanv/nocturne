@@ -193,6 +193,7 @@ msgstr ""
 
 #: src/lib/components/ConnectorConfigDialog.svelte
 #: src/lib/components/TreatmentEditModal.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/lib/components/admin/RoleDialog.svelte
 #: src/lib/components/alerts/RuleEditorSheet.svelte
 #: src/lib/components/connectors/ApiSecretSection.svelte
@@ -238,7 +239,6 @@ msgstr ""
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
@@ -4207,7 +4207,6 @@ msgstr ""
 #. placeholder {0}: food.carbs
 #. placeholder {0}: food.carbs
 #. placeholder {0}: (insulinStats.totalCarbs ?? 0).toFixed(0)
-#. placeholder {0}: (insulinStats.totalCarbs ?? 0).toFixed(0)
 #: src/lib/components/entries/CarbIntakeSection.svelte
 #: src/lib/components/meal-matching/MealMatchReviewDialog.svelte
 #: src/lib/components/reports/InsulinDonutChart.svelte
@@ -4216,7 +4215,6 @@ msgstr ""
 #: src/lib/components/treatments/FoodSearchCombobox.svelte
 #: src/lib/components/treatments/FoodSearchCombobox.svelte
 #: src/routes/(authenticated)/reports/insulin-delivery/+page.svelte
-#: src/routes/reports/insulin-delivery/+page.svelte
 msgid "{0}g carbs"
 msgstr ""
 
@@ -10520,49 +10518,49 @@ msgstr ""
 #~ msgid "View and manage your account information"
 #~ msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Account Details"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Subject ID"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Session Expires"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Roles"
 msgstr ""
 
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/lib/components/admin/UsersTabContent.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/admin/+page.svelte
 msgid "No roles assigned"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Permissions"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "No explicit permissions"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Back to Settings"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/UserProfileCard.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Log Out"
 msgstr ""
@@ -22320,8 +22318,8 @@ msgstr ""
 msgid "Destination"
 msgstr ""
 
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/lib/components/alerts/SchedulesTab.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
 #: src/routes/settings/account/+page.svelte
@@ -22753,17 +22751,15 @@ msgstr ""
 msgid "<0/> Revoke"
 msgstr ""
 
+#. placeholder {0}: formatDate(credential.createdAt)
 #. placeholder {0}: formatDate(grant.createdAt)
 #. placeholder {0}: formatDate(app.createdAt)
 #. placeholder {0}: formatDate(credential.createdAt)
 #. placeholder {0}: formatDate(credential.createdAt)
-#. placeholder {0}: formatDate(credential.createdAt)
 #. placeholder {0}: formatDate(follower.sysCreatedAt)
+#: src/lib/components/account/SecurityCredentialCard.svelte
 #: src/lib/components/settings/ApiTokens.svelte
 #: src/lib/components/settings/ConnectedApps.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/api-access/+page.svelte
 #: src/routes/settings/security/+page.svelte
@@ -22771,18 +22767,16 @@ msgstr ""
 msgid "<0/> Created {0}"
 msgstr ""
 
+#. placeholder {0}: formatDate(credential.lastUsedAt)
 #. placeholder {0}: formatDate(grant.lastUsedAt)
 #. placeholder {0}: formatDate(app.lastUsedAt)
 #. placeholder {0}: formatDate(identity.lastUsedAt)
 #. placeholder {0}: formatDate(credential.lastUsedAt)
-#. placeholder {0}: formatDate(credential.lastUsedAt)
 #. placeholder {0}: formatDate(follower.lastUsedAt)
+#: src/lib/components/account/SecurityCredentialCard.svelte
 #: src/lib/components/settings/ApiTokens.svelte
 #: src/lib/components/settings/ConnectedApps.svelte
 #: src/lib/components/settings/LinkedOidcIdentities.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/api-access/+page.svelte
 #: src/routes/settings/security/+page.svelte
@@ -23835,13 +23829,11 @@ msgstr ""
 msgid "Manage your passkeys and account recovery options"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/security/+page.svelte
 msgid "<0/> Passkeys"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/security/+page.svelte
 msgid ""
@@ -23849,13 +23841,11 @@ msgid ""
 "your device's biometrics or security key."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/security/+page.svelte
 msgid "<0/> Add passkey"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/security/+page.svelte
 msgid ""
@@ -23863,7 +23853,6 @@ msgid ""
 "sign-in."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
@@ -23874,13 +23863,11 @@ msgstr ""
 
 #. placeholder {0}: maxPasskeys
 #. placeholder {0}: maxPasskeys
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/security/+page.svelte
 msgid "Maximum of {0} passkeys reached."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/security/+page.svelte
 msgid ""
@@ -24890,6 +24877,7 @@ msgstr ""
 msgid "Learn about the different ways to sign in to Nocturne"
 msgstr ""
 
+#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(fullscreen)/auth/help/+page.svelte
 #: src/routes/(unauthenticated)/auth/help/+page.svelte
 #: src/routes/auth/help/+page.svelte
@@ -24997,6 +24985,7 @@ msgstr ""
 msgid "Authenticator app added successfully."
 msgstr ""
 
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Verification failed. Check the code and try again."
@@ -25012,24 +25001,20 @@ msgstr ""
 msgid "Failed to remove authenticator."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Authenticator Apps"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid ""
 "Use an authenticator app like Google Authenticator or Authy to\n"
 "generate time-based one-time passwords for sign-in."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Add authenticator"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid ""
 "No authenticator apps registered. Add one for an additional\n"
@@ -25037,46 +25022,44 @@ msgid ""
 msgstr ""
 
 #: src/routes/(authenticated)/settings/account/+page.svelte
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Unnamed authenticator"
 msgstr ""
 
 #. placeholder {0}: maxTotpCredentials
-#: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Maximum of {0} authenticators reached."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Set up authenticator app"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/settings/account/+page.svelte
 msgid ""
 "Scan the QR code with your authenticator app, then enter the 6-digit\n"
 "code to verify."
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "TOTP QR code"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Or enter this secret manually:"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "Verification code"
 msgstr ""
 
-#: src/routes/(authenticated)/settings/account/+page.svelte
+#: src/lib/components/account/TotpSetupDialog.svelte
 #: src/routes/settings/account/+page.svelte
 msgid "<0/> Verify and save"
 msgstr ""
@@ -27286,4 +27269,48 @@ msgstr ""
 
 #: src/lib/components/meals/MealsFilterBar.svelte
 msgid "Foods <0/> <1/>"
+msgstr ""
+
+#. placeholder {0}: title.toLowerCase()
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid ""
+"No {0} registered. Add one to enable additional sign-in\n"
+"methods."
+msgstr ""
+
+#. placeholder {0}: title.toLowerCase()
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid "Unnamed {0}"
+msgstr ""
+
+#. placeholder {0}: maxCredentials
+#. placeholder {1}: title.toLowerCase()
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid "Maximum of {0} {1} reached."
+msgstr ""
+
+#: src/lib/components/account/SecurityCredentialCard.svelte
+msgid ""
+"You cannot remove your only credential without an alternative sign-in\n"
+"method linked to your account."
+msgstr ""
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Passkeys provide secure, phishing-resistant authentication using your device's biometrics or security key."
+msgstr ""
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Add passkey"
+msgstr ""
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Authenticator Apps"
+msgstr ""
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Use an authenticator app like Google Authenticator or Authy to generate time-based one-time passwords for sign-in."
+msgstr ""
+
+#: src/routes/(authenticated)/settings/account/+page.svelte
+msgid "Add authenticator"
 msgstr ""
