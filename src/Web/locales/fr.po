@@ -199,7 +199,7 @@ msgstr ""
 #: src/lib/components/admin/SubjectEditDialog.svelte
 #: src/lib/components/alerts/RuleEditorSheet.svelte
 #: src/lib/components/connectors/ApiSecretSection.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
 #: src/lib/components/dashboard/GlucoseChartCard.svelte
@@ -330,7 +330,7 @@ msgid "Loading..."
 msgstr ""
 
 #: src/lib/components/WebSocketStatus.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/DeduplicationDialog.svelte
 #: src/lib/components/dashboard/PredictionVisualizations.svelte
@@ -369,11 +369,10 @@ msgid "Error"
 msgstr ""
 
 #: src/lib/components/WebSocketStatus.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/dashboard/widgets/ConnectionStatusWidget.svelte
 #: src/routes/(fullscreen)/auth/bot/authorize/done/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
-#: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/(unauthenticated)/auth/bot/authorize/done/+page.svelte
 #: src/routes/auth/bot/authorize/done/+page.svelte
@@ -578,7 +577,7 @@ msgid "Clear Selection"
 msgstr ""
 
 #: src/lib/components/TreatmentsTable.svelte
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/treatments/DataTableToolbar.svelte
 msgid "<0/> Delete Selected"
 msgstr ""
 
@@ -1445,9 +1444,11 @@ msgstr ""
 msgid "Comparison Error"
 msgstr ""
 
+#: src/lib/components/account/SecurityCredentialCard.svelte
 #: src/lib/components/alerts/AlertBanner.svelte
 #: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
 #: src/lib/components/connectors/ServerConnectorsCard.svelte
 #: src/lib/components/dashboard/BGStatisticsCards.svelte
@@ -1477,7 +1478,6 @@ msgstr ""
 #: src/routes/(authenticated)/settings/migration/+page.svelte
 #: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
 #: src/routes/(authenticated)/settings/nightscout-transition/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/compatibility/[id]/+page.svelte
 #: src/routes/compatibility/[id]/+page.svelte
@@ -1790,13 +1790,13 @@ msgstr ""
 msgid "Method"
 msgstr ""
 
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/meals/MealsFilterBar.svelte
 #: src/lib/components/treatments/TreatmentCategoryTabs.svelte
 #: src/routes/(authenticated)/compatibility/+page.svelte
 #: src/routes/(authenticated)/compatibility/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
 #: src/routes/(authenticated)/reports/data-quality/compression-lows/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/compatibility/+page.svelte
 #: src/routes/compatibility/+page.svelte
@@ -1842,8 +1842,8 @@ msgstr ""
 msgid "Apply"
 msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/treatments/DataTableToolbar.svelte
+#: src/lib/components/treatments/DataTableToolbar.svelte
 #: src/routes/(authenticated)/compatibility/+page.svelte
 #: src/routes/(authenticated)/food/FoodEditor.svelte
 #: src/routes/compatibility/+page.svelte
@@ -2806,9 +2806,7 @@ msgid "No foods found."
 msgstr ""
 
 #: src/lib/components/meals/MealsFilterBar.svelte
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
-#: src/routes/meals/+page.svelte
+#: src/lib/components/treatments/ColumnFilterPopover.svelte
 msgid "<0/> Clear filter"
 msgstr ""
 
@@ -5850,6 +5848,7 @@ msgstr ""
 #: src/lib/components/dashboard/glucose-chart/dialogs/TreatmentInspectionDialog.svelte
 #: src/lib/components/status-pills/COBPill.svelte
 #: src/lib/components/status-pills/IOBPill.svelte
+#: src/lib/components/treatments/TreatmentsDataTable.svelte
 msgid "Source"
 msgstr ""
 
@@ -7192,9 +7191,8 @@ msgstr ""
 msgid "Select row"
 msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
-msgid "Type <0/> <1/>"
-msgstr ""
+#~ msgid "Type <0/> <1/>"
+#~ msgstr ""
 
 #~ msgid "Search types..."
 #~ msgstr ""
@@ -7202,41 +7200,39 @@ msgstr ""
 #~ msgid "No types found."
 #~ msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
-msgid "Source <0/> <1/>"
-msgstr ""
+#~ msgid "Source <0/> <1/>"
+#~ msgstr ""
 
 #: src/lib/components/treatments/TreatmentsDataTable.svelte
 msgid "Search sources..."
 msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
-msgid "No sources found."
-msgstr ""
+#~ msgid "No sources found."
+#~ msgstr ""
 
 #~ msgid "Search treatments..."
 #~ msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/treatments/DataTableToolbar.svelte
 msgid "<0/> Columns"
 msgstr ""
 
 #~ msgid "No treatments found."
 #~ msgstr ""
 
-#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
-#. placeholder {1}: table.getFilteredRowModel() .rows.length
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#. placeholder {0}: selectedCount
+#. placeholder {1}: totalCount
+#: src/lib/components/treatments/DataTablePagination.svelte
 msgid "{0} of {1} row(s) selected"
 msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/treatments/DataTablePagination.svelte
 msgid "Rows per page"
 msgstr ""
 
-#. placeholder {0}: pagination.pageIndex + 1
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/treatments/DataTablePagination.svelte
 msgid "Page {0} of {1}"
 msgstr ""
 
@@ -10007,9 +10003,9 @@ msgstr ""
 #. placeholder {0}: (dataSummary.recordCounts?.['treatments'] ?? 0).toLocaleString()
 #. placeholder {0}: (dataSummary.recordCounts?.['treatments'] ?? 0).toLocaleString()
 #. placeholder {0}: (deleteDataResult.deletedCounts?.['treatments'] ?? 0).toLocaleString()
-#: src/lib/components/connectors/ConnectorSetup.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "{0} treatments"
 msgstr ""
 
@@ -11978,7 +11974,8 @@ msgstr ""
 msgid "Failed to delete demo data"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
 #: src/routes/settings/connectors/+page.svelte
@@ -12104,8 +12101,8 @@ msgstr ""
 msgid "Connect your CGM app or AID system to push data to Nocturne"
 msgstr ""
 
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/connectors/UploaderAppsCard.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
 #: src/routes/settings/services/+page.svelte
@@ -12113,8 +12110,8 @@ msgstr ""
 msgid "CGM Apps"
 msgstr ""
 
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/lib/components/connectors/UploaderAppsCard.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
 #: src/routes/settings/services/+page.svelte
@@ -12396,7 +12393,7 @@ msgstr ""
 msgid "All device status records"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 #: src/lib/components/connectors/DataSourceManageDialog.svelte
 #: src/routes/settings/connectors/+page.svelte
 #: src/routes/settings/services/+page.svelte
@@ -12461,8 +12458,8 @@ msgid "{0} of {1} connectors synced in {2}s"
 msgstr ""
 
 #: src/lib/components/connectors/ConnectorDetailsDialog.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/ManualSyncDialog.svelte
+#: src/lib/components/connectors/SyncResultCard.svelte
 #: src/routes/(authenticated)/settings/connectors/+page.svelte
 #: src/routes/(authenticated)/settings/connectors/+page.svelte
 #: src/routes/settings/connectors/+page.svelte
@@ -13774,8 +13771,8 @@ msgstr ""
 msgid "Safe to run multiple times"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
 #: src/lib/components/connectors/DeduplicationDialog.svelte
+#: src/lib/components/connectors/SyncResultCard.svelte
 #: src/lib/components/settings/ApiTokens.svelte
 #: src/routes/(authenticated)/settings/account/+page.svelte
 #: src/routes/(authenticated)/settings/members/+page.svelte
@@ -15265,8 +15262,8 @@ msgstr ""
 msgid "Failed to update connector state"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Failed to delete configuration"
 msgstr ""
 
@@ -15292,15 +15289,15 @@ msgstr ""
 msgid "<0/> View documentation for {0}"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Danger Zone"
 msgstr ""
 
 #~ msgid "Irreversible actions that affect this connector's configuration"
 #~ msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Delete Configuration"
 msgstr ""
 
@@ -15864,47 +15861,47 @@ msgid ""
 "event from different data sources."
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Irreversible actions that affect this connector"
 msgstr ""
 
 #~ msgid "Remove this connector's configuration. The connector will need to be set up again to resume syncing."
 #~ msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "<0/> Delete Config"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Delete Synced Data"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Permanently delete all data synced by this connector."
 msgstr ""
 
 #. placeholder {0}: (dataSummary.recordCounts?.['entries'] ?? 0).toLocaleString()
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "<0/> {0} entries"
 msgstr ""
 
 #~ msgid "{0} device statuses"
 #~ msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "<0/> Delete Data"
 msgstr ""
 
 #. placeholder {0}: displayName
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Delete {0} Configuration"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "You are about to permanently delete all configuration and credentials for this connector. The connector will stop syncing data."
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Configuration deleted successfully"
 msgstr ""
 
@@ -15912,39 +15909,39 @@ msgstr ""
 #~ msgstr ""
 
 #. placeholder {0}: displayName
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Delete {0} Data"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "You are about to permanently delete all data synchronized by this connector."
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Delete All Data"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Data to be deleted:"
 msgstr ""
 
 #. placeholder {0}: (dataSummary.recordCounts?.['entries'] ?? 0).toLocaleString()
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "{0} glucose entries"
 msgstr ""
 
 #. placeholder {0}: (dataSummary.recordCounts?.['deviceStatuses'] ?? 0).toLocaleString()
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "{0} device status records"
 msgstr ""
 
 #. placeholder {0}: dataSummary.total?.toLocaleString() ?? 0
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Total: {0} records"
 msgstr ""
 
 #. placeholder {0}: (deleteDataResult.deletedCounts?.['entries'] ?? 0).toLocaleString()
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "{0} entries"
 msgstr ""
 
@@ -17361,15 +17358,15 @@ msgstr ""
 msgid "Auto"
 msgstr ""
 
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#: src/lib/components/treatments/DataTableToolbar.svelte
 #: src/routes/(authenticated)/reports/treatments/+page.svelte
 #: src/routes/reports/treatments/+page.svelte
 msgid "Search records..."
 msgstr ""
 
-#. placeholder {0}: selectedRows.length
-#. placeholder {1}: selectedRows.length !== 1 ? "s" : ""
-#: src/lib/components/treatments/TreatmentsDataTable.svelte
+#. placeholder {0}: selectedCount
+#. placeholder {1}: selectedCount !== 1 ? "s" : ""
+#: src/lib/components/treatments/DataTableToolbar.svelte
 msgid "{0} record{1} selected"
 msgstr ""
 
@@ -17555,6 +17552,7 @@ msgid "<0/> BG Check"
 msgstr ""
 
 #: src/lib/components/entries/BGCheckSection.svelte
+#: src/lib/components/treatments/TreatmentsDataTable.svelte
 #: src/routes/(authenticated)/reports/day-in-review/+page.svelte
 #: src/routes/(authenticated)/settings/admin/tenants/+page.svelte
 #: src/routes/(authenticated)/settings/alerts/+page.svelte
@@ -20002,7 +20000,7 @@ msgid ""
 msgstr ""
 
 #: src/lib/components/connectors/ApiSecretSection.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 #: src/lib/components/settings/DataSourceRow.svelte
 #: src/routes/settings/connectors/+page.svelte
 msgid "<0/> Configured"
@@ -21315,7 +21313,7 @@ msgstr ""
 #~ msgid "Connect to your CGM or diabetes management platform to sync glucose and treatment data. You can always add more connectors later."
 #~ msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 msgid "No connectors available"
 msgstr ""
 
@@ -22358,7 +22356,7 @@ msgstr ""
 msgid "Configure a phone app to push data to Nocturne"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "General Uploaders"
@@ -22371,19 +22369,19 @@ msgstr ""
 msgid "Failed to load uploader apps"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Android"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Desktop"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Web"
@@ -22441,15 +22439,15 @@ msgstr ""
 msgid "<0/> Download {0}"
 msgstr ""
 
-#. placeholder {0}: selectedApp ? getUploaderName(selectedApp) : ''
+#. placeholder {0}: app ? getUploaderName(app) : ''
 #. placeholder {1}: ds.entriesLast24h ?? 0
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "{0} is sending data. {1} entries in the last 24 hours."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Waiting for data"
@@ -22461,26 +22459,26 @@ msgstr ""
 msgid "Once you've configured {0}, it can take up to five minutes for the first glucose data to arrive. This page will update automatically."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Failed to load setup instructions"
 msgstr ""
 
-#. placeholder {0}: selectedApp ? getUploaderName(selectedApp) : ''
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#. placeholder {0}: app ? getUploaderName(app) : ''
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "Could not load setup details for {0}. Please try again."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "<0/> iOS"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/uploaders/+page.svelte
 #: src/routes/settings/setup/uploaders/+page.svelte
 msgid "<0/> Android"
@@ -22541,15 +22539,15 @@ msgstr ""
 msgid "Failed to load available connectors"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 msgid "Choose a connector"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 msgid "Select a data source to configure"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorSelectionGrid.svelte
 msgid "No server-side connectors are registered in this installation."
 msgstr ""
 
@@ -22562,16 +22560,15 @@ msgstr ""
 #~ msgid "Save and Sync"
 #~ msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
-msgid ""
-"Remove this connector's configuration. The connector will\n"
-"need to be set up again to resume syncing."
-msgstr ""
+#~ msgid ""
+#~ "Remove this connector's configuration. The connector will\n"
+#~ "need to be set up again to resume syncing."
+#~ msgstr ""
 
 #. placeholder {0}: (dataSummary.recordCounts?.['deviceStatuses'] ?? 0).toLocaleString()
 #. placeholder {0}: (deleteDataResult.deletedCounts?.['deviceStatuses'] ?? 0).toLocaleString()
-#: src/lib/components/connectors/ConnectorSetup.svelte
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid ""
 "{0} device\n"
 "statuses"
@@ -22585,20 +22582,20 @@ msgstr ""
 msgid "This may take a moment depending on the amount of data."
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/SyncResultCard.svelte
 msgid "Sync completed"
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/SyncResultCard.svelte
 msgid "An error occurred during sync."
 msgstr ""
 
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid "Redirecting..."
 msgstr ""
 
 #. placeholder {0}: deleteDataResult.totalDeleted?.toLocaleString() ?? 0
-#: src/lib/components/connectors/ConnectorSetup.svelte
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
 msgid ""
 "Total: {0} records\n"
 "deleted"
@@ -22730,7 +22727,7 @@ msgstr ""
 msgid "<0/> Revoke"
 msgstr ""
 
-#. placeholder {0}: formatDate(credential.createdAt)
+#. placeholder {0}: credential.createdAt ? formatDate(credential.createdAt) : "Unknown"
 #. placeholder {0}: formatDate(grant.createdAt)
 #. placeholder {0}: formatDate(app.createdAt)
 #. placeholder {0}: formatDate(credential.createdAt)
@@ -22991,8 +22988,8 @@ msgstr ""
 msgid "{0} - Nocturne"
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 msgid "Device Authorized"
 msgstr ""
@@ -23002,21 +22999,21 @@ msgstr ""
 msgid "You can close this window and return to your device."
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 msgid "Authorization Denied"
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 msgid "The device will not be granted access."
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/consent/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 msgid "Authorize Application"
@@ -23038,17 +23035,17 @@ msgid ""
 "approve if you trust this application."
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/consent/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 msgid "This application is requesting permission to:"
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/consent/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 msgid "This app cannot delete your data."
@@ -23063,20 +23060,20 @@ msgid ""
 "data."
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/consent/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 #: src/routes/settings/access-requests/+page.svelte
 msgid "<0/> Deny"
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
 #: src/routes/(authenticated)/oauth/device/+page.svelte
 #: src/routes/(authenticated)/settings/access-requests/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/consent/+page.svelte
 #: src/routes/oauth/device/+page.svelte
 #: src/routes/settings/access-requests/+page.svelte
@@ -23280,8 +23277,8 @@ msgstr ""
 msgid "<0/> is requesting additional access to your Nocturne data."
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(authenticated)/oauth/consent/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/oauth/consent/+page.svelte
 msgid "<0/> wants to access your Nocturne data."
 msgstr ""
@@ -24052,9 +24049,9 @@ msgid "Optional. Updates your display name if provided."
 msgstr ""
 
 #: src/lib/components/auth/RecoveryCodes.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(fullscreen)/auth/recovery/+page.svelte
 #: src/routes/(fullscreen)/auth/recovery/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(unauthenticated)/auth/recovery/+page.svelte
 #: src/routes/(unauthenticated)/auth/recovery/+page.svelte
 #: src/routes/auth/bot/authorize/+page.svelte
@@ -27000,7 +26997,7 @@ msgstr ""
 msgid "Connect a glucose data source to get started."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 #: src/routes/(fullscreen)/setup/connect/+page.svelte
 msgid "Failed to load data sources"
 msgstr ""
@@ -27009,102 +27006,101 @@ msgstr ""
 msgid "Connect a Data Source - Setup - Nocturne"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "Connect a Data Source"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "Choose a cloud service or phone app to start sending glucose and treatment data to Nocturne."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "<0/> Cloud Services"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "<0/> Phone Apps"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "No data sources available"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "There are no data sources available at this time."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/DataSourceSelectionView.svelte
 msgid "Skip for now"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "<0/> Back to data sources"
 msgstr ""
 
+#: src/lib/components/connectors/UploaderSetupView.svelte
 #: src/routes/(fullscreen)/setup/+page.svelte
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
 #: src/routes/(unauthenticated)/setup/+page.svelte
 msgid "Continue to Dashboard"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Invalid or expired device code."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Invalid or expired device code. Please check and try again."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Failed to approve. The code may have expired."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Failed to deny the request."
 msgstr ""
 
-#. placeholder {0}: selectedApp ? getUploaderName(selectedApp) : ''
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#. placeholder {0}: app ? getUploaderName(app) : ''
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "{0} is now connected. You can return to your device."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Receiving Data"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "It can take a few minutes for the first glucose reading to arrive. This page will update automatically."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "This application is not in the Nocturne known app directory. Only approve if you trust it."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "This app is requesting full access, including the ability to delete data."
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Scan to Connect"
 msgstr ""
 
-#. placeholder {0}: selectedApp ? getUploaderName(selectedApp) : ''
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#. placeholder {0}: app ? getUploaderName(app) : ''
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Scan this QR code with your phone's camera to open {0} and start the connection."
 msgstr ""
 
-#. placeholder {0}: selectedApp ? getUploaderName(selectedApp) : ''
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#. placeholder {0}: app ? getUploaderName(app) : ''
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "QR code to connect {0}"
 msgstr ""
 
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "Enter Authorization Code"
 msgstr ""
 
-#. placeholder {0}: selectedApp ? getUploaderName(selectedApp) : ''
-#: src/routes/(fullscreen)/setup/connect/+page.svelte
+#. placeholder {0}: app ? getUploaderName(app) : ''
+#: src/lib/components/connectors/UploaderSetupView.svelte
 msgid "After scanning, {0} will show an 8-character code. Enter it here to approve the connection."
 msgstr ""
 
@@ -27247,6 +27243,12 @@ msgstr ""
 msgid "Set up the admin account for your Nocturne instance."
 msgstr ""
 
+#: src/lib/components/connectors/ConnectorDangerZone.svelte
+msgid ""
+"Remove this connector's configuration. The connector will need to\n"
+"be set up again to resume syncing."
+msgstr ""
+
 #. placeholder {0}: title.toLowerCase()
 #: src/lib/components/account/SecurityCredentialCard.svelte
 msgid ""
@@ -27293,4 +27295,12 @@ msgstr ""
 
 #: src/routes/(authenticated)/settings/account/+page.svelte
 msgid "Add authenticator"
+msgstr ""
+
+#: src/lib/components/treatments/ColumnFilterPopover.svelte
+msgid "Search..."
+msgstr ""
+
+#: src/lib/components/treatments/ColumnFilterPopover.svelte
+msgid "No options found."
 msgstr ""
