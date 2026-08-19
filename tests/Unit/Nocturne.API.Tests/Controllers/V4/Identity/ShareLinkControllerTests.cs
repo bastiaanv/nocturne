@@ -8,6 +8,7 @@ using Nocturne.API.Models.Responses;
 using Nocturne.API.Services.Auth;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Models.Configuration;
 using Xunit;
 
 namespace Nocturne.API.Tests.Controllers.V4.Identity;
@@ -119,6 +120,53 @@ public sealed class ShareLinkControllerTests
 
         var result = await controller.SetShareLinkScopes(
             new SetShareScopesRequest(["bogus.read"]), CancellationToken.None);
+
+        result.Result.Should().BeOfType<ObjectResult>()
+            .Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public async Task SetShareLinkAppearance_without_sharing_manage_is_forbidden()
+    {
+        var controller = BuildController(/* no scopes */);
+
+        var result = await controller.SetShareLinkAppearance(
+            new SetShareAppearanceRequest(new ShareAppearance { GlucoseUnits = "mmol" }),
+            CancellationToken.None);
+
+        result.Result.Should().BeOfType<ForbidResult>();
+        _service.Verify(s => s.SetAppearanceAsync(
+            It.IsAny<Guid>(), It.IsAny<ShareAppearance>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SetShareLinkAppearance_with_sharing_manage_applies_the_appearance()
+    {
+        _service.Setup(s => s.SetAppearanceAsync(
+                It.IsAny<Guid>(), It.IsAny<ShareAppearance>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ShareLinkDto { Enabled = true });
+        var controller = BuildController(TenantPermissions.SharingManage);
+
+        var result = await controller.SetShareLinkAppearance(
+            new SetShareAppearanceRequest(new ShareAppearance { GlucoseUnits = "mmol" }),
+            CancellationToken.None);
+
+        result.Result.Should().BeOfType<OkObjectResult>();
+        _service.Verify(s => s.SetAppearanceAsync(
+            It.IsAny<Guid>(), It.IsAny<ShareAppearance>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task SetShareLinkAppearance_returns_bad_request_for_invalid_values()
+    {
+        _service.Setup(s => s.SetAppearanceAsync(
+                It.IsAny<Guid>(), It.IsAny<ShareAppearance>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ArgumentException("glucoseUnits: 'kPa' is not allowed."));
+        var controller = BuildController(TenantPermissions.SharingManage);
+
+        var result = await controller.SetShareLinkAppearance(
+            new SetShareAppearanceRequest(new ShareAppearance { GlucoseUnits = "kPa" }),
+            CancellationToken.None);
 
         result.Result.Should().BeOfType<ObjectResult>()
             .Which.StatusCode.Should().Be(StatusCodes.Status400BadRequest);

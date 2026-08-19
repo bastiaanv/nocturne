@@ -10,6 +10,7 @@ using Nocturne.Core.Constants;
 using Nocturne.Core.Contracts.Platform;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models;
+using Nocturne.Core.Models.Configuration;
 using Nocturne.Infrastructure.Cache.Abstractions;
 using Nocturne.Infrastructure.Data;
 
@@ -188,6 +189,21 @@ public class StatusService : IStatusService
             }
         }
 
+        // The share appearance the admin pinned for the public view. Tenant-level and
+        // caller-independent, so like anonymousReadAccess it is safe in the cached per-tenant
+        // response; the web app applies it to anonymous share-link viewers.
+        ShareAppearance? shareAppearance = null;
+        if (tenantContext != null)
+        {
+            await using var appearanceCtx = await _dbContextFactory.CreateDbContextAsync();
+            var rawAppearance = await appearanceCtx.Tenants.AsNoTracking()
+                .Where(t => t.Id == tenantContext.TenantId)
+                .Select(t => t.ShareAppearance)
+                .FirstOrDefaultAsync();
+            var parsed = ShareAppearance.Deserialize(rawAppearance);
+            shareAppearance = parsed.IsEmpty ? null : parsed;
+        }
+
         var response = new StatusResponse
         {
             Status = "ok",
@@ -206,6 +222,7 @@ public class StatusService : IStatusService
             IsDemo = isDemo,
             NextResetAt = nextResetAt,
             AnonymousReadAccess = anonymousReadAccess,
+            ShareAppearance = shareAppearance,
         };
 
         _logger.LogDebug(

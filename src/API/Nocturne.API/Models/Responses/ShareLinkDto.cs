@@ -27,4 +27,11 @@ public class ShareLinkDto
 
     /// <summary>When the share link was last accessed, or null if never (or not yet recorded).</summary>
     public DateTime? LastAccessedAt { get; set; }
+
+    /// <summary>
+    /// The presentation appearance pinned for anonymous viewers (glucose units, time format,
+    /// color scheme/theme). Null (or any field null) means that aspect follows the defaults an
+    /// anonymous visitor would otherwise get. Edited via the share appearance endpoint.
+    /// </summary>
+    public Nocturne.Core.Models.Configuration.ShareAppearance? Appearance { get; set; }
 }

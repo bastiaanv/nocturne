@@ -1521,6 +1521,13 @@ public class NocturneDbContext : DbContext, IDataProtectionKeyContext
             .HasDatabaseName("ix_tenants_share_token")
             .IsUnique();
 
+        modelBuilder.Entity<TenantEntity>(entity =>
+        {
+            // Public share appearance stored as a JSONB blob (semantic comparison is applied by
+            // the relational jsonb-string value-comparer configured in OnModelCreating).
+            entity.Property(e => e.ShareAppearance).HasColumnType("jsonb");
+        });
+
         modelBuilder.Entity<TenantMemberEntity>()
             .HasIndex(tm => tm.SubjectId)
             .HasDatabaseName("ix_tenant_members_subject_id");

@@ -9,6 +9,8 @@ import {
     registerPreferencesWriteThrough,
     reconcilePreferences,
     setLanguage,
+    applyPreferences,
+    setColorScheme,
     type SupportedLocale,
 } from '$lib/stores/appearance-store.svelte'
 import { updateDisplayPreferences } from '$lib/api/user-preferences.remote'
@@ -52,6 +54,14 @@ export const load: LayoutLoad = async ({ url, data }) => {
     if (browser && data?.isAuthenticated) {
         // Server preferences win across devices; an empty server blob seeds from local once.
         reconcilePreferences(data?.user?.preferences)
+    }
+
+    // Anonymous shared views carry no preference of their own — the admin's pinned appearance
+    // (units/time/theme) is what renders, applied for hydration exactly as SSR resolved it, plus
+    // the pinned light/dark mode. Never persisted: share viewers are read-only.
+    if (browser && data?.isShareHost) {
+        applyPreferences(data?.shareAppearance)
+        if (data?.shareColorScheme != null) setColorScheme(data.shareColorScheme)
     }
 
     // WUCHALE-DISABLED: wuchale temporarily disabled — locale dynamic load skipped.

@@ -12,7 +12,9 @@ import {
   hasStoredPreferences,
   parsePrefsCookie,
   resolveLanguage,
+  type ColorScheme,
 } from "$lib/stores/appearance-store.svelte";
+import type { UserDisplayPreferences } from "$lib/api";
 
 /**
  * Root layout server load function.
@@ -32,18 +34,24 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
   const tenantSlug = slug;
 
   // Resolved once here, for every route: the apex needs the API's answer (does a sole tenant
-  // resolve behind it?) and asking per-page would repeat both the question and the round-trip.
-  // Children read `tenantless` from this layout's data via parent().
-  const tenantless = isTenantlessHost(
-    kind,
-    kind === "apex" ? Boolean((await getRequestStatus(locals))?.tenantSlug) : false
-  );
+  // resolve behind it?) and the share host needs the tenant's pinned public appearance. Asking
+  // per-page would repeat both the question and the round-trip.
+  const status = await getRequestStatus(locals);
+
+  // The appearance an admin pinned for the public share view. Only meaningful on the share host;
+  // injected as the highest-precedence preference layer so anonymous viewers render the pinned
+  // units/time/theme instead of their (absent) defaults.
+  const tenantless = isTenantlessHost(kind, kind === "apex" ? Boolean(status?.tenantSlug) : false);
+
+  const statusAppearance = locals.isShareHost ? status?.shareAppearance : null;
+  const shareAppearance = statusAppearance ? toDisplayPreferences(statusAppearance) : null;
 
   // Display preferences for SSR, in the same precedence the browser applies them
   // (backend blob over the mirrored cookie) so the markup matches hydration.
   const serverPrefs = locals.isAuthenticated ? locals.user?.preferences : null;
   const cookiePrefs = parsePrefsCookie(cookies.get(PREFS_COOKIE_NAME));
   const displayPreferences = [
+    shareAppearance,
     hasStoredPreferences(serverPrefs) ? serverPrefs : null,
     cookiePrefs,
   ].filter((prefs) => prefs !== null && prefs !== undefined);
@@ -64,5 +72,29 @@ export const load: LayoutServerLoad = async ({ locals, request, cookies }) => {
     tenantless,
     baseDomain,
     dashboardSlugs,
+    isShareHost: locals.isShareHost,
+    shareAppearance,
+    shareColorScheme: (locals.isShareHost
+      ? (statusAppearance?.colorScheme as ColorScheme | undefined) ?? null
+      : null) as ColorScheme | null,
   };
 };
+
+/**
+ * The share appearance's fields that line up with the display-preference shape by name; the
+ * color scheme is deliberately left out — mode-watcher drives it separately, not via the
+ * preference layers.
+ */
+function toDisplayPreferences(a: {
+  glucoseUnits?: string | undefined;
+  timeFormat?: string | undefined;
+  colorTheme?: string | undefined;
+  regionFormat?: string | undefined;
+}): UserDisplayPreferences {
+  return {
+    glucoseUnits: a.glucoseUnits,
+    timeFormat: a.timeFormat,
+    colorTheme: a.colorTheme,
+    regionFormat: a.regionFormat,
+  };
+}

@@ -3,6 +3,8 @@ using Microsoft.Extensions.Options;
 using Nocturne.API.Models.Responses;
 using Nocturne.API.Multitenancy;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Models.Configuration;
+using Nocturne.Infrastructure.Cache.Abstractions;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Security;
@@ -38,6 +40,13 @@ public interface IShareLinkService
     /// authoritative.
     /// </summary>
     Task<ShareLinkDto> SetScopesAsync(Guid tenantId, IReadOnlyList<string> scopes, CancellationToken ct = default);
+
+    /// <summary>
+    /// Merges <paramref name="appearance"/> over the stored share appearance and persists it.
+    /// Only non-null fields are applied, so a partial payload updates just those aspects; null
+    /// fields in the stored value keep whatever was set before. Does not require an active link.
+    /// </summary>
+    Task<ShareLinkDto> SetAppearanceAsync(Guid tenantId, ShareAppearance appearance, CancellationToken ct = default);
 }
 
 /// <inheritdoc />
@@ -50,6 +59,7 @@ public sealed class ShareLinkService : IShareLinkService
     private readonly IShareTokenGenerator _tokenGenerator;
     private readonly ShareTokenCacheService _shareTokenCache;
     private readonly PublicAccessCacheService _publicAccessCache;
+    private readonly ICacheService _cacheService;
     private readonly string _baseDomain;
 
     public ShareLinkService(
@@ -57,12 +67,14 @@ public sealed class ShareLinkService : IShareLinkService
         IShareTokenGenerator tokenGenerator,
         ShareTokenCacheService shareTokenCache,
         PublicAccessCacheService publicAccessCache,
+        ICacheService cacheService,
         IOptions<BaseDomainOptions> baseDomain)
     {
         _dbContext = dbContext;
         _tokenGenerator = tokenGenerator;
         _shareTokenCache = shareTokenCache;
         _publicAccessCache = publicAccessCache;
+        _cacheService = cacheService;
         _baseDomain = baseDomain.Value.BaseDomain;
     }
 
@@ -189,6 +201,37 @@ public sealed class ShareLinkService : IShareLinkService
         return ToDto(tenant, member);
     }
 
+    public async Task<ShareLinkDto> SetAppearanceAsync(Guid tenantId, ShareAppearance appearance, CancellationToken ct = default)
+    {
+        if (appearance.Validate() is { } error)
+            throw new ArgumentException(error, nameof(appearance));
+
+        var tenant = await _dbContext.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, ct)
+            ?? throw new InvalidOperationException($"Tenant {tenantId} not found");
+        var member = await GetPublicMemberAsync(tenantId, ct);
+
+        if (tenant.ShareAppearance == null)
+        {
+            tenant.ShareAppearance = appearance.Serialize();
+        }
+        else
+        {
+            // Merge so a partial payload honors earlier fields rather than wiping them.
+            var current = ShareAppearance.Deserialize(tenant.ShareAppearance);
+            current.MergeWith(appearance);
+            tenant.ShareAppearance = current.Serialize();
+        }
+
+        await _dbContext.SaveChangesAsync(ct);
+
+        // The status endpoint caches the appearance it serves to anonymous viewers; drop its
+        // cached copy so a change reaches the public view immediately rather than after the TTL.
+        await _cacheService.RemoveAsync($"status:system:{tenantId}");
+        await _cacheService.RemoveAsync($"status:system:{tenantId}:demo");
+
+        return ToDto(tenant, member);
+    }
+
     private Task<TenantMemberEntity?> GetPublicMemberAsync(Guid tenantId, CancellationToken ct) =>
         _dbContext.TenantMembers
             .Include(m => m.MemberRoles)
@@ -227,7 +270,14 @@ public sealed class ShareLinkService : IShareLinkService
         FullHistory = member is { LimitTo24Hours: false },
         Scopes = ComputeScopes(member),
         LastAccessedAt = tenant.ShareLastAccessedAt,
+        Appearance = ResolveAppearance(tenant),
     };
+
+    private static ShareAppearance? ResolveAppearance(TenantEntity tenant)
+    {
+        var appearance = ShareAppearance.Deserialize(tenant.ShareAppearance);
+        return appearance.IsEmpty ? null : appearance;
+    }
 
     /// <summary>
     /// The public-shareable read scopes the Public subject currently resolves to — the union of any

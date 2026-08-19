@@ -39,6 +39,7 @@
   import MemberCard from "$lib/components/members/MemberCard.svelte";
   import GuestLinksSection from "$lib/components/members/GuestLinksSection.svelte";
   import PublicAccessCard from "$lib/components/members/PublicAccessCard.svelte";
+  import PublicAppearanceCard from "$lib/components/members/PublicAppearanceCard.svelte";
   import MembershipRequestsCard from "$lib/components/members/MembershipRequestsCard.svelte";
   import RolesSection from "$lib/components/members/RolesSection.svelte";
 
@@ -241,6 +242,9 @@
 
   <!-- Public access -->
   <PublicAccessCard />
+
+  <!-- Public link appearance -->
+  <PublicAppearanceCard />
 
   <!-- Membership requests (independent of public access) -->
   <MembershipRequestsCard />

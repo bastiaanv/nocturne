@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Nocturne.Core.Models.Configuration;
 
 namespace Nocturne.Core.Models;
 
@@ -147,4 +148,14 @@ public class StatusResponse
     /// </summary>
     [JsonPropertyName("tenantSlug")]
     public string? TenantSlug { get; set; }
+
+    /// <summary>
+    /// The tenant's public-share appearance (glucose units, time format, color scheme/theme),
+    /// so an anonymous viewer of the share link renders exactly what the admin configured.
+    /// Null/absent means the public view falls back to its defaults. Tenant-level and
+    /// caller-independent, hence safe inside the cached per-tenant response.
+    /// </summary>
+    [JsonPropertyName("shareAppearance")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ShareAppearance? ShareAppearance { get; set; }
 }

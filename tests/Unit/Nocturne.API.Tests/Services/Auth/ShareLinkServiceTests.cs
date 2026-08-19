@@ -11,6 +11,8 @@ using Nocturne.API.Multitenancy;
 using Nocturne.API.Services.Auth;
 using Nocturne.API.Tests.Infrastructure;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Models.Configuration;
+using Nocturne.Infrastructure.Cache.Abstractions;
 using Nocturne.Infrastructure.Data;
 using Nocturne.Infrastructure.Data.Entities;
 using Nocturne.Infrastructure.Data.Security;
@@ -25,6 +27,7 @@ public sealed class ShareLinkServiceTests : IDisposable
 
     private readonly NocturneDbContext _db;
     private readonly ShareLinkService _service;
+    private readonly Mock<ICacheService> _mockCacheService;
 
     public ShareLinkServiceTests()
     {
@@ -51,6 +54,8 @@ public sealed class ShareLinkServiceTests : IDisposable
         factory.Setup(f => f.CreateDbContextAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => TestDbContextFactory.CreateInMemoryContext(dbName));
 
+        _mockCacheService = new Mock<ICacheService>();
+
         _service = new ShareLinkService(
             _db,
             new ShareTokenGenerator(),
@@ -58,6 +63,7 @@ public sealed class ShareLinkServiceTests : IDisposable
                 new MemoryCache(new MemoryCacheOptions()), factory.Object, NullLogger<ShareTokenCacheService>.Instance),
             new PublicAccessCacheService(
                 new MemoryCache(new MemoryCacheOptions()), factory.Object, NullLogger<PublicAccessCacheService>.Instance),
+            _mockCacheService.Object,
             Options.Create(new BaseDomainOptions { BaseDomain = "nocturne.run" }));
     }
 
@@ -261,5 +267,68 @@ public sealed class ShareLinkServiceTests : IDisposable
 
         dto.Enabled.Should().BeFalse();
         (await _db.Tenants.AsNoTracking().FirstAsync(t => t.Id == TenantId)).ShareToken.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Appearance_defaults_to_null_until_set()
+    {
+        var dto = await _service.GetAsync(TenantId);
+
+        dto.Appearance.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SetAppearance_persists_and_returns_the_chosen_fields()
+    {
+        var dto = await _service.SetAppearanceAsync(TenantId, new ShareAppearance
+        {
+            GlucoseUnits = "mmol",
+            TimeFormat = "24",
+            ColorScheme = "dark",
+            ColorTheme = "trio",
+        });
+
+        dto.Appearance.Should().NotBeNull();
+        dto.Appearance!.GlucoseUnits.Should().Be("mmol");
+        dto.Appearance.TimeFormat.Should().Be("24");
+        dto.Appearance.ColorScheme.Should().Be("dark");
+        dto.Appearance.ColorTheme.Should().Be("trio");
+
+        // Persisted as the JSONB blob on the tenant.
+        var tenant = await _db.Tenants.AsNoTracking().FirstAsync(t => t.Id == TenantId);
+        tenant.ShareAppearance.Should().NotBeNull();
+        ShareAppearance.Deserialize(tenant.ShareAppearance).GlucoseUnits.Should().Be("mmol");
+    }
+
+    [Fact]
+    public async Task SetAppearance_merges_non_null_fields_over_existing()
+    {
+        await _service.SetAppearanceAsync(TenantId, new ShareAppearance { GlucoseUnits = "mmol" });
+
+        var dto = await _service.SetAppearanceAsync(TenantId, new ShareAppearance { TimeFormat = "24" });
+
+        dto.Appearance!.GlucoseUnits.Should().Be("mmol", "fields not present in the new payload are preserved");
+        dto.Appearance!.TimeFormat.Should().Be("24");
+    }
+
+    [Fact]
+    public async Task SetAppearance_rejects_values_outside_the_allow_lists()
+    {
+        var setBadUnits = async () => await _service.SetAppearanceAsync(
+            TenantId, new ShareAppearance { GlucoseUnits = "kPa" });
+        var setBadScheme = async () => await _service.SetAppearanceAsync(
+            TenantId, new ShareAppearance { ColorScheme = "sepia" });
+
+        await setBadUnits.Should().ThrowAsync<ArgumentException>();
+        await setBadScheme.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task SetAppearance_evicts_the_cached_status_for_both_demo_modes()
+    {
+        await _service.SetAppearanceAsync(TenantId, new ShareAppearance { GlucoseUnits = "mmol" });
+
+        _mockCacheService.Verify(c => c.RemoveAsync($"status:system:{TenantId}", It.IsAny<CancellationToken>()), Times.Once);
+        _mockCacheService.Verify(c => c.RemoveAsync($"status:system:{TenantId}:demo", It.IsAny<CancellationToken>()), Times.Once);
     }
 }

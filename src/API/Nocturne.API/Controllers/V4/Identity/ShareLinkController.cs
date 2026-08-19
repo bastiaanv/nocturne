@@ -5,6 +5,7 @@ using Nocturne.API.Models.Responses;
 using Nocturne.API.Services.Auth;
 using Nocturne.Core.Contracts.Multitenancy;
 using Nocturne.Core.Models.Authorization;
+using Nocturne.Core.Models.Configuration;
 
 namespace Nocturne.API.Controllers.V4.Identity;
 
@@ -110,12 +111,44 @@ public class ShareLinkController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Customize the appearance of the public share view (glucose units, time format, color
+    /// scheme/theme). Only the provided fields change — null fields keep their current value.
+    /// </summary>
+    [HttpPut("appearance")]
+    [RemoteCommand(Invalidates = ["GetShareLink"])]
+    [ProducesResponseType(typeof(ShareLinkDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<ShareLinkDto>> SetShareLinkAppearance(
+        [FromBody] SetShareAppearanceRequest request, CancellationToken ct)
+    {
+        if (!HasPermission(TenantPermissions.SharingManage))
+            return Forbid();
+
+        try
+        {
+            return Ok(await _shareLinkService.SetAppearanceAsync(
+                _tenantAccessor.TenantId, request.Appearance, ct));
+        }
+        catch (ArgumentException ex)
+        {
+            return Problem(detail: ex.Message, statusCode: 400, title: "Invalid appearance");
+        }
+    }
+
     private bool HasPermission(string permission)
     {
         var grantedScopes = HttpContext.Items["GrantedScopes"] as IReadOnlySet<string>;
         return grantedScopes != null && TenantPermissions.HasPermission(grantedScopes, permission);
     }
 }
+
+/// <summary>
+/// The appearance to pin for the public share view. Fields carry only the aspects being changed;
+/// null leaves each aspect at its current value (or the platform default if never set).
+/// </summary>
+public record SetShareAppearanceRequest(ShareAppearance Appearance);
 
 public record SetShareFullHistoryRequest(bool FullHistory);
 

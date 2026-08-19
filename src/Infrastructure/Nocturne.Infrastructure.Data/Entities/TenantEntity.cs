@@ -87,6 +87,14 @@ public class TenantEntity : ISystemTimestamped
     public DateTime? ShareLastAccessedAt { get; set; }
 
     /// <summary>
+    /// Presentation appearance for the public share view (glucose units, time format, color
+    /// scheme/theme), serialized as a JSONB blob (<see cref="Core.Models.Configuration.ShareAppearance"/>).
+    /// Null until an admin customizes it, in which case the public view uses platform defaults.
+    /// </summary>
+    [Column("share_appearance")]
+    public string? ShareAppearance { get; set; }
+
+    /// <summary>
     /// When the tenant record was created
     /// </summary>
     [Column("sys_created_at")]
